@@ -1,0 +1,37 @@
+Sitteraufträge
+	Schiffbau <-- warum steht das hier noch?
+		Schiffsnamen in Combobox
+	sonstiger Auftrag
+	Dauerauftrag
+	Aufträge bearbeiten
+	Auftrag anhängen
+	Sittergruppen
+	Markieren, dass Auftrag schon in Bearbeitung
+	SitterUtilsJob - Button zum Auftrag als erledigt markieren
+Scanberichte
+	Schiffscans
+	Gebscans
+	Uniscan-XMLs
+Kampfberichte
+	Einlesen aus externen Links
+	Ausgeben
+		HTML
+		BB-Style
+Benutzerverwaltung
+	Memberliste
+	Einstellungen bearbeiten (geht teilweise schon, aber fehlt auch noch einiges)
+Botinterface
+	Sitteraufträge
+	Sitterlogins
+Uniübersicht
+	Nach Gebäuden suchen
+	Presets
+	Nach Planeten suchen wo best. Scantyp älter als xyz Tage
+Techtree überarbeiten
+Schiffsübersicht
+RessProdÜbersicht
+Fehlerausgabe & GUI (->LogError)
+Geoscan einlesen vom FX testen
+Universum einlesen vom FX testen
+Bauschleife einlesen vom FX testen
+Fehler beim Einlesen von Besonderheiten/Nebeln finden

@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PageGen", "PageGen\PageGen.csproj", "{A64B0213-1AA9-4AD8-84B9-63799633B501}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IWDBBotModule", "IWDBBotModule\IWDBBotModule.csproj", "{2D701DA4-B8C2-4C8A-B4E9-4F8F470003CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{841E96A6-D9BF-4ED3-970D-339E09B7267C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A64B0213-1AA9-4AD8-84B9-63799633B501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A64B0213-1AA9-4AD8-84B9-63799633B501}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A64B0213-1AA9-4AD8-84B9-63799633B501}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A64B0213-1AA9-4AD8-84B9-63799633B501}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D701DA4-B8C2-4C8A-B4E9-4F8F470003CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D701DA4-B8C2-4C8A-B4E9-4F8F470003CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D701DA4-B8C2-4C8A-B4E9-4F8F470003CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D701DA4-B8C2-4C8A-B4E9-4F8F470003CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{841E96A6-D9BF-4ED3-970D-339E09B7267C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{841E96A6-D9BF-4ED3-970D-339E09B7267C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{841E96A6-D9BF-4ED3-970D-339E09B7267C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{841E96A6-D9BF-4ED3-970D-339E09B7267C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

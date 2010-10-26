@@ -1,0 +1,1 @@
+robocopy E:\progging\IWDB\trunc\php X:\test *.* /E /ZB /XD .svn .settings .cache /XF .project .projectOptions install.sql Settings.php errors.txt changes.txt /TBD /XO /PURGE

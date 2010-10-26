@@ -1,0 +1,69 @@
+  Sittergruppen
+D Sitteraufträge
+  mit/ohne Bauschleife
+  Daueraufträge
+
+->Sitterauftragstext speichern
+->Ein paar Formulare um Standardtexte zu schreiben
+->mit escapedtem html speichern
+
+DB:
+sitter
+=> ID|userid|groupsallowed|time1 (Auftragsbegin)|time2 (Bauschleifenauslauf)|done|Text
+sittergroup
+=> id|name
+sittermember
+=> groupid|userid
+
+Creates:
+
+ALTER TABLE users ADD COLUMN sitterlogin CHAR(64) DEFAULT '' AFTER ipsecurity
+ALTER TABLE users ADD COLUMN sitterpw CHAR(32) DEFAULT '' AFTER sitterlogin
+ALTER TABLE users ADD COLUMN sitterflags int DEFAULT 0 NOT NULL AFTER sitterpw
+ALTER TABLE users ADD COLUMN sitterskin tinyint DEFAULT 0 AFTER sitterflags
+ALTER TABLE users ADD COLUMN sitteripchange tinyint(1) DEFAULT 0 AFTER sitterskin
+
+
+CREATE TABLE sitter (
+	ID int auto_increment,
+	userid int,
+	groupsallowed int,
+	time1 int,
+	time2 int,
+	done tinyint(1),
+	Text varchar(255),
+	PRIMARY KEY(ID)
+)
+
+CREATE TABLE sittergroup (
+	id int,
+	name char(64),
+	unique(id)
+)
+
+CREATE TABLE sittermember (
+	groupid int,
+	userid int,
+	KEY(userid)
+)
+
+CREATE TABLE sitterlog (
+	userid int,
+	victimid int,
+	type enum('auftrag', 'login'),
+	time int,
+	auftragsid int,
+	KEY (userid),
+	KEY (victimid)
+)
+
+Sitteraufträge anzeigen:
+Beim Aufruf die Gruppenflags für den User bilden (select SUM(groupid) FROM sittermember WHERE userid=$ID_MEMBER)
+Danach 
+
+Sitteraufträge hinzufügen:
+Text auf Länge prüfen
+Zeiten auf < now testen
+
+Sittergruppen:
+Beim Entfernen von allen groupsallowed das Flag Num wegnehmen

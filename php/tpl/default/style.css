@@ -1,0 +1,221 @@
+body {
+	background-color: #E5E5E8;
+	margin: 0px;
+	padding: 12px 30px 4px 30px;
+	/* text-align: center; /* zentrieren im ie */
+}
+
+a:visited, a:active, a:hover, a:focus, a:link, a:hover { /*Alle Links erstmal blau */
+	color: #0000FF;
+}
+a:active {
+	font-style: italic;
+}
+
+td, th {
+	empty-cells: show;
+}
+
+body, td, th, tr {
+	color: #000000;
+	font-size: 12px;
+	font-family: verdana, sans-serif;
+}
+
+.header {
+	text-align: left;
+	padding-bottom: 10px;
+}
+.content {
+	text-align: left;
+	margin-top: 5px;
+	padding-bottom: 10px;
+	padding-left: 5px;
+	padding-top: 5px;
+	margin-left: 160px;
+	border: solid 1px #88A6C0;
+}
+.footer {
+	margin-left: 160px;
+	text-align: left;
+}
+.menu {
+	background-color: #E9F0F6;
+	color: #FFFFDD;
+	margin: 5px;
+	margin-right: 0px;
+	padding: 1px;
+	width: 150px;
+	float:left;
+	border: solid 1px #88A6C0;
+	text-align: left;
+}
+
+.menu th {
+	background-color: #E9F0F6;
+	border-bottom: solid 1px #9BAEBF;
+	padding: 4px;
+}
+
+.menu td {
+	border-bottom: solid 1px #9BAEBF;
+	border-top: solid 1px #FFFFFF;
+	padding: 4px;
+	font-size: 12px;
+}
+
+.menu td a:visited, .menu td a:active, .menu td a:hover, .menu td a:focus, .menu td a:link { /*Alle Links im Menü erstmal blau */
+	color: #0000FF;
+}
+
+.menu td a:hover {
+	color: #FF0000;
+}
+
+.menu td a:active {
+	font-style: italic;
+}
+
+.content table {
+	background-color: #E9F0F6;
+	padding: 0px;
+	border: solid 1px #88A6C0;
+	text-align: left;
+}
+
+.content td {
+	border-right: solid 1px #9BAEBF;
+	border-bottom: solid 1px #9BAEBF;
+	border-left: solid 1px #FFFFFF;
+	border-top: solid 1px #FFFFFF;
+	padding: 4px;
+}
+
+.content .subtable .t, .content .subtable .st {
+	background-color: #E9F0F6;
+	padding: 0px;
+	border: solid 1px #88A6C0;
+	text-align: left;
+	color: #FF0000;
+}
+
+.content .subtable .t td, .content .subtable .st td  {
+	border-right: solid 1px #9BAEBF;
+	border-bottom: solid 1px #9BAEBF;
+	border-left: solid 1px #FFFFFF;
+	border-top: solid 1px #FFFFFF;
+	padding: 4px;
+}
+
+.content .subtable .st td {
+	padding: 2px;
+}
+
+.content .subtable table {
+	margin: 0px;
+	padding: 0px;
+	border: none 0px;
+}
+
+.content .subtable td {
+	border: none 0px;
+}
+
+/* Die Überschrift und Tabellenüberschriften im Menü*/
+.categoryheader, .menu th, .content th {
+	background-color: #88A6C0;
+	padding-left: 10px;
+	padding-right: 10px;
+	/* #355D80 */
+}
+
+/* Links in Tabellenüberschriften */
+.content th a:link, .content th a:visited, .content th a:hover, .content th a:active, .content th a:focus {
+	text-decoration: none;
+}
+
+/* Die Boxen innerhalb der Frames, die beim Sitterlogin angezeigt werden */
+.sitterutil_box {
+	position:fixed;
+	top:0px;
+	bottom:15px;
+	left:0px;
+	right:0px;
+	margin:0px;
+	overflow:auto;
+}
+.sitterutil_box > div,
+.sitterutil_box > table,
+.sitterutil_box > h2 {
+	margin-left:5px;
+	margin-right:5px;
+	margin-top: 3px;
+	margin-bottom: 0px;
+	text-align:center;
+}
+.sitterutil_links {
+	position:fixed;
+	left:0px;
+	right:0px;
+	bottom:0px;
+	background-color: #88A6C0;
+	height:15px;
+}
+
+.sitterutil_box * {
+	font-size:10px;
+}
+
+.sitterutil_box > h2 {
+	font-size: 12px;
+}
+
+.simp {
+	font-weight: bold;
+	color: #009900;
+}
+
+.imp {
+	font-weight: bold;
+	color: #FF0000;
+}
+
+.sub {
+	font-size: smaller;
+	font-style: italic;
+}
+
+/* Stargates in der Systemkarte */
+.systemmap_stargate,
+.systemmap_stargate td,
+.systemmap_stargate a:link,
+.systemmap_stargate a:visited,
+.systemmap_stargate a:focus,
+.systemmap_stargate a:hover		{ background-color: #000000; color: #FFFFFF; }
+
+.techtree_geb { color: #007700; font-style:italic; }
+.techtree_for { color: #0000FF; font-style:italic; }
+.techtree_for_done { color: #0000FF; }
+.techtree_geb_done { color: #007700; }
+
+.danger_0 {}
+.danger_1 { background-color:#FFFF00; }
+
+.sitterjob_own {
+	background-color: #E5C0E8;
+}
+.sitterjob_account {
+	background-color: #E5E5C4;
+}
+.sitterjob_none {
+}
+
+/* Bilder sollen keinen Rand haben, sähe doof aus. Muss nach unten */
+img { border-width: 0px; }
+
+*.act_0, *.act_0 td { background-color: #00FF00; }
+*.act_1, *.act_1 td { background-color: #80FF00; }
+*.act_2, *.act_2 td { background-color: #C4FF00; }
+*.act_3, *.act_3 td { background-color: #FFFF00; }
+*.act_4, *.act_4 td { background-color: #FF8040; }
+*.act_5, *.act_5 td { background-color: #FF0000; }

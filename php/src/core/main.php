@@ -1,0 +1,94 @@
+<?php
+if (!defined("dddfd"))
+	die("Hacking attempt");
+
+function Index() {
+	global $content, $pre, $user, $sourcedir, $scripturl;
+	
+	
+	$content['visibleName'] = $user['visibleName'];
+	$content['problems'] = array();
+	
+	$u = $user['igmuser'] != 0;
+	if($u) {
+		$username = DBQueryOne("SELECT igmname FROM {$pre}igm_data WHERE id=".$user['igmuser'], __FILE__, __LINE__);
+		$u = $username !== false && strlen($username) > 0;
+	}
+	if(!$u) {
+		$content['problems'][] = array(
+				'class' => 'imp',
+				'text' => 'Du hast keine Sitterdaten eingetragen!',
+				'link' => $scripturl. '/index.php?action=settings',
+			);
+	}
+	if($user['isAdmin']) {
+		$dberrors = DBQueryOne("SELECT count(*) FROM {$pre}errors", __FILE__, __LINE__);
+		if($dberrors > 0) {
+			$content['problems'][] = array(
+				'class' => 'imp',
+				'text' => 'Es sind '. $dberrors. ' Fehler aufgetreten!',
+				'link' => $scripturl. '/index.php?action=errors',
+			);
+		}
+		if(file_exists(dirname($sourcedir)."/errors.txt") && filesize(dirname($sourcedir)."/errors.txt") > 0) {
+			$content['problems'][] = array(
+				'class' => 'imp',
+				'text' => 'Es sind kritische Fehler aufgetreten!',
+				'link' => $scripturl. '/index.php?action=errors',
+			);
+		}
+	}
+	$browser = IdentifyBrowser();
+	if($browser != 'fx') {
+		$content['problems'][] = array(
+			'class' => 'imp',
+			'text' => 'Du benutzt als Browser nicht den Firefox, somit wird der größte Teil der Tool-Parser nicht funktionieren!',
+			'link' => '',
+		);
+	}
+	TemplateInit('main');
+	TemplateIndex();
+}
+
+function IdentifyBrowser() {
+	$s = $_SERVER['HTTP_USER_AGENT'];
+	if(strpos($s, 'Firefox/') !== false) {
+		return 'fx';
+	} elseif(strpos($s, 'Mozilla/') !== false) {
+		return 'ie';
+	} elseif(strpos($s, 'Opera/') !== false) {
+		return 'op';
+	} else {
+		return '??';
+	}
+}
+
+function UnknownAction() {
+	
+	header("HTTP/1.0 404 Not Found");
+	LogError("Unbekannte Action: ".$_REQUEST['action'], __FILE__, __LINE__);
+	TemplateInit('main');
+	TemplateUnknownAction();
+}
+
+function HelpView() {
+	global $pre, $content;
+	
+	$txt = DBQueryOne("SELECT Text FROM {$pre}texts WHERE Name='".EscapeDB(Param('name'))."'", __FILE__, __LINE__);
+	if($txt === false || strlen($txt) == 0) {
+		$content['text'] = 'Zu diesem Thema ist leider kein Hilfe-Eintrag vorhanden!';
+	} else {
+		$content['text'] = $txt;
+	}
+	
+	TemplateInit('main');
+	TemplateHelp();
+}
+
+function Bugs() {
+	global $content;
+	$content['text'] = GetText('bugs_page');
+	TemplateInit('main');
+	TemplateBugs();
+}
+?>

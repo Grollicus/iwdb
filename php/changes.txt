@@ -1,0 +1,1 @@
+alter table $preigm_data add column squad varchar(32) not null default '' after accounttyp
