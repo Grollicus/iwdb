@@ -235,8 +235,8 @@
 		}
 	// ]]></script>
 	<div class="sitterutil_box">
-		<h2>Neuer Bericht</h2>
-		', !empty($content['msg']) ? '<div class="imp">'.$content['msg'].'</div>' : '', '
+		', !empty($content['submsg']) ? '' : '<h2>Neuer Bericht</h2>', 
+		!empty($content['msg']) ? '<div class="imp">'.$content['msg'].'</div>' : '', '
 		<div><form id="newscan" method="post" action="', $scripturl, '/index.php?action=sitterutil_newscan', $content['params'], '">
 			<textarea name="scans" rows="4" cols="60">', $content['scans'], '</textarea><br/>
 			<input type="hidden" name="uid" value="', $content['uid'], '" />

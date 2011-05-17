@@ -7,7 +7,7 @@ function NewscanEx() {
 
 	ParseScansEx();
 	
-	$content['desc'] = GetText('newscan_desc');
+	$content['desc'] = GetText2('newscan_desc');
 	$q = DBQuery("SELECT id, igmname FROM {$pre}igm_data ORDER BY igmname", __FILE__, __LINE__);
 	$content['users'] = array();
 	GenRequestID();
@@ -28,6 +28,7 @@ function ParseScansEx() {
 	global $content, $ID_MEMBER, $user;
 	
 	
+	flush();
 	$content['scans'] = '';
 	$search	 = array("Erdbeeren",	"Erdbeermarmelade", "Brause", 			utf8_decode("Erdbeerkonfitüre"), "Vanilleeis", "Eismatsch"		, "Traubenzucker", "Kekse"  , "blubbernde Gallertmasse" );
 	$replace = array("Eisen", 		"Stahl", 			"chem. Elemente", 	"VV4A"	 					   , "Eis"  	 , "Wasser"			, "Energie"		 , "Credits", utf8_decode("Bevölkerung"));

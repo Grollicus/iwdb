@@ -5,7 +5,12 @@
 		TemplateMenu();
 		echo '<div class="content">
 				<h2>Ressourcenproduktion nach Accounts</h2>
-				<table>
+				Squad: <select onchange="filterTable(\'resstbl\', 0, this.value);" onkeyup="filterTable(\'resstbl\', 0, this.value);">';
+		foreach($content['squads'] as $squad) {
+			echo '<option value="', $squad, '">', $squad, '</option>';
+		}
+		echo '</select>
+				<table id="resstbl">
 					<tr>
 						<th>
 							<a href="', $content['sortLinks'][0]['link'], '">Account', $content['sortLinks'][0]['active'] ? '<img src="'.$themeurl.'/img/'.$content['order'].'.png" alt="sort" />' : '','</a><br />
@@ -50,28 +55,28 @@
 			echo '
 				<tr class="', $user['age'], '">
 					<td>', $user['name'], '<br /><i style="font-size:smaller;">',$user['accountTyp'] , '@', $user['squad'], '</i></td>
-					<td>', $user['vFe'], '<br /><span class="sub">', $user['fe'], '</span></td>
-					<td>', $user['vSt'], '<br /><span class="sub">', $user['st'], '</span></td>
-					<td>', $user['vVv'], '<br /><span class="sub">', $user['vv'], '</span></td>
-					<td>', $user['vCh'], '<br /><span class="sub">', $user['ch'], '</span></td>
-					<td>', $user['vEi'], '<br /><span class="sub">', $user['ei'], '</span></td>
-					<td>', $user['vWa'], '<br /><span class="sub">', $user['wa'], '</span></td>
-					<td>', $user['vEn'], '<br /><span class="sub">', $user['en'], '</span></td>
-					<td>', $user['fp'], '</td>
-					<td>', $user['vCr'], '<br /><span class="sub">', $user['cr'], '</span></td>
+					<td align="right">', $user['vFe'], '<br /><span class="sub">', $user['tFe'], ' ', $user['fe'], '</span></td>
+					<td align="right">', $user['vSt'], '<br /><span class="sub">', $user['tSt'], ' ', $user['st'], '</span></td>
+					<td align="right">', $user['vVv'], '<br /><span class="sub">', $user['tVv'], ' ', $user['vv'], '</span></td>
+					<td align="right">', $user['vCh'], '<br /><span class="sub">', $user['tCh'], ' ', $user['ch'], '</span></td>
+					<td align="right">', $user['vEi'], '<br /><span class="sub">', $user['tEi'], ' ', $user['ei'], '</span></td>
+					<td align="right">', $user['vWa'], '<br /><span class="sub">', $user['tWa'], ' ', $user['wa'], '</span></td>
+					<td align="right">', $user['vEn'], '<br /><span class="sub">', $user['en'], '</span></td>
+					<td align="right">', $user['fp'], '</td>
+					<td align="right">', $user['vCr'], '<br /><span class="sub">', $user['cr'], '</span></td>
 				</tr>';
 		}
 		echo '<tr style="font-weight:bold;">
 					<td>Gesamt</td>
-					<td>', $content['ges']['vFe'], '<br /><span class="sub">', $content['ges']['fe'], '</span></td>
-					<td>', $content['ges']['vSt'], '<br /><span class="sub">', $content['ges']['st'], '</span></td>
-					<td>', $content['ges']['vVv'], '<br /><span class="sub">', $content['ges']['vv'], '</span></td>
-					<td>', $content['ges']['vCh'], '<br /><span class="sub">', $content['ges']['ch'], '</span></td>
-					<td>', $content['ges']['vEi'], '<br /><span class="sub">', $content['ges']['ei'], '</span></td>
-					<td>', $content['ges']['vWa'], '<br /><span class="sub">', $content['ges']['wa'], '</span></td>
-					<td>', $content['ges']['vEn'], '<br /><span class="sub">', $content['ges']['en'], '</span></td>
-					<td>', $content['ges']['fp'], '<br /></td>
-					<td>', $content['ges']['vCr'], '<br /><span class="sub">', $content['ges']['cr'], '</span></td>
+					<td align="right">', $content['ges']['vFe'], '<br /><span class="sub">', $content['ges']['fe'], '</span></td>
+					<td align="right">', $content['ges']['vSt'], '<br /><span class="sub">', $content['ges']['st'], '</span></td>
+					<td align="right">', $content['ges']['vVv'], '<br /><span class="sub">', $content['ges']['vv'], '</span></td>
+					<td align="right">', $content['ges']['vCh'], '<br /><span class="sub">', $content['ges']['ch'], '</span></td>
+					<td align="right">', $content['ges']['vEi'], '<br /><span class="sub">', $content['ges']['ei'], '</span></td>
+					<td align="right">', $content['ges']['vWa'], '<br /><span class="sub">', $content['ges']['wa'], '</span></td>
+					<td align="right">', $content['ges']['vEn'], '<br /><span class="sub">', $content['ges']['en'], '</span></td>
+					<td align="right">', $content['ges']['fp'], '<br /></td>
+					<td align="right">', $content['ges']['vCr'], '<br /><span class="sub">', $content['ges']['cr'], '</span></td>
 				</tr>';
 		echo '</table>
 			</div>';

@@ -32,7 +32,7 @@ if(!defined('dddfd'))
  * 	*Escapes toEscape so it can be safely printed to a XHTML-Website
  * string EscapeDB ( string toEscape )
  * 	*Escapes toEscape so it can be safely used in a string entity in a database query 
- * string GetText( string name )
+ * string GetText2( string name )
  * 	*Gets a predefined Text message from the database
  * 
  */
@@ -321,7 +321,7 @@ function Param($name, $req = null) {
 		return utf8_decode($req[$name]);
 }
 
-function GetText($name) {
+function GetText2($name) {
 	global $pre;
 	return DBQueryOne("SELECT text FROM {$pre}texts WHERE Name='".$name."'", __FILE__, __LINE__);
 }

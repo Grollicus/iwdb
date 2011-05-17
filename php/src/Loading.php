@@ -84,6 +84,6 @@ function DoMaintenance() {
 	
 	$now = time();
 	DBQuery("DELETE FROM {$pre}requestids WHERE time < ".($now-172800), __FILE__, __LINE__);
-	DBQuery("DELETE FROM {$pre}geoscans WHERE reset is not null and reset < ".$now, __FILE__, __LINE__);
+DBQuery("DELETE FROM {$pre}geoscans WHERE reset is not null and reset < ".$now." AND (SELECT objekttyp='---' FROM {$pre}universum AS universum WHERE universum.id = {$pre}geoscans.id)", __FILE__, __LINE__);
 }
 ?>

@@ -87,7 +87,7 @@ function HelpView() {
 
 function Bugs() {
 	global $content;
-	$content['text'] = GetText('bugs_page');
+	$content['text'] = GetText2('bugs_page');
 	TemplateInit('main');
 	TemplateBugs();
 }

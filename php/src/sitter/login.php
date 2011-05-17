@@ -46,13 +46,13 @@
 			
 		$sitterdata = DBQueryOne("SELECT sitterskin, sitteripchange FROM {$pre}users WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
 		if($spiel == 'iw')  {
-			$loginurl = 'http://217.20.121.21/index.php?action=login&amp;sitter=1&amp;submit=1';
+			$loginurl = 'http://www.icewars.de/index.php?action=login&amp;sitter=1&amp;submit=1';
 			$loginurl .= '&amp;name='.EscapeOU($victim[0]);
-			$loginurl .= '&amp;pswd='.EscapeOU(rawurlencode($victim[1]));
+			$loginurl .= '&amp;pswd='.EscapeO(rawurlencode(utf8_decode($victim[1])));
 		} else {
 			$loginurl = 'http://www.crystalwars.de/index.php?action=login&amp;login_sitter=1&amp;submit_data=1';
 			$loginurl .= '&amp;login_name='.EscapeOU($victim[0]);
-			$loginurl .= '&amp;login_pswd='.EscapeOU(rawurlencode($victim[1]));
+			$loginurl .= '&amp;login_pswd='.EscapeOU(rawurlencode(utf8_decode($victim[1])));
 		}
 		if($sitterdata[0] != 0)
 			$loginurl .= '&amp;serverskin=1&amp;serverskin_typ='.$sitterdata[0];
@@ -79,9 +79,9 @@
 FROM {$pre}users AS users LEFT JOIN {$pre}igm_data AS igm_data ON users.igmuser=igm_data.id 
 WHERE users.ID={$ID_MEMBER}", __FILE__, __LINE__);
 		if($spiel == 'iw')
-			$loginurl = 'http://217.20.121.21/index.php?action=login&amp;submit=1&amp;name='.EscapeOU($dta[0]).'&amp;pswd='.EscapeOU($dta[1]);
+			$loginurl = 'http://217.20.121.21/index.php?action=login&amp;submit=1&amp;name='.EscapeOU($dta[0]).'&amp;pswd='.EscapeO(rawurlencode(utf8_decode($dta[1])));
 		else
-			$loginurl = 'http://www.crystalwars.de/index.php?action=login&amp;submit_data=1&amp;login_name='.EscapeOU($dta[0]).'&amp;login_pswd='.EscapeOU($dta[1]);
+			$loginurl = 'http://www.crystalwars.de/index.php?action=login&amp;submit_data=1&amp;login_name='.EscapeOU($dta[0]).'&amp;login_pswd='.EscapeO(rawurlencode(utf8_decode($dta[1])));
 		if($dta[2] == 1)
 			$loginurl .= '&amp;ip_change=1';
 		$params .= '&amp;lastLogin='.$dta[3];

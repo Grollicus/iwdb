@@ -872,7 +872,7 @@
 		if(is_null($row['chemie'])) {
 			$data['geo_ch'] = '???';
 		} else {
-			$data['geo_ch'] = is_null($row['gebtimemod']) ? number_format($row['chemie']*0.1, 1, ',', '.').'/???' : number_format($row['chemie']*10/$row['gebtimemod'], 1, ',', '.');
+			$data['geo_ch'] = ($row['gebtimemod'] == 0) ? number_format($row['chemie']*0.1, 1, ',', '.').'/???' : number_format($row['chemie']*10/$row['gebtimemod'], 1, ',', '.');
 		}
 		if(!isset($data['geotime']))
 			$data['geotime'] = GeoActualityColor($row['geotime'], $row['georeset']);
@@ -881,7 +881,7 @@
 		if(is_null($row['eis'])) {
 			$data['geo_ei'] = '???';
 		} else {
-			$data['geo_ei'] = is_null($row['gebtimemod']) ? number_format($row['eis']*0.1, 1, ',', '.').'/???' : number_format($row['eis']*10/$row['gebtimemod'], 1, ',', '.');
+			$data['geo_ei'] = ($row['gebtimemod'] == 0) ? number_format($row['eis']*0.1, 1, ',', '.').'/???' : number_format($row['eis']*10/$row['gebtimemod'], 1, ',', '.');
 		}
 		//$data['geo_ei'] = is_null($row['eis']) ? '???' : number_format($row['eis']*0.1, 1, ',', '.');
 		if(!isset($data['geotime']))
@@ -891,7 +891,7 @@
 		if(is_null($row['eisen'])) {
 			$data['geo_fe'] = '???';
 		} else {
-			$data['geo_fe'] = is_null($row['gebtimemod']) ? number_format($row['eisen']*0.1, 1, ',', '.').'/???' : number_format($row['eisen']*10/$row['gebtimemod'], 1, ',', '.');
+			$data['geo_fe'] = ($row['gebtimemod'] == 0) ? number_format($row['eisen']*0.1, 1, ',', '.').'/???' : number_format($row['eisen']*10/$row['gebtimemod'], 1, ',', '.');
 		}
 		//$data['geo_fe'] = is_null($row['eisen']) ? '???' : number_format($row['eisen']*0.1, 1, ',', '.');
 		if(!isset($data['geotime']))
