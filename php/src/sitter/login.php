@@ -79,7 +79,7 @@
 FROM {$pre}users AS users LEFT JOIN {$pre}igm_data AS igm_data ON users.igmuser=igm_data.id 
 WHERE users.ID={$ID_MEMBER}", __FILE__, __LINE__);
 		if($spiel == 'iw')
-			$loginurl = 'http://217.20.121.21/index.php?action=login&amp;submit=1&amp;name='.EscapeOU($dta[0]).'&amp;pswd='.EscapeO(rawurlencode(utf8_decode($dta[1])));
+			$loginurl = 'http://www.icewars.de/index.php?action=login&amp;submit=1&amp;name='.EscapeOU($dta[0]).'&amp;pswd='.EscapeO(rawurlencode(utf8_decode($dta[1])));
 		else
 			$loginurl = 'http://www.crystalwars.de/index.php?action=login&amp;submit_data=1&amp;login_name='.EscapeOU($dta[0]).'&amp;login_pswd='.EscapeO(rawurlencode(utf8_decode($dta[1])));
 		if($dta[2] == 1)

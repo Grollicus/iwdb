@@ -54,6 +54,8 @@ function IdentifyBrowser() {
 	$s = $_SERVER['HTTP_USER_AGENT'];
 	if(strpos($s, 'Firefox/') !== false) {
 		return 'fx';
+	} elseif(strpos($s, 'SeaMonkey/') !== false) {
+		return 'fx';
 	} elseif(strpos($s, 'Mozilla/') !== false) {
 		return 'ie';
 	} elseif(strpos($s, 'Opera/') !== false) {
