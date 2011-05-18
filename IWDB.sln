@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PageGen", "PageGen\PageGen.csproj", "{A64B0213-1AA9-4AD8-84B9-63799633B501}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IWDBBotModule", "IWDBBotModule\IWDBBotModule.csproj", "{2D701DA4-B8C2-4C8A-B4E9-4F8F470003CA}"

@@ -18,7 +18,6 @@ namespace IWDB {
         void AnfliegendeFlotten(out uint flottenAnz, out uint zielplaniAnz);
         List<PlaniData> PlanisMitBesitzer(String name);
         List<PlaniData> PlanisInSystem(uint gala, uint sys);
-
     }
 
 	//momentan offene Aufträge jede Minute spammen - bei Änderung nicht

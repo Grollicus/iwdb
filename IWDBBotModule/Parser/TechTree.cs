@@ -139,7 +139,7 @@ class GebäudeübersichtParser:ReportParser {
 			public String Coords { get { return gala + ":" + sys + ":" + pla; } }
 		}
 	public GebäudeübersichtParser(NewscanHandler newscanHandler) : base(newscanHandler) {
-        AddPatern(@"Artefaktübersicht\n\s*\nGebäudeübersicht\n\s*\nGebäudeübersicht\n([\s\S]+)", PatternFlags.All);
+        AddPatern(@"Artefaktübersicht\s*\nGebäudeübersicht\n\s*\nGebäudeübersicht\n([\s\S]+)", PatternFlags.All);
     }
     public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match outerMatch in matches) {
