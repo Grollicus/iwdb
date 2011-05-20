@@ -293,11 +293,14 @@
 		$data['planID'] = intval($_REQUEST['planet']);
 	}
 	function CbValidateBauschleife() {
-		global $bq, $pre, $valid_zeit1;
+		global $bq, $pre, $valid_zeit1, $content;
 		$bq = false;
 		$c = DBQueryOne("SELECT gala, sys, pla FROM {$pre}universum WHERE ID=".intval($_REQUEST['planet']), __FILE__, __LINE__);
 		$coords = "$c[0]:$c[1]:$c[2]"; 
 		$bq = ParseIWBuildingQueue($_REQUEST['bauschleife'], $coords);
+		if($bq === false && !$valid_zeit1) {
+			$content['errors'][] = 'Keine Zeit angegeben oder fehlerhaft formatiert!';
+		}
 		return $bq !== false || $valid_zeit1;
 	}
 	function CbEvaluateBauschleife(&$data) {

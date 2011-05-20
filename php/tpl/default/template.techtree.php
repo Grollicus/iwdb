@@ -62,11 +62,12 @@ function TemplateTechtreeView() {
 		<tr id="row_0_', $item['id'], '" style="display:none;"><td id="tt_0_', $item['id'], '" colspan="3" style="padding:2px;"></td></tr>
 		<tr id="row_1_', $item['id'], '" style="display:none;"><td id="tt_1_', $item['id'], '" colspan="3" style="padding:2px;"></td></tr>';
 	}
-	echo '<tr><td class="windowbg1" colspan="3">
+	echo '<tr><th class="windowbg1" colspan="3">
 			<span class="techtree_for_done">erledigte</span>/<span class="techtree_for">fehlende Forschung</span> - 
-			<span class="techtree_geb_done">gebautes</span>/<span class="techtree_geb">fehlendes Geb&auml;ude</span>
-			<br />Geb&auml;ude- und Forschungs&uuml;bersicht als neuen Bericht importieren
-			<br /><a href="', $scripturl, '/index.php?action=techtree_missing">Noch fehlende Einträge</a>
+			<span class="techtree_geb_done">gebautes</span>/<span class="techtree_geb">fehlendes Geb&auml;ude</span></th></tr>
+		<tr><td class="windowbg1" colspan="3">
+			<a href="', $scripturl, '/index.php?action=techtree_missing">Noch nicht eingelesene Einträge</a><br />
+			Geb&auml;ude- und Forschungs&uuml;bersicht als neuen Bericht importieren
 		 </td></tr>
 		</table>
 	</div>';

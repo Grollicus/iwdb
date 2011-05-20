@@ -16,7 +16,7 @@ function viewLoadingState(state) {
 	var el = getElById('dhtml_loading_header');
 	if(state) {
 		el.innerHTML = 'Loading...';
-		el.style.backgroundColor = '#FF0000';
+		el.style.backgroundColor = '#00FF00';
 	} else {
 		el.innerHTML = '';
 		el.style.backgroundColor = '';
