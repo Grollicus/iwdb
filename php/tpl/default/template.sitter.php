@@ -336,22 +336,27 @@
 			<input type="submit" name="submit" value="Anz." />
 		</form>
 		<table width="99%" cellpadding="0" cellspacing="0" border="1"><tr align="center">';
+		echo '<th>&nbsp;</th>';
 		foreach($content['data'] as $line) {
 			echo '<td>', $line['name'], '<br />(', $line['coords'], ')</td>';
 		}
 		echo '</tr><tr>';
+		echo '<th title="rumfliegende Ress">R</th>';
 		foreach($content['data'] as $line) {
 			echo '<td>', $line['ress'], '</td>';
 		}
 		echo '</tr><tr>';
+		echo '<th title="Produktion / h">P</th>';
 		foreach($content['data'] as $line) {
 			echo '<td>', $line['prod'], '</td>';
 		}
 		echo '</tr><tr>';
+		echo '<th title="Lagerplatz/-inhalt h&auml;lt noch..">H</th>';
 		foreach($content['data'] as $line) {
 			echo '<td>', $line['haelt'], '</td>';
 		}
 		echo '</tr><tr>';
+		echo '<th title="Lagergr&ouml;&szlig;e">L</th>';
 		foreach($content['data'] as $line) {
 			echo '<td>', $line['lager'], '</td>';
 		}

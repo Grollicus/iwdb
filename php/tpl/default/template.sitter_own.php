@@ -9,7 +9,7 @@
 		TemplateMenu();
 		echo '<div class="content">
 	<h2>', $content['heading'], '</h2>
-	<form action="', $content['action'], '" method="post">
+	<form action="', $content['submitAction'], '" method="post">
 	<table width="99%" cellpadding="0" cellspacing="0" border="0">
 				<tr>';
 		foreach($content['pages'] as $page) {

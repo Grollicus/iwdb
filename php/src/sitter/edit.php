@@ -199,7 +199,7 @@
 		}
 		$content['heading'] = (isset($_REQUEST['ID']) && $_REQUEST['ID'] != '0') ? 'Sitterauftrag bearbeiten' : 'Neuer Sitterauftrag';
 		$content['subHeading'] = $pages[$currentPage]['name'];
-		$content['action'] = $scripturl.'/index.php?action=sitter_edit&amp;page='.EscapeO($currentPage);
+		$content['submitAction'] = $scripturl.'/index.php?action=sitter_edit&amp;page='.EscapeO($currentPage);
 		TemplateInit('sitter_own');
 		TemplateSitterEdit();
 	}

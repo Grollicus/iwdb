@@ -2,6 +2,12 @@
 	function TransporteList() {
 		global $pre, $content, $scripturl;
 		
+		$q = DBQuery("SELECT igmname, squad FROM {$pre}igm_data", __FILE__, __LINE__);
+		$squads = array();
+		while($row = mysql_fetch_row($q)) {
+			$squads[$row[0]] = EscapeOU($row[1]);
+		}
+		
 		$q = DBQuery("SELECT absender, SUM(eisen), SUM(stahl), SUM(chemie), SUM(vv4a), SUM(eis), SUM(wasser), SUM(energie), SUM(bev) FROM {$pre}bilanz GROUP BY absender", __FILE__, __LINE__);
 		$ppl = array();
 		while($row = mysql_fetch_row($q)) {
@@ -40,6 +46,11 @@
 		
 		function TransporteSort($a, $b) {
 			global $sort_index, $sort_order;
+			
+			$cmp = strcasecmp($squads[$a['name']], $squads[$b['name']]);
+			if($cmp != 0)
+				return $cmp;
+			
 			if($a[$sort_index] < $b[$sort_index]) {
 				return (-1)*$sort_order;
 			}
@@ -61,12 +72,17 @@
 		foreach($ppl as $u) {
 			$a = array();
 			foreach($u as $k => $v) {
-				if($k == 'name')
+				if($k == 'name') {
 					$a[$k] = $v;
-				else
+				} else {
 					$a[$k] = number_format($v, 0, ',', '.');
+				}
 			}
-			$content['users'][] = $a;
+			if(isset($squads[$a['name']])) {
+				$content['users'][$squads[$a['name']]][] = $a;
+			} else {
+				$content['users']['none'][] = $a;
+			}
 		}
 		$content['headers'] = array(
 			'name' =>  array('title' => 'Name', 'sort' => false, 'order' => 'asc', 'link' => $scripturl.'/index.php?action=transporte&amp;sortby=name'),

@@ -149,7 +149,7 @@ if (!function_exists('TemplateFooter'))
 	<div class="footer">';
 		if($content['debug_mode'] >= 1) {
 			echo '
-		<hr />
+		<hr style="margin-top:20px;" />
 		It is now ', FormatDate(time()), ' (', microtime(true), ')<br />
 		Needed '.number_format(microtime(true)-$starttime,3).' secs for this useless stuff<br />
 		Browser: ', $_SERVER['HTTP_USER_AGENT'];

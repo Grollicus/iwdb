@@ -89,30 +89,35 @@
 		TemplateHeader();
 		TemplateMenu();
 		echo '<div class="content"><h2>Ressourcenbilanz nach Accounts (eingetragene Transportberichte)</h2>';
-		echo '<table>
-			<tr>';
-		foreach($content['headers'] as $header) {
-			echo '<th>',
-					$header['sort'] ? '<img src="'.$themeurl.'/img/'.$header['order'].'.png" />' : '',
-					'<a href="', $header['link'], '">', $header['title'],'</a>',
-					$header['sort'] ? '<img src="'.$themeurl.'/img/'.$header['order'].'.png" />' : '',
-				'</th>';
+		
+		foreach($content['users'] as $squadname => $squadmembers) {
+			echo '<table>
+				<tr><th colspan="9">', $squadname == 'none' ? '???' : $squadname, '</th></tr>
+				<tr>';
+			foreach($content['headers'] as $header) {
+				echo '<th>',
+						$header['sort'] ? '<img src="'.$themeurl.'/img/'.$header['order'].'.png" />' : '',
+						'<a href="', $header['link'], '">', $header['title'],'</a>',
+						$header['sort'] ? '<img src="'.$themeurl.'/img/'.$header['order'].'.png" />' : '',
+					'</th>';
+			}
+			echo '</tr>';
+			foreach($squadmembers as $user) {
+				echo '<tr>
+					<td>', $user['name'], '</td>
+					<td>', $user['fe'], '</td>
+					<td>', $user['st'], '</td>
+					<td>', $user['vv'], '</td>
+					<td>', $user['ch'], '</td>
+					<td>', $user['ei'], '</td>
+					<td>', $user['wa'], '</td>
+					<td>', $user['en'], '</td>
+					<td>', $user['bev'], '</td>
+				</tr>';
+			}
+			echo '</table><br />';
 		}
-		echo '</tr>';
-		foreach($content['users'] as $user) {
-			echo '<tr>
-				<td>', $user['name'], '</td>
-				<td>', $user['fe'], '</td>
-				<td>', $user['st'], '</td>
-				<td>', $user['vv'], '</td>
-				<td>', $user['ch'], '</td>
-				<td>', $user['ei'], '</td>
-				<td>', $user['wa'], '</td>
-				<td>', $user['en'], '</td>
-				<td>', $user['bev'], '</td>
-			</tr>';
-		}
-		echo '</table></div>';
+		echo '</div>';
 		TemplateFooter();
 	}
 ?>

@@ -66,8 +66,8 @@ function TemplateTechtreeView() {
 			<span class="techtree_for_done">erledigte</span>/<span class="techtree_for">fehlende Forschung</span> - 
 			<span class="techtree_geb_done">gebautes</span>/<span class="techtree_geb">fehlendes Geb&auml;ude</span></th></tr>
 		<tr><td class="windowbg1" colspan="3">
-			<a href="', $scripturl, '/index.php?action=techtree_missing">Noch nicht eingelesene Einträge</a><br />
-			Geb&auml;ude- und Forschungs&uuml;bersicht als neuen Bericht importieren
+			<a href="', $scripturl, '/index.php?action=techtree_missing">Hier gehts zur Liste der noch nicht eingelesenen Gebäude/Forschungen</a><br />
+			<span style="font-size:smaller;">(Geb&auml;ude- und Forschungs&uuml;bersicht als neuen Bericht importieren)</span>
 		 </td></tr>
 		</table>
 	</div>';
