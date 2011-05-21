@@ -7,7 +7,7 @@
 	
 	 
 	function ShowUniMap() {
-		global $content, $pre, $default_gala;
+		global $content, $pre, $default_gala, $unicolor_stages;
 		
 		if(!isset($_REQUEST['gala']))
 			$gal = $default_gala; //Defaultgala
@@ -29,13 +29,19 @@
 			}
 			$content['galadatalines'][$j][$i] = array(
 				'num' => $row[0],
-				'age' => $row[3] == 'Stargate' ? 'systemmap_stargate' : $data['act'] = $row[2] > 0 ? 'act_5' : ActualityColor($row[1])
+				'age' => $row[3] == 'Stargate' ? 'systemmap_stargate' : /*wtf? $data['act'] = */ $row[2] > 0 ? 'act_5' : ActualityColor($row[1])
 			);
 			$i++;
 		}
 		for(;$i < $sysperline; $i++) {
 			$content['galadatalines'][$j][$i] = array();
 		}
+		
+		$content['color_stages'] = array();
+		foreach($unicolor_stages as $stage => $time) {
+			$content['color_stages'][$stage] = FormatDays($time);
+		}
+		
 		TemplateInit('uni');
 		TemplateUniMap();
 	}

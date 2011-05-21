@@ -19,7 +19,11 @@ function TemplateUniMap() {
 		}
 		echo '</tr>';
 	}
-	echo '</table></form>';
+	echo '<tr><th colspan="', $content['sysperline'], '">Farben geben das Alter der Daten an: ';
+	foreach($content['color_stages'] as $stage => $time) {
+		echo '&nbsp;<span class="act_', $stage, '">', $time, '</span>';
+	}
+	echo '<span class="act_5">+</span></th></tr></table></form>';
 	
 	echo '</div>';
 	TemplateFooter();

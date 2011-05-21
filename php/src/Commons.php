@@ -194,6 +194,27 @@ function FormatTime($secs)
 	return $ret;
 }
 
+function FormatDays($secs) {
+	$ret = '';
+	$weeks = ($secs-($secs % 604800)) / 604800;
+	if($weeks > 1)
+		$ret .= $weeks.' Wochen';
+	elseif ($weeks == 1)
+		$ret .= '1 Woche';
+	$secs -= $weeks * 604800;
+	
+	$days = ($secs-($secs % 86400)) / 86400;
+	if($days > 1)
+		$ret .= $days.' Tage';
+	elseif ($days == 1)
+		$ret .= '1 Tag';
+	$secs -= $days*86400;
+	if($secs > 0)
+		return $ret.' '.FormatTime($secs);
+	else
+		return $ret;
+}
+
 function FormatDate($secs) {
 	return date("d.m.Y H:i", $secs);
 }
@@ -389,29 +410,17 @@ function GenRequestID() {
 }
 
 function ActualityColor($time) {
-	static $stages = array(
-		1 => 86400,//1d
-		2 => 604800,//1w
-		3 => 1209600,//2w
-		4 => 1814400,//3w
-		5 => 2419200,//4w
-	);
+	global $unicolor_stages;
 	$diff = time()-$time;
-	for($pos = 1;isset($stages[$pos]) && $stages[$pos] <= $diff; ++$pos);
+	for($pos = 1;isset($unicolor_stages[$pos]) && $unicolor_stages[$pos] <= $diff; ++$pos);
 	--$pos;
 	return 'act_'.$pos;
 }
 
 function LastLoginColor($time) {
-	static $stages = array(
-		1 => 1800, //30 mins
-		2 => 3600, //1h
-		3 => 7200, //2h
-		4 => 10400, //3h
-		5 => 14400, //4h
-	);
+	global $sittercolor_stages;
 	$diff = time()-$time;
-	for($pos = 1;isset($stages[$pos]) && $stages[$pos] <= $diff; ++$pos);
+	for($pos = 1;isset($sittercolor_stages[$pos]) && $sittercolor_stages[$pos] <= $diff; ++$pos);
 	--$pos;
 	return 'act_'.$pos;
 }

@@ -24,7 +24,7 @@
 					<td align="center"><a href="', $line['loginLink'], '">Login</a></td>
 				</tr>';
 		}
-		echo '</table><br /><br /><br />
+		echo '<tr><th colspan="5">Farbenlegende: <span class="sitterjob_own">Eigener Auftrag</span> <span class="sitterjob_account">Fremder Auftrag für eigenen Account</span></th></tr></table><br /><br /><br />
 			<table width="99%" cellpadding="0" cellspacing="0" border="0">
 				<tr><th colspan="5">Kommende Sitterauftr&auml;ge</th></tr>
 				<tr><th style="width:120px;">Zeit</th><th>Bei</th><th>Koordinaten</th><th>Auftrag</th><th>&nbsp;</th></tr>';
@@ -38,8 +38,8 @@
 					<td>&nbsp;</td>
 				</tr>';
 		}
-		echo '</table>';
-		echo '</div>';
+		echo '<tr><th colspan="5">Farbenlegende: <span class="sitterjob_own">Eigener Auftrag</span> <span class="sitterjob_account">Fremder Auftrag für eigenen Account</span></th></tr>
+		</table></div>';
 		TemplateFooter();
 	}
 	
@@ -127,6 +127,10 @@
 			 '</td><td>', $item['bauEnde'], '</td><td>', $item['angriffAnkunft'], '</td><td><a href="', $scripturl, '/index.php?action=sitter_login&amp;from=sitter_list&amp;id=', $item['ID'], '">[Jetzt einloggen]</a></td></tr>';
 		}
 		echo '
+				<tr><th colspan="4">Farbenlegende:';
+		foreach($content['time_stages'] as $k => $t)
+			echo '&nbsp;<span class="act_',$k,'">', $t, '</span>';
+			echo '<span class="act_5">+</span></th></tr>
 				</table>
 			</div>';
 		
@@ -243,7 +247,7 @@
 			', ReqID(), '
 			<input type="hidden" name="abs" value="Einlesen" />
 			<input type="submit" value="Einlesen" id="newscan_submit" />
-			<button type="button" onclick="FastPasteSubmit();" title="Den Scan einlesen und danach direkt weiter zum längsten nicht gesitteten Account">Einl. & Nächster</button>
+			<button type="button" onclick="FastPasteSubmit();" title="Den Scan einlesen und danach direkt weiter zu dem am längsten nicht gesitteten Account">Einl. & Nächster</button>
 			<button type="button" onclick="IdlePasteSubmit();" title="Den Scan einlesen und danach direkt weiter zum nächsten Account mit Leerlauf!">Einl. & N. + Leerlauf</button>
 		</form></div>
 		', !empty($content['submsg']) ? '<div class="simp">'.$content['submsg'].'</div>' : '', '
@@ -410,7 +414,7 @@
 			</tr>';
 			}
 		}
-		echo '</table></div>';
+		echo '<tr><th colspan="5">Farbenlegende: <span class="danger_1">Angriff INC</span></th></tr></table></div>';
 		TemplateFooter();
 	}
 

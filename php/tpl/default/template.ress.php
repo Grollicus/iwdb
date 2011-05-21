@@ -77,8 +77,13 @@
 					<td align="right">', $content['ges']['vEn'], '<br /><span class="sub">', $content['ges']['en'], '</span></td>
 					<td align="right">', $content['ges']['fp'], '<br /></td>
 					<td align="right">', $content['ges']['vCr'], '<br /><span class="sub">', $content['ges']['cr'], '</span></td>
-				</tr>';
-		echo '</table>
+				</tr>
+				<tr><th colspan="10">Farben geben das Alter der Daten an: ';
+		foreach($content['color_stages'] as $stage => $time) {
+			echo '&nbsp;<span class="act_', $stage, '">', $time, '</span>';
+		}
+		echo '<span class="act_5">+</span></th></tr>
+				</table>
 			</div>';
 		Templatefooter();
 	}

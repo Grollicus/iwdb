@@ -583,7 +583,7 @@
 		//Filtermodul:	-stellt eine Bedingung dar, die angezeigte Datensätze erfüllen müssen
 		//				-rekursiv (todo: realisierung überlegen^^)
 		
-		global $db_host, $db_user_uni, $db_pass_uni, $db_name, $pre, $content, $debug, $sql_log;
+		global $db_host, $db_user_uni, $db_pass_uni, $db_name, $pre, $content, $debug, $sql_log, $unicolor_stages;
 		
 		//$tables = array(name => table, name => table, ..)
 		//$table = array('name' => [table name in db], 'cond' => join condition),
@@ -858,7 +858,23 @@
 			}
 			$a[] = $data;
 		}
-		$content['uni'] = array('data' => $a, 'titles' => $titles, 'columns' => $title_count, 'hasNextLink' => !empty($next_link), 'nextLink' => $next_link, 'hasPrevLink' => !empty($previous_link), 'prevLink' => $previous_link);
+		
+		$color_stages = array();
+		foreach($unicolor_stages as $stage => $time) {
+			$color_stages[$stage] = FormatDays($time);
+		}
+		
+		$content['uni'] = array(
+			'data' => $a,
+			'titles' => $titles,
+			'columns' => $title_count,
+			'hasNextLink' => !empty($next_link),
+			'nextLink' => $next_link,
+			'hasPrevLink' => !empty($previous_link),
+			'prevLink' => $previous_link,
+			'color_stages' => $color_stages
+		);
+		
 	}
 	function titles_cmp_function($a, $b) {
 		return $a['num'] - $b['num'];
@@ -1016,6 +1032,9 @@
 	}
 	
 	function GeoActualityColor($geotime, $reset) {
+		//Diese Funktion behandelt einen Sonderfall der Akualitätsdaten: 
+		//Da die Angabe der Sprengzeit nicht ganz genau ist, zeigt es potentiell 
+		//schon gesprengte Planis lieber als veraltet an. An sonsten halt gesprengte Planis = veraltet
 		if(time()-172800 > $reset)//$now-2 Tage, wegen +-1 Tag
 			return 'act_5';
 		return ActualityColor($geotime);

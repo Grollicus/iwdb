@@ -170,11 +170,10 @@ if (!function_exists('TemplateFooter'))
 				echo '</span>';
 
 				echo '<br /><a href="javascript:toggleVisibility(getElById(\'footer_content\'));">Content</a><hr /><span style="display:none;" id="footer_content">';
-                                ob_start();
-                                var_dump($content);
-                                $ob = ob_get_clean();
-                                echo str_replace(array("<pre class='xdebug-var-dump' dir='ltr'>", "</pre>"), array('<span style="font-family: courier, monospace;">', "</span>"), $ob);				
-
+				ob_start();
+				var_dump($content);
+				$ob = ob_get_clean();
+				echo str_replace(array("<pre class='xdebug-var-dump' dir='ltr'>", "</pre>"), array('<span style="font-family: courier, monospace;">', "</span>"), $ob);				
 			}
 		}
 		echo '

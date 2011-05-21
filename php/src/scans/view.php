@@ -1,4 +1,5 @@
 <?php
+/// Das Ding scheint nicht verwendet zu werden..
 	function ScansView() {
 		global $content, $pre;
 		

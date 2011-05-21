@@ -10,7 +10,7 @@
 		return number_format($t, 1, ',', '.').'h';
 	}
 	function RessUserList() {
-		global $content, $pre, $scripturl;
+		global $content, $pre, $scripturl, $unicolor_stages;
 		
 		$content['squads'] = array();
 		$q = DBQuery("SELECT igm_data.squad FROM {$pre}igm_data AS igm_data GROUP BY igm_data.squad", __FILE__, __LINE__);
@@ -138,6 +138,11 @@ GROUP BY uid ORDER BY $order", __FILE__, __LINE__);
 			);
 		}
 		$content['order'] = $desc ? 'down' : 'up';
+		
+		$content['color_stages'] = array();
+		foreach($unicolor_stages as $stage => $time) {
+			$content['color_stages'][$stage] = FormatDays($time);
+		}
 		
 		TemplateInit('ress');
 		TemplateRessUserList();

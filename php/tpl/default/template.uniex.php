@@ -4,7 +4,6 @@
 	function TemplateUniViewEx() {
 		global $content;
 		
-		//var_dump($content['uni']);
 		echo '<table width="99%" cellpadding="0" cellspacing="0" border="0">
 			<tr><td colspan="', $content['uni']['columns'], '">
 				<table width="100%" border="0" style="border: none;" class="subtable"><tr><td align="left" style="width: 90px;">', $content['uni']['hasPrevLink'] ? '<a href="'.$content['uni']['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td>
@@ -76,9 +75,15 @@
 			echo '</tr>';
 		}
 		echo '<tr><td colspan="', $content['uni']['columns'], '">
-				<table width="100%" border="0" style="border: none;" class="subtable"><tr><td width="50%" align="left">', $content['uni']['hasPrevLink'] ? '<a href="'.$content['uni']['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td>
-				<td align="right">', $content['uni']['hasNextLink'] ? '<a href="'.$content['uni']['nextLink'].'">Nächste Seite</a>' : 'Nächste Seite', '</td></tr></table>
-			</td></tr></table>'; 
+				<table width="100%" border="0" style="border: none; margin:0px; padding:0px;" class="subtable"><tr><td width="50%" align="left" style="border: none; margin:0px; padding:0px;">', $content['uni']['hasPrevLink'] ? '<a href="'.$content['uni']['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td>
+				<td align="right" style="border: none; margin:0px; padding:0px;">', $content['uni']['hasNextLink'] ? '<a href="'.$content['uni']['nextLink'].'">Nächste Seite</a>' : 'Nächste Seite', '</td></tr></table>
+			</td></tr>
+			<tr><th colspan="', $content['uni']['columns'], '">Farben geben das Alter der Daten an: ';
+		foreach($content['uni']['color_stages'] as $stage => $time) {
+			echo '&nbsp;<span class="act_', $stage, '">', $time, '</span>';
+		}
+		echo '<span class="act_5">+</span></th></tr>
+		</table>'; 
 	}
 	
 	function TemplateViewFilteredUniverseEx() {
@@ -86,13 +91,13 @@
 		
 		TemplateHeader();
 		TemplateMenu();
-		echo '<div class="content">';
+		echo '<div class="content" style="border:none;">';
 		
 		if($content['hasResults']) {
 			TemplateUniViewEx();
 		}
 		echo '
-		<br /><form action="', $content['submitUrl'], '" method="post">
+		<br /><br /><form action="', $content['submitUrl'], '" method="post">
 			<table width="99%" cellpadding="0" cellspacing="0" border="0">
 				<tr><th colspan="2"><input type="submit" value="Filtern" /></th></tr>';
 		foreach($content['filter'] as $filter) {

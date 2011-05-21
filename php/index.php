@@ -90,7 +90,7 @@ function Main()
 	'newscanex' => array('newscan/main.php', 'NewscanEx'),
 	'ressuserlist' => array('ress/list.php', 'RessUserList'),
 	'settings' => array('core/UserSettings.php', 'UserSettings'),
-	'scans_view' => array('scans/view.php', 'ScansView'),
+	'scans_view' => array('scans/view.php', 'ScansView'), //scheint nicht verwendet zu werden
 	'shipdata' => array('admin/shipdata.php', 'EditShipData'),
 	'sitter_flotten' => array('sitter/view.php', 'SitterFeindlFlottenUebersicht'),
 	'sitter_login' => array('sitter/login.php', 'SitterLogin'),

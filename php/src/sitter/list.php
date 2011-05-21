@@ -3,7 +3,7 @@ if(!defined('dddfd'))
 	die("epic fail.");
 
 function SitterList() {
-	global $content, $pre;
+	global $content, $pre, $sittercolor_stages;
 	
 	$q = DBQuery("SELECT igm_data.id, igm_data.igmname, igm_data.accounttyp, igm_data.squad, igm_data.ikea, igm_data.mdp, 0, MIN(flotten.ankunft) AS flottenAnkunft, igm_data.lastLogin
 FROM (({$pre}igm_data AS igm_data)
@@ -33,6 +33,11 @@ GROUP BY igm_data.id", __FILE__, __LINE__);
 		return 0;
 	}
 	usort($sortArr, "sortCB");
+	
+	$content['time_stages'] = array();
+	foreach($sittercolor_stages as $stage => $time) {
+		$content['time_stages'][$stage] = FormatTime($time);
+	}
 	
 	foreach($sortArr as $row) {
 		$content['list'][] = array(
