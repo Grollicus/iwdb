@@ -299,9 +299,9 @@
 			echo '
 			<tr>
 				<td style="width:120px;">', $line['time'], '</td>
-				<td style="width:80px;">', $line['user'], '</td>
-				<td style="width:15px;">', $line['type'], '</td>
-				<td align="left">', $line['text'], '</td>
+				<td style="width:80px;">', $line['user'], '</td>',
+				$line['type'] == 'L' ? '<td style="width:15px;" title="Login">L</td>' : '<td style="width:15px;" title="Auftrag">A</td>',
+				'<td align="left">', $line['text'], '</td>
 			</tr>';
 		}
 		echo '</table>
