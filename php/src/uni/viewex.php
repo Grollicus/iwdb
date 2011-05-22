@@ -494,16 +494,16 @@
 		foreach($req['planityp'] as $v) {
 			$ret .= "'".EscapeDB($v)."'";
 		}
-		return $ret.')';
+		return substr($ret, 0, -1).')';
 	}
 	function ObjekttypGenFilter($req) {
 		if(empty($req['objekttyp']))
 			return '';
 		$ret = 'uni.objekttyp IN (';
 		foreach($req['objekttyp'] as $v) {
-			$ret .= "'".EscapeDB($v)."'";
+			$ret .= "'".EscapeDB($v)."',";
 		}
-		return $ret.')';
+		return substr($ret, 0, -1).')';
 	}
 	function PlaninameGenFilter($req) {
 		return StringLikeFilter('uni.planiname', 'planiname', $req);

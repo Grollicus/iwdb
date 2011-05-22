@@ -58,7 +58,7 @@ StopExecution();
 
 function Main()
 {
-	global $sourcedir, $ID_MEMBER, $action, $content, $mainteance, $user, $debug;
+	global $sourcedir, $ID_MEMBER, $action, $content, $mainteance, $user, $debug, $pre;
 	
 //If there will be something else to do then sesison_start(), it'll be done in LoadSession()	
 	LoadSession();
@@ -142,7 +142,8 @@ function Main()
 	$content['action'] = $action;
 	SetLinkParam('action', $action);
 	$content['debug_mode'] = $debug > 1 || $user['isAdmin'] ? $debug : 0;
-
+	$content['sitter_job_cnt'] = DBQueryOne("SELECT count(*) FROM {$pre}sitter AS sitter WHERE sitter.done=0 AND followUpTo=0 AND sitter.time <= ".time(), __FILE__, __LINE__);
+	
 	//Actually do
 	require($sourcedir.'/'.$actionArr[$action][0]);
 	return $actionArr[$action][1];

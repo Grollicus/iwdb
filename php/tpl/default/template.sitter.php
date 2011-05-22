@@ -127,7 +127,7 @@
 			 '</td><td>', $item['bauEnde'], '</td><td>', $item['angriffAnkunft'], '</td><td><a href="', $scripturl, '/index.php?action=sitter_login&amp;from=sitter_list&amp;id=', $item['ID'], '">[Jetzt einloggen]</a></td></tr>';
 		}
 		echo '
-				<tr><th colspan="4">Farbenlegende:';
+				<tr><th colspan="4">Die Farben zeigen, wann sich zuletzt jemand eingeloggt hat:';
 		foreach($content['time_stages'] as $k => $t)
 			echo '&nbsp;<span class="act_',$k,'">', $t, '</span>';
 			echo '<span class="act_5">+</span></th></tr>

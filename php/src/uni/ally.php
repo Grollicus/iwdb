@@ -38,7 +38,7 @@ function UniAllyAt() {
 	TemplateUniAllyAt();
 }
 
-//NOTICE: Dies ist einer der aufwendigsten Querys in Sachen Uni. Optimieren? ;)
+//NOTICE: Dies ist einer der aufwändigsten Querys in Sachen Uni. Optimieren? ;)
 function UniAllyOverview() {
 	global $content, $pre;
 	

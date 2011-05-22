@@ -11,13 +11,13 @@
 //		}
 //		echo '</table></div>';
 		echo '<div class="content">';
-		echo 'Hi, ', $content['visibleName'];
 		foreach($content['problems'] as $problem) {
 			if(!empty($problem['link']))
-				echo '<br /><a href="', $problem['link'], '"><span class="', $problem['class'], '">', $problem['text'], '</span></a>';
+				echo '<br /><a href="', $problem['link'], '"><span style="font-size: large;" class="', $problem['class'], '">', $problem['text'], '</span></a>';
 			else
 				echo '<br /><span class="', $problem['class'], '">', $problem['text'], '</span>';
 		}
+		echo GetText2('welcomepage');
 		echo '</div>';
 		TemplateFooter();
 	}

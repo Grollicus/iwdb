@@ -38,7 +38,7 @@
 				'text' => SitterText($row),
 				'igmName' => EscapeOU($row[4]),
 				'userName' => EscapeOU($row[2]),
-				'coords' => $row[7] != null ? ($row[9]. ':'. $row[10]. ':'. $row[11]) : '-',
+				'coords' => $row[9]. ':'. $row[10]. ':'. $row[11],
 				'planiName' => EscapeOU($row[12]),
 				'loginLink' => $scripturl.'/index.php?action=sitter_login&amp;from=sitter_view&amp;jobid='.$row[0],
 				'ownershipState' => $row[1] == $ID_MEMBER ? 'own' : ($row[3] == $user['igmuser'] ? 'account' : 'none'),
@@ -72,7 +72,7 @@
 				'text' => SitterText($row),
 				'igmName' => EscapeOU($row[4]),
 				'userName' => EscapeOU($row[2]),
-				'coords' => $row[7] != null ? ($row[9]. ':'. $row[10]. ':'. $row[11]) : '-',
+				'coords' => $row[9]. ':'. $row[10]. ':'. $row[11],
 				'planiName' => EscapeOU($row[12]),
 				'ownershipState' => $row[1] == $ID_MEMBER ? 'own' : ($row[3] == $user['igmuser'] ? 'account' : 'other'),
 			);

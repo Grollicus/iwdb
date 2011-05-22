@@ -40,7 +40,7 @@ $sittercolor_stages = array(
 	1 => 1800, //30 mins
 	2 => 3600, //1h
 	3 => 7200, //2h
-	4 => 10400, //3h
+	4 => 10800, //3h
 	5 => 14400, //4h
 );
 $unicolor_stages = array(
@@ -49,6 +49,12 @@ $unicolor_stages = array(
 	3 => 1209600,//2w
 	4 => 1814400,//3w
 	5 => 2419200,//4w
+);
+//Die Preset-URLs sind von der Form http://$scripturl/tool/?action=uni_view&HIER-DAS-PREFIX
+$uni_presets= array(
+	'Geoscan' => 'gala_min=&gala_max=&sys_min=&sys_max=&pla_min=&pla_max=&spieler=&tag=&objekttyp[]=---&planiname=&geo_ch_min=0&geo_ch_max=&geo_fe_min=&geo_fe_max=&geo_ei_min=&geo_ei_max=&geo_gravi_min=&geo_gravi_max=&geo_lb_min=&geo_lb_max=&geo_fmod_min=&geo_fmod_max=&geo_gebd_min=&geo_gebd_max=&geo_gebk_min=&geo_gebk_max=&geo_schd_min=&geo_schd_max=&geo_schk_min=&geo_schk_max=&scan_geb=&spalten[]=coords&spalten[]=types&spalten[]=important_specials&spalten[]=geo_fe&spalten[]=geo_ch&spalten[]=geo_ei&spalten[]=geo_gravilb&spalten[]=geo_ttl&spalten[]=geo_mods&sortby[]=coords&orders[]=0',
+	'Spieler' => 'gala_min=&gala_max=&sys_min=&sys_max=&pla_min=&pla_max=&spieler=&tag=&objekttyp[]=Kolonie&objekttyp[]=Sammelbasis&objekttyp[]=Kampfbasis&objekttyp[]=Artefaktbasis&planiname=&geo_ch_min=&geo_ch_max=&geo_fe_min=&geo_fe_max=&geo_ei_min=&geo_ei_max=&geo_gravi_min=&geo_gravi_max=&geo_lb_min=&geo_lb_max=&geo_fmod_min=&geo_fmod_max=&geo_gebd_min=&geo_gebd_max=&geo_gebk_min=&geo_gebk_max=&geo_schd_min=&geo_schd_max=&geo_schk_min=&geo_schk_max=&scan_geb=&spalten[]=coords&spalten[]=owner&spalten[]=types&spalten[]=planiname&spalten[]=important_specials&sortby[]=coords&orders[]=0',
+	
 );
 
 ?>
