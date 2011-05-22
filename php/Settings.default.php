@@ -38,10 +38,10 @@ $default_gala = 9;
 $spiel = 'iw';
 $sittercolor_stages = array(
 	1 => 1800, //30 mins
-	2 => 3600, //1h
-	3 => 7200, //2h
-	4 => 10800, //3h
-	5 => 14400, //4h
+	2 => 7200, //2h
+	3 => 14400, //4h
+	4 => 28800, //8h
+	5 => 43200, //12h
 );
 $unicolor_stages = array(
 	1 => 86400,//1d
