@@ -119,7 +119,7 @@
 		echo '
 			<div class="content">
 				<table width="99%" cellpadding="0" cellspacing="0" border="0">
-					<tr><th>Igmname</th><th>Bauauftr&auml;ge bis', HelpLink('sitter_bauschleifen_auslauf'), '</th><th>nächste Flotte</th><th>Login</th></tr>';
+					<tr><th>Igmname</th><th>Bau/Forschung bis', HelpLink('sitter_bauschleifen_auslauf'), '</th><th>nächste Flotte</th><th>Login</th></tr>';
 		foreach($content['list'] as $item) {
 			echo '<tr class="', $item['actuality'], '"><td>', $item['igmName'], '<br /><i style="font-size:smaller;">',$item['accountTyp'] , '@', $item['squad'], '</i>',
 				$item['hasIkea'] ? ', <i style="font-size:smaller;">Ikea</i>' : '',
