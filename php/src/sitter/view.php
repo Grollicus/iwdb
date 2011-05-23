@@ -232,4 +232,14 @@ ORDER BY flotten.ankunft ASC", __FILE__, __LINE__);
 		TemplateInit('sitter');
 		TemplateSitterOwn();
 	}
+	
+	function SitterScriptCnt() {
+		global $pre;
+		
+		echo '<data><setValue elementId="sitter_job_cnt">';
+		$cnt = DBQueryOne("SELECT count(*) FROM {$pre}sitter AS sitter WHERE sitter.done=0 AND followUpTo=0 AND sitter.time <= ".time(), __FILE__, __LINE__);
+		if($cnt > 0)
+			echo '('.$cnt.')';
+		echo '</setValue></data>';
+	}
 ?>

@@ -175,6 +175,21 @@ function ToggleCollapsables(Category) {
 	}
 }
 
+function filterTable(tblId, colNum, needle) {
+	var tbl = getElById(tblId);
+	for(var i = 1; i < tbl.rows.length-1; ++i) {
+		var row = tbl.rows[i];
+		var cell = row.cells[colNum];
+		if(cell.innerHTML.indexOf(needle) == -1) {
+			if(row.style.display != 'none')
+				toggleTableRow(row);
+		} else {
+			if(row.style.display == 'none')
+				toggleTableRow(row);
+		}
+	}
+}
+
 /* Private Funktionen */
 
 function AjaxCallback(req) {
@@ -230,19 +245,5 @@ function SelectOnBlur() {
 	if(dta.Changed) {
 		dta.Callback();
 		dta.Changed = false;
-	}
-}
-function filterTable(tblId, colNum, needle) {
-	var tbl = getElById(tblId);
-	for(var i = 1; i < tbl.rows.length-1; ++i) {
-		var row = tbl.rows[i];
-		var cell = row.cells[colNum];
-		if(cell.innerHTML.indexOf(needle) == -1) {
-			if(row.style.display != 'none')
-				toggleTableRow(row);
-		} else {
-			if(row.style.display == 'none')
-				toggleTableRow(row);
-		}
 	}
 }

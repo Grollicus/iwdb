@@ -49,7 +49,7 @@ if(!function_exists('TemplateMenu')) {
 			<tr><th>Handel</th></tr>
 			<tr><td><a class="',$content['action'] == 'trade_list' ? 'active' : 'item','" href="', $scripturl, '/?action=trade_list">Übersicht</a></td></tr>
 			<tr><th>Sitterzeugs</th></tr>
-			<tr><td><a class="',$content['action'] == 'sitter_view' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_view">Sitterauftr&auml;ge', $content['sitter_job_cnt'] > 0 ? ' ('.$content['sitter_job_cnt'].')' : '', '</a></td></tr>
+			<tr><td><a class="',$content['action'] == 'sitter_view' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_view">Sitterauftr&auml;ge <span id="sitter_job_cnt">', $content['sitter_job_cnt'] > 0 ? ' ('.$content['sitter_job_cnt'].')' : '', '</span></a></td></tr>
 			<tr><td><a class="',$content['action'] == 'sitter_list' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_list">Sitterlogins</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'sitter_own' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_own">Meine Auftr&auml;ge</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'sitter_history' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_history">History</a></td></tr>
@@ -100,6 +100,13 @@ if(!function_exists('TemplateHtmlHeader')) {
 			fenster.focus();
 			return false;
 		}
+		', $user['isGuest'] ?  '' : '
+		function timerCallback() {
+			AjaxRequest("sitter_cnt");
+			window.setTimeout(timerCallback, 120000);
+		}
+		window.setTimeout(timerCallback, 120000);
+		', '
 	// ]]></script>
 	<script type="text/javascript" src="', $themeurl, '/dhtml.js"></script>
 </head>
