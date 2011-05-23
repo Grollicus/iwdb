@@ -77,6 +77,7 @@ function Main()
 		//'kb_print' => array('kbs/kb_print.php', 'KBPrint'),
 		'sittergebs' => array('sitter/own.php', 'SitterScriptListGebs'),
 		'sitterstufen' => array('sitter/own.php', 'SitterScriptListGebTimes'),
+		'sitter_cnt' => array('sitter/view.php', 'SitterScriptCnt'),
 		'sitter_forschungen' => array('sitter/edit.php', 'SitterScriptListForschungen'),
 		'sitter_gebs' => array('sitter/edit.php', 'SitterScriptListGebs'),
 		'sitter_planis' => array('sitter/edit.php', 'SitterScriptListPlanis'),
