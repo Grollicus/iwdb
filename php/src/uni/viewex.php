@@ -492,7 +492,7 @@
 			return '';
 		$ret = 'uni.planityp IN (';
 		foreach($req['planityp'] as $v) {
-			$ret .= "'".EscapeDB($v)."'";
+			$ret .= "'".EscapeDB($v)."',";
 		}
 		return substr($ret, 0, -1).')';
 	}
