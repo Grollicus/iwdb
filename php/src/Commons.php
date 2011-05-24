@@ -120,7 +120,7 @@ function DBError($query,$file,$line, $con = false)
  * @param String $query SQL Query to execute
  * @param String $file Filename where DBQuery is called (used to be __FILE__)
  * @param Integer $line Line in $file where DBQuery is called (used to be __LINE__)
- * @param Integer $assoc Return an associative array or a numeric
+ * @param Integer $assoc Return associative (true) or numeric (false, default) array
  * @return FALSE if failed, one Element if only one row/col is queried or an array with the values of all columns
  */
 function DBQueryOne($query,$file,$line,$assoc = false)

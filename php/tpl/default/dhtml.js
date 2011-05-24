@@ -195,7 +195,8 @@ function filterTable(tblId, colNum, needle) {
 function AjaxCallback(req) {
 	if(req.readyState == 4) {
 		if(req.status != 200) {
-			alert("Fehler " + req.status + " beim Ajax-Request!");
+			if(req.status != 0)
+				alert("Fehler " + req.status + " beim Ajax-Request!");
 		} else {
 			var resp = req.responseXML;
 			var setValues = resp.getElementsByTagName('setValue');
