@@ -14,7 +14,7 @@
 				if($ID_MEMBER == $id) { //pwcheck erforderlich?
 					$count = DBQueryOne("SELECT count(*) FROM {$pre}users WHERE ID={$ID_MEMBER} AND pwmd5='".md5($_REQUEST['pwcheck'])."'", __FILE__, __LINE__);
 					if($count == 0) {
-						$content['msg'] = 'Das eingegebene Passwort stimmt nicht!';
+						$content['msg'] = 'Gib bitte dein aktuelles Passwort ein, um Änderungen an deinem Account zu machen!';
 						ShowUserSettingsForm();
 						StopExecution();
 					}
