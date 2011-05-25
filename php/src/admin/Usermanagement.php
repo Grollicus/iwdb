@@ -34,7 +34,7 @@ FROM {$pre}users AS users LEFT JOIN {$pre}igm_data AS igm_data ON users.igmuser=
 				'igmName' => EscapeOU($row[5]),
 				'igmid' => $row[6],
 				'hasPW' => $row[7] ? 'Ja' : '<b>Nein</b>',
-				'editlink' => $scripturl.'/index.php?action=settings&amp;ID='.$row[0],
+				'editlink' => $scripturl.'/index.php?action=settingsex&amp;ID='.$row[0],
 				'dellink' => $scripturl.'/index.php?action=useradmin&amp;del='.$row[0],
 			);
 		}

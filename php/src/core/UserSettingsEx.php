@@ -3,8 +3,17 @@
 if(!defined('dddfd'))
 		exit();
 
-	global $filter_modules;
+	global $settings_modules;
 	$settings_modules = array(
+		'id' => array(
+			'name' => '',
+			'desc' => '',
+			'table' => 'users',
+			'col' => 'ID',
+			'isValid' => 'CbValidateNoSettings',
+			'prepare' => 'CbPrepareID',
+			'evaluate' => 'CbEvaluateNoSettings',
+		),
 		'username' => array (
 			'name' => 'Username',
 			'desc' => 'Dein Tool-Login',
@@ -12,7 +21,7 @@ if(!defined('dddfd'))
 			'col' => 'userName',
 			'isValid' => 'CbValidateUsername',
 			'prepare' => 'CbPrepareUsername',
-			'evaluate' => 'CbValidateUsername',
+			'evaluate' => 'CbEvaluateUsername',
 		),
 		'pw' => array(
 			'name' => 'Neues PW',
@@ -30,7 +39,7 @@ if(!defined('dddfd'))
 			'col' => 'pwmd5',
 			'isValid' => 'CbValidatePW2',
 			'prepare' => 'CbPrepareNoSettings',
-			'evaluate' => 'CbEvaluatePW2',
+			'evaluate' => 'CbEvaluateNoSettings',
 		),
 		'visibleName' => array(
 			'name' => 'Angezeigter Name',
@@ -87,14 +96,12 @@ if(!defined('dddfd'))
 			'evaluate' => 'CbEvaluateNoSettings',
 		),
 		
-		
-		
 		'igmname' => array (
 			'name' => 'Ingame-Account',
 			'desc' => 'Für den Sitterlogin',
 			'table' => 'igm_data',
 			'col' => 'igmname',
-			'isValid' => 'CbValidateIgmName',
+			'isValid' => 'CbValidateNoSettings',
 			'prepare' => 'CbPrepareIgmName',
 			'evaluate' => 'CbEvaluateIgmName',
 		),
@@ -103,7 +110,7 @@ if(!defined('dddfd'))
 			'desc' => '',
 			'table' => 'igm_data',
 			'col' => 'sitterpw',
-			'isValid' => 'CbValidateSitterPW',
+			'isValid' => 'CbValidateNoSettings',
 			'prepare' => 'CbPrepareSitterPW',
 			'evaluate' => 'CbEvaluateSitterPW',
 		),
@@ -112,7 +119,7 @@ if(!defined('dddfd'))
 			'desc' => 'Dieses wird ausschliesslich für den Link links oben in der Ecke verwendet, der dich in IW einloggt.',
 			'table' => 'igm_data',
 			'col' => 'realpw',
-			'isValid' => 'CbValidateRealPW',
+			'isValid' => 'CbValidateNoSettings',
 			'prepare' => 'CbPrepareRealPW',
 			'evaluate' => 'CbEvaluateRealPW',
 		),
@@ -130,7 +137,7 @@ if(!defined('dddfd'))
 			'desc' => '',
 			'table' => 'igm_data',
 			'col' => 'squad',
-			'isValid' => 'CbValidateSquad',
+			'isValid' => 'CbValidateNoSettings',
 			'prepare' => 'CbPrepareSquad',
 			'evaluate' => 'CbEvaluateSquad',
 		),
@@ -139,7 +146,7 @@ if(!defined('dddfd'))
 			'desc' => '',
 			'table' => 'igm_data',
 			'col' => 'ikea',
-			'isValid' => 'CbValidateIkea',
+			'isValid' => 'CbValidateNoSettings',
 			'prepare' => 'CbPrepareIkea',
 			'evaluate' => 'CbEvaluateIkea',
 		),
@@ -148,7 +155,7 @@ if(!defined('dddfd'))
 			'desc' => '',
 			'table' => 'igm_data',
 			'col' => 'mdp',
-			'isValid' => 'CbValidateMdp',
+			'isValid' => 'CbValidateNoSettings',
 			'prepare' => 'CbPrepareMdp',
 			'evaluate' => 'CbEvaluateMdp',
 		),
@@ -171,10 +178,10 @@ if(!defined('dddfd'))
 			'evaluate' => 'CbEvaluateKomma',
 		),
 	);
-		
-		
+
+
 	function UserSettingsEx() {
-		global $settings_modules, $pre, $content, $ID_MEMBER, $user;
+		global $settings_modules, $pre, $content, $ID_MEMBER, $user, $scripturl;
 		
 		$id = (isset($_REQUEST['ID']) && $user['isAdmin']) ? intval($_REQUEST['ID']) : $ID_MEMBER;
 		$igmid = DBQueryOne("SELECT igmuser FROM {$pre}users WHERE ID=".$id, __FILE__, __LINE__);
@@ -187,6 +194,17 @@ if(!defined('dddfd'))
 				$valid &= (call_user_func($mod['isValid']));
 			}
 			if($valid) {
+				
+				$set = array('users' => '', 'igm_data' => '');
+				foreach($settings_modules as $mod) {
+					$set[$mod['table']] .= call_user_func($mod['evaluate']);
+				}
+				$users_set = substr($set['users'], 0, -2);
+				$igm_data_set = substr($set['igm_data'], 0, -2);
+				
+				
+				DBQuery("UPDATE {$pre}users SET {$users_set} {$users_where}", __FILE__, __LINE__);
+				DBQuery("UPDATE {$pre}igm_data SET {$igm_data_set} {$igm_data_where}", __FILE__, __LINE__);
 				//Updates machen :)
 			}
 		}
@@ -195,7 +213,8 @@ if(!defined('dddfd'))
 		foreach($settings_modules as $mod) {
 			$cols[$mod['table']][] = $mod['col'];
 		}
-		array_walk($cols, 'array_ unique');
+		foreach($cols as $k => $c)
+			$cols[$k] = array_unique($c);
 		foreach($cols as $tbl => $columns) {
 			switch($tbl) {
 				case 'users':
@@ -216,9 +235,28 @@ if(!defined('dddfd'))
 			$data[$tbl] = DBQueryOne("SELECT {$col_str} FROM {$pre}{$tbl} {$where}", __FILE__, __LINE__, true);
 		}
 		
-		foreach($settings_modules as $mod) {
-			$mod['prepare']($data[$mod['table']]);
+		foreach($settings_modules as $key => $mod) {
+			$content['settings'][$key] = array(
+				'name' => $mod['name'],
+				'desc' => $mod['desc'],
+				'data' => $mod['prepare']($data[$mod['table']]),
+			);
+			
 		}
+		
+		
+		$q = DBQuery("SELECT id, mask FROM {$pre}irc_autologin WHERE uid={$id}", __FILE__, __LINE__);
+		$content['ircAutoLogin'] = array();
+		while($row = mysql_fetch_row($q)) {
+			$content['ircAutoLogin'][] = array(
+				'ID' => $row[0],
+				'editLink' => $scripturl.'/index.php?action=ircmask&amp;sub=edit&amp;id='.$row[0].'&amp;uid='.$id,
+				'delLink' => $scripturl.'/index.php?action=ircmask&amp;sub=del&amp;id='.$row[0].'&amp;uid='.$id,
+				'mask' => str_replace('%', '*', EscapeOU($row[1])),
+			);
+		}
+		$content['newIrcAutoLoginLink'] = $scripturl.'/index.php?action=ircmask&amp;sub=new&amp;uid='.$id;
+		$content['submiturl'] = $scripturl.'/index.php?action=settingsex';
 		
 		TemplateInit('main');
 		TemplateUserSettingsEx();
@@ -226,12 +264,19 @@ if(!defined('dddfd'))
 
 	function CbValidateNoSettings() { return true; }
 	function CbPrepareNoSettings($dta) {}
-	function CbEvaluateNoSettings() {}
+	function CbEvaluateNoSettings() {return '';}
 	
+	
+	function CbPrepareID() {
+		global $user, $ID_MEMBER;
+		return (isset($_REQUEST['ID']) && $user['isAdmin']) ? intval($_REQUEST['ID']) : $ID_MEMBER;
+	}
 	function CbValidateUsername() {
 		global $pre, $content, $user, $ID_MEMBER;
+		if(!$user['isAdmin'])
+			return true;
 		$id = (isset($_REQUEST['ID']) && $user['isAdmin']) ? intval($_REQUEST['ID']) : $ID_MEMBER;
-		if(!empty($_REQUEST['username'])) {
+		if(!empty($_REQUEST['userName'])) {
 			$content['errors'][] = 'Der Username darf nicht leer sein!';
 			return false;
 		}
@@ -242,38 +287,45 @@ if(!defined('dddfd'))
 		return true;
 	}
 	function CbPrepareUsername($dta) {
-		global $content;
-		
-		$content['username'] = isset($_REQUEST['username']) ? EscapeO(Param('username')) : $dta['userName'];
+		global $user;
+		return array(
+			'editable' => $user['isAdmin'],
+			'value' => ($user['isAdmin'] && isset($_REQUEST['username'])) ? EscapeO(Param('username')) : EscapeOU($dta['userName'])
+		);
 		
 	}
 	function CbEvaluateUsername() {
-		//TODO
+		global $user;
+		if(!$user['isAdmin'] || !isset($_REQUEST['username']))
+			return false;
+		return "userName='".EscapeDB(Param('username'))."', ";
 	}
 	function CbValidatePW() {
 		global $content;
 		$pw = Param('pw');
-		if(strlen($pw) < 6) {
+		if($pw != '' && strlen($pw) < 6) {
 			$content['errors'][] = 'Dein neues Passwort ist zu kurz! Bitte wähl was vernünftiges!';
 			return false;
 		}
 		return true;
 	}
-	function CbEvaluatePW() {//TODO
+	function CbEvaluatePW() {
+		if(empty($_REQUEST['pw'])) {
+			return '';
+		}
+		return "pwmd5='".md5($_REQUEST['pw'])."', ";
 	}
 	function CbValidatePW2() {
-		if(Param('pw') != Param('pw2')) {
+		if($_REQUEST['pw'] != $_REQUEST['pw2']) {
 			$content['errors'][] = 'Die eingegebenen neuen Passwörter stimmen nicht überein!';
 			return false;
 		}
 		return true;
 	}
-	function CbEvaluatePW2() {//TODO
-	}
 	function CbValidateVisibleName() {
 		global $pre, $content, $user, $ID_MEMBER;
 		$id = (isset($_REQUEST['ID']) && $user['isAdmin']) ? intval($_REQUEST['ID']) : $ID_MEMBER;
-		if(!empty($_REQUEST['visibleName'])) {
+		if(empty($_REQUEST['visibleName'])) {
 			$content['errors'][] = 'Der Angezeigte Name darf nicht leer sein!';
 			return false;
 		}
@@ -284,29 +336,37 @@ if(!defined('dddfd'))
 		return true;
 	}
 	function CbPrepareVisibleName($dta) {
-		global $content;
-		$content['visibleName'] = isset($_REQUEST['visibleName']) ? EscapeO(Param('visibleName')) : $dta['visibleName'];
+		return isset($_REQUEST['visibleName']) ? EscapeO(Param('visibleName')) : EscapeOU($dta['visibleName']);
+	}
+	function CbEvaluateVisibleName() {
+		return "visibleName='".EscapeDB(Param('visibleName'))."', ";
 	}
 	function CbPrepareEmail($dta) {
-		global $content;
-		$content['email'] = isset($_REQUEST['email']) ? EscapeO(Param('email')) : $dta['email'];
+		return isset($_REQUEST['email']) ? EscapeO(Param('email')) : EscapeOU($dta['email']);
 	}
 	function CbEvaluateEmail() {
-		//TODO
+		return "email='".EscapeDB(Param('email'))."', ";
 	}
 	function CbPrepareIpSec($dta) {
-		global $content;
-		$content['ipsec'] = isset($_REQUEST['submit']) ? isset($_REQUEST['ipsec']) : $dta['ipsecurity'];
+		return isset($_REQUEST['submit']) ? isset($_REQUEST['ipsec']) : $dta['ipsecurity'];
 	}
 	function CbEvaluateIpsec() {
-		//TODO
+		if(isset($_REQUEST['ipsec']))
+			return "ipsecurity='1', ";
+		return "ipsecurity='0', ";
 	}
-	function CbPrepareAdmin() {
-		global $content, $user;
-		$content['isAdmin'] = $user['isAdmin'] && isset($_REQUEST['submit']) ? isset($_REQUEST['isAdmin']) :  $dta['isAdmin'];
+	function CbPrepareAdmin($dta) {
+		global $user;
+		return array(
+			'editable' => $user['isAdmin'],
+			'value' => ($user['isAdmin'] && isset($_REQUEST['submit'])) ? isset($_REQUEST['isAdmin']) : $dta['isAdmin'],
+		);
 	}
 	function CbEvaluateAdmin() {
-		//TODO
+		global $user;
+		if(!$user['isAdmin'])
+			return '';
+		return "isAdmin=".(isset($_REQUEST['isAdmin']) ? "'1', " : "'0', ");
 	}
 	function CbValidateSitterSkin() {
 		global $content;
@@ -317,11 +377,15 @@ if(!defined('dddfd'))
 		return true;
 	}
 	function CbPrepareSitterSkin($dta) {
-		global $content;
-		$content['sitterskin'] = isset($_REQUEST['sitterskin']) ? intval($_REQUEST['sitterskin']) : $dta['sitterskin'];
+		$selected = isset($_REQUEST['sitterskin']) ? intval($_REQUEST['sitterskin']) : $dta['sitterskin'];
+		return array(
+			'0' => array('selected' => $selected == 0, 'text' => 'Account-Standard'),
+			'3' => array('selected' => $selected == 3, 'text' => 'Textskin'),
+			'6' => array('selected' => $selected == 6, 'text' => 'IW-Standard'),
+		);
 	}
 	function CbEvaluateSitterSkin() {
-		//TODO
+		return "sitterskin='".intval($_REQUEST['sitterskin'])."', ";
 	}
 	function CbValidateCurrentPW() {
 		global $pre, $content, $user, $ID_MEMBER;
@@ -329,12 +393,108 @@ if(!defined('dddfd'))
 		$id = (isset($_REQUEST['ID']) && $user['isAdmin']) ? intval($_REQUEST['ID']) : $ID_MEMBER;
 		if($user['isAdmin'] && $id != $ID_MEMBER)
 			return true;
-		if(0 == DBQueryOne("SELECT count(*) FROM {$pre}users WHERE ID={$id} AND pwmd5='".md5($_POST('currentPW'))."'", __FILE__, __LINE__)) {
-			$content['errors'][] = 'Gib bitte dein aktuelles Passwort ein, um Änderungen an deinem Account zu machen!';
+		if($_REQUEST['pw'] == '')
+			return true;
+		if(0 == DBQueryOne("SELECT count(*) FROM {$pre}users WHERE ID={$id} AND pwmd5='".md5($_POST['currentPW'])."'", __FILE__, __LINE__)) {
+			$content['errors'][] = 'Aus Sicherheitsgründen muss zum Ändern des Passworts auch das aktuelle Passwort angegeben werden!';
 			return false;
 		}
 		return true;
 	}
 	
-	//TODO: die ganzen Callbacks von der igm_users-Tabelle!
+	function CbPrepareIgmName($dta) {
+		return isset($_REQUEST['igmname']) ? EscapeO(Param('igmname')) : EscapeOU($dta['igmname']);
+	}
+	function CbEvaluateIgmName() {
+		return "igmname='".EscapeDB(Param('igmname'))."', ";
+	}
+	function CbPrepareSitterPW($dta) {
+		return isset($_REQUEST['sitterpw']) ? EscapeO(Param('sitterpw')) : '';
+	}
+	function CbEvaluateSitterPW() {
+		if(empty($_REQUEST['sitterpw']))
+			return '';
+		return "sitterpw='".EscapeDB(Param('sitterpw'))."', ";
+	}
+	function CbPrepareRealPW($dta) {
+		return isset($_REQUEST['realpw']) ? EscapeO(Param('realpw')) : '';
+	}
+	function CbEvaluateRealPW() {
+		if(empty($_REQUEST['realpw']))
+			return '';
+		return "realpw='".EscapeDB(Param('realpw'))."', ";
+	}
+	function CbValidateAccounttyp() {
+		global $content;
+		$t = Param('accounttyp');
+		if($t != 'fle' && $t != 'bud' && $t != 'mon' && $t != 'all') {
+			$content['errors'][] = 'WTF-Accounttyp!';
+			return false;
+		}
+		return true;
+	}
+	function CbPrepareAccounttyp($dta) {
+		$selected = isset($_REQUEST['accounttyp']) ? EscapeO(Param('accounttyp')) : EscapeOU($dta['accounttyp']);
+		return array(
+			'fle' => array('selected' => $selected == 'fle', 'text' => 'Fleeter'),
+			'bud' => array('selected' => $selected == 'bud', 'text' => 'Buddler'),
+			'mon' => array('selected' => $selected == 'mon', 'text' => 'Monarch'),
+			'all' => array('selected' => $selected == 'all', 'text' => 'Allrounder'),
+		);
+	}
+	function CbEvaluateAccounttyp() {
+		return "accounttyp='".EscapeDB(Param('accounttyp'))."', ";
+	}
+	function CbPrepareSquad($dta) {
+		return isset($_REQUEST['squad']) ? EscapeO(Param('squad')) : EscapeOU($dta['squad']);
+	}
+	function CbEvaluateSquad() {
+		return "squad='".EscapeDB(Param('squad'))."', ";
+	}
+	function CbPrepareIkea($dta) {
+		return isset($_REQUEST['submit']) ? isset($_REQUEST['ikea']) : $dta['ikea'];
+	}
+	function CbEvaluateIkea() {
+		return "ikea=".(isset($_REQUEST['ikea']) ? "'1', " : "'0', ");
+	}
+	function CbPrepareMdp($dta) {
+		return isset($_REQUEST['submit']) ? isset($_REQUEST['mdp']) : $dta['mdp'];
+	}
+	function CbEvaluateMdp() {
+		return "mdp=".(isset($_REQUEST['mdp']) ? "'1', " : "'0', ");
+	}
+	function CbValidateTsdTrennz() {
+		global $content;
+		$tz = Param('tsdTrennZeichen');
+		if(strlen($tz) > 1) {
+			$content['errors'][] = 'Dein Tausendertrennzeichen ist zu lang! (evtl Leerzeichen dahinter?)';
+			return false;
+		}
+		return true;
+	}
+	function CbPrepareTsdTrennz($dta) {
+		return isset($_REQUEST['tsdTrennZeichen']) ? EscapeO(Param('tsdTrennZeichen')) : EscapeOU($dta['tsdTrennZeichen']);
+	}
+	function CbEvaluateTsdTrennz() {
+		return "tsdTrennZeichen='".EscapeDB(Param('tsdTrennZeichen'))."', ";
+	}
+	function CbValidateKomma() {
+		global $content;
+		$tz = Param('Komma');
+		if(strlen($tz) != 1) {
+			$content['errors'][] = 'Dein Dezimaltrennzeichen ist nicht genau ein Zeichen! (evtl Leerzeichen dahinter?)';
+			return false;
+		}
+		if($tz == Param('tsdTrennZeichen')) {
+			$content['errors'][] = 'Dein Tausender- und Dezimaltrennzeichen sind gleich! Wie soll das Tool das auseinanderhalten?';
+			return false;
+		}
+		return true;
+	}
+	function CbPrepareKomma($dta) {
+		return isset($_REQUEST['Komma']) ? EscapeO(Param('Komma')) : EscapeOU($dta['Komma']);
+	}
+	function CbEvaluateKomma() {
+		return "Komma='".EscapeDB(Param('Komma'))."', ";
+	}
 ?>

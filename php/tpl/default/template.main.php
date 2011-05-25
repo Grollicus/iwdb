@@ -139,6 +139,89 @@
 		TemplateFooter();
 	}
 
+	function TemplateUserSettingsEx() {
+		global $content;
+		
+		TemplateHeader();
+		TemplateMenu();
+		
+		echo '<div class="content">
+		<form method="POST" action="', $content['submiturl'], '">
+		<input type="hidden" name="ID" value="',$content['settings']['id']['data'],'" />
+		<table>
+			<tr><th colspan="2">Einstellungen</th></tr>';
+		if(!empty($content['errors'])) {
+			echo '<tr><td colspan="2"><span class="imp">';
+			echo implode('<br />', $content['errors']);
+			echo '</span></tr>';
+		}
+		if(!empty($content['msg'])) {
+			echo '<tr><td colspan="2"><span class="simp">';
+			echo $content['msg'];
+			echo '</span></tr>';
+		}
+		foreach($content['settings'] as $name => $mod) {
+			if($name == 'id') {
+				continue;
+			}
+			echo '<tr><td>', $mod['name'], '<br /><span style="font-size:smaller;font-style:italic;">', $mod['desc'], '</span></td>';
+			switch($name) {
+				case 'username':
+					echo '<td><input type="text" name="', $name, '" value="', $mod['data']['value'], '" ', $mod['data']['editable'] ? '' : 'disabled="disabled"' ,' /></td>';
+					break;
+				case 'pw':
+				case 'pw2':
+				case 'sitterpw':
+				case 'realpw':
+				case 'currentPW':
+					echo '<td><input type="password" name="', $name, '" value="', $mod['data'], '" /></td>';
+					break;
+				case 'visibleName':
+				case 'email':
+				case 'igmname':
+				case 'squad':
+					echo '<td><input type="text" name="', $name, '" value="', $mod['data'], '" /></td>';
+					break;
+				case 'ipsec':
+				case 'ikea':
+				case 'mdp':
+					echo '<td><input type="checkbox" name="', $name, '" value="1" ', $mod['data'] ? 'checked="checked"' : '' ,' /></td>';
+					break;
+				case 'isAdmin':
+					echo '<td><input type="checkbox" name="', $name, '" value="1" ', $mod['data']['value'] ? 'checked="checked"' : '' , $mod['data']['editable'] ? '' : 'disabled="disabled"', ' /></td>';
+					break;
+				case 'sitterskin':
+				case 'accounttyp':
+					echo '<td><select name="', $name, '">';
+					foreach($mod['data'] as $val => $desc) {
+						echo '<option value="', $val, '" , ',$desc['selected'] ? 'selected="selected" ' : '','>', $desc['text'], '</option>';
+					}
+					echo '</select></td>';
+					break;
+				case 'tsdTrennZeichen':
+				case 'Komma':
+					echo '<td><input type="text" size="3" name="', $name, '" value="', $mod['data'], '" /></td>';
+					break;
+				default:
+					echo $name, ' => ', var_dump($mod), '<br />';
+			}
+			echo '</tr>';
+			if($name == 'currentPW')
+				echo '<tr><td colspan="2"><input name="submit" value="Absenden" type="submit" /></td></tr></table><br /><table><tr><th colspan="2">Ingame-Einstellungen</th></tr>';
+		}
+			
+		echo'<tr><td colspan="2"><input name="submit" value="Absenden" type="submit" /></td></tr></table></form>
+		<br /><table><tr><th colspan="2">IRC-Autologinmasken</th></tr>';
+		foreach($content['ircAutoLogin'] as $line) {
+			echo '<tr><td>', $line['mask'], '</td><td><a href="', $line['editLink'], '">Edit</a> <a href="', $line['delLink'], '">Del</a></td></tr>';
+		}
+		echo '
+			<tr><td colspan="2"><a href="', $content['newIrcAutoLoginLink'], '">neue Maske</a></td></tr> 
+		</table></div>';
+		
+		TemplateFooter();
+	}
+	
 	function TemplateHelp() {
 		global $content;
 		
