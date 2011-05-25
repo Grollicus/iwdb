@@ -62,7 +62,7 @@ if(!function_exists('TemplateMenu')) {
 			<tr><td><a class="',$content['action'] == 'techtree' ? 'active' : 'item','" href="', $scripturl, '/?action=techtree">Techtree</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'ressuserlist' ? 'active' : 'item','" href="', $scripturl, '/?action=ressuserlist">AccountRessProd</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'transporte' ? 'active' : 'item','" href="', $scripturl, '/?action=transporte">AccountRessBilanz</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'settings' ? 'active' : 'item','" href="', $scripturl, '/?action=settings">Einstellungen</a></td></tr>';
+			<tr><td><a class="',$content['action'] == 'settingsex' ? 'active' : 'item','" href="', $scripturl, '/?action=settingsex">Einstellungen</a></td></tr>';
 		if($user['isAdmin'])
 		echo '
 				<tr><th>Admin</th></tr>
