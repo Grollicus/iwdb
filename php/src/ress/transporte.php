@@ -1,6 +1,6 @@
 <?php
 	function TransporteList() {
-		global $pre, $content, $scripturl;
+		global $pre, $content, $scripturl, $squads;
 		
 		$q = DBQuery("SELECT igmname, squad FROM {$pre}igm_data", __FILE__, __LINE__);
 		$squads = array();
@@ -45,7 +45,7 @@
 		$sort_order = isset($_REQUEST['desc']) ? -1 : 1;
 		
 		function TransporteSort($a, $b) {
-			global $sort_index, $sort_order;
+			global $sort_index, $sort_order, $squads;
 			
 			$cmp = strcasecmp($squads[$a['name']], $squads[$b['name']]);
 			if($cmp != 0)
@@ -60,7 +60,10 @@
 			return 0;
 		}
 		function TransporteSortName($a, $b) {
-			global $sort_order;
+			global $sort_order, $squads;
+			$cmp = strcasecmp($squads[$a['name']], $squads[$b['name']]);
+                        if($cmp != 0)
+                                return $cmp;
 			return strcasecmp($a['name'], $b['name'])*$sort_order;
 		}
 		if($sort_index == 'name')
