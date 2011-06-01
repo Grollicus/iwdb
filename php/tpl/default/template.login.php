@@ -14,7 +14,6 @@ function Template_Login()
 {
 	global $content, $scripturl;
 	TemplateHtmlHeader();
-	//Ok, they want a login-box. So they'll get one.
 	
 	echo '<body>
 	<form action="', $content['submitUrl'] ,'" method="post">
@@ -22,6 +21,7 @@ function Template_Login()
 			', isset($content['message']) ? ('<tr><td colspan="2"><b>'.$content['message'].'</b></td></tr>') : '' ,'
 			<tr><td>Username</td><td><input type="text" name="login_user" value="', $content['user'], '" /></td></tr>
 			<tr><td>Passwort</td><td><input type="password" name="login_pass" value="', $content['pw'], '" /></td></tr>
+			<tr><td colspan="2"><input type="checkbox" name="login_stay" /> Eingeloggt bleiben</td></tr>
 			<tr><td colspan="2" align="center"><input type="submit" name="login" value="Abschicken" /></td></tr> 
 		</table>';
 	foreach($content['postdata'] as $name => $value) {

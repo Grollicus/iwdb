@@ -7,6 +7,8 @@
 		$t = (-100*$ress / $v)+($age-time())/3600;
 		if($t < 1)
 			return '<b>&lt;1 h</b>';
+		if($t > 72)
+			return '<b>&gt;75 h</b>';
 		return number_format($t, 1, ',', '.').'h';
 	}
 	function RessUserList() {

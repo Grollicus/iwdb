@@ -47,7 +47,17 @@
 		function TransporteSort($a, $b) {
 			global $sort_index, $sort_order, $squads;
 			
-			$cmp = strcasecmp($squads[$a['name']], $squads[$b['name']]);
+			if(isset($squads[$a['name']])) {
+				if(isset($squads[$b['name']]))
+					$cmp = strcasecmp($squads[$a['name']], $squads[$b['name']]);
+				else
+					return -1;
+			} else {
+				if(isset($squads[$b['name']]))
+					return 1;
+				else
+					$cmp = 0;
+			}
 			if($cmp != 0)
 				return $cmp;
 			
@@ -68,12 +78,12 @@
 					return -1;
 			} else {
 				if(isset($squads[$b['name']]))
-                                	return 1;
+					return 1;
 				else
-                                        $cmp = 0;
+					$cmp = 0;
 			}
-                        if($cmp != 0)
-                                return $cmp;
+			if($cmp != 0)
+				return $cmp;
 			return strcasecmp($a['name'], $b['name'])*$sort_order;
 		}
 		if($sort_index == 'name')

@@ -93,6 +93,7 @@ function Main()
 	'shipdata' => array('admin/shipdata.php', 'EditShipData'),
 	'sitter_flotten' => array('sitter/view.php', 'SitterFeindlFlottenUebersicht'),
 	'sitter_login' => array('sitter/login.php', 'SitterLogin'),
+	'sitter_dologin' => array('sitter/login.php', 'SitterDoLogin'),
 	'sitter_edit' => array('sitter/edit.php', 'SitterEdit'),
 	'sitter_view' => array('sitter/view.php', 'SitterView'),
 	'sitter_history' => array('sitter/history.php', 'SitterHistory'),
@@ -132,7 +133,7 @@ function Main()
 	
 //if we're in mainteance-mode and only admins should log in - but the user isnt an admin - die
 	if($mainteance == 1 && !$user['isAdmin'] && !isset($_REQUEST['login'])) {
-		require($sourcedir.'/core/LoginOut.php');
+		require_once($sourcedir.'/core/LoginOut.php');
 		Login();
 		StopExecution();
 	}
@@ -144,7 +145,7 @@ function Main()
 	$content['sitter_job_cnt'] = DBQueryOne("SELECT count(*) FROM {$pre}sitter AS sitter WHERE sitter.done=0 AND followUpTo=0 AND sitter.time <= ".time(), __FILE__, __LINE__);
 	
 	//Actually do
-	require($sourcedir.'/'.$actionArr[$action][0]);
+	require_once($sourcedir.'/'.$actionArr[$action][0]);
 	return $actionArr[$action][1];
 }
 

@@ -118,7 +118,7 @@ Kolonie\s+Eisen\s+Stahl\s+VV4A\s+chem.\sElemente\s+Eis\s+Wasser\s+Energie\s+
             AddPatern(@"Ressourcenkoloübersicht\s+Teil\s2\s+
 Kolonie\s+FP\s+Credits\s+Steuersatz\s+Bevölkerung\s+Zufr\s+
 ([\s\S]+?)
-Gesamt\s+[\d" + dot+@"]+\s+\(\S+?\*\((\d+,\d+)\+(\d+,\d+)\)\)\s+([\d"+dot+comma+@"]+)\s+\([^)]+\)\sAllisteuer:", PatternFlags.All);
+Gesamt\s+[\d" + dot+@"]+\s+\(\S+?\*\((\d+,\d+)\+(\d+,\d+)\)\)\s+([\d"+dot+comma+@"]+)\s+\([^)]+\)\sAllisteuer:\s+([\d"+dot+comma+@"]+)", PatternFlags.All);
         }
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match outerMatch in matches) {
@@ -132,6 +132,8 @@ Gesamt\s+[\d" + dot+@"]+\s+\(\S+?\*\((\d+,\d+)\+(\d+,\d+)\)\)\s+([\d"+dot+comma+
 \(([^)]+)\))?", RegexOptions.IgnorePatternWhitespace);
                 if (c.Count == 0)
                     return;
+				int planiCnt = c.Count;
+				float creditsAllysteuer = float.Parse(outerMatch.Groups[5].Value) / planiCnt;
 				foreach (Match innerMatch in c) {
 					uint gala = uint.Parse(innerMatch.Groups[1].Value);
 					uint sys = uint.Parse(innerMatch.Groups[2].Value);
@@ -150,7 +152,7 @@ Gesamt\s+[\d" + dot+@"]+\s+\(\S+?\*\((\d+,\d+)\+(\d+,\d+)\)\)\s+([\d"+dot+comma+
 					}
 
 					uint insertFP = (uint)Math.Round(fp * 100);
-					int realCreds = (int)Math.Round(creds * 100);
+					int realCreds = (int)Math.Round((creds + creditsAllysteuer) * 100);
 					uint realZu = (uint)Math.Round(zu * 100);
 					int realVZu = (int)Math.Round(vZu * 100);
 

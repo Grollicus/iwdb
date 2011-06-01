@@ -32,9 +32,9 @@
 					<td>', $line['file'], ':', $line['line'], '</td>
 					<td><a href="', $scripturl, '/?action=errors&amp;sub=del&amp;id=', $line['ID'], '">del</a></td>
 				</tr>
-				<tr><td colspan="5">', $line['msg'], '</td></tr>
-				<tr><td colspan="5"><b>Stacktrace</b><br />', $line['stacktrace'], '</td></tr>
-				<tr><td colspan="5">', $line['request'], '</td></tr>';
+				<tr><td colspan="5"><a href="javascript:toggleTableRow(getElById(\'err_st_',$line['ID'],'\'));toggleTableRow(getElById(\'err_req_',$line['ID'],'\'));">', $line['msg'], '</a></td></tr>
+				<tr id="err_st_',$line['ID'],'" style="display:none;"><td colspan="5"><b>Stacktrace</b><br />', $line['stacktrace'], '</td></tr>
+				<tr id="err_req_',$line['ID'],'" style="display:none;"><td colspan="5">', $line['request'], '</td></tr>';
 		}
 		echo '</table><br /><table width="100%">';
 		echo '<tr><th colspan="4">Aufgetretene und in der Datei geloggte Fehler (', $content['fileerrcount'], ')&nbsp;&nbsp;&nbsp;<a href="', $scripturl, '/?action=errors&amp;sub=fdelall">clear</a></th></tr>';

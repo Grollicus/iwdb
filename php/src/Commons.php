@@ -151,12 +151,12 @@ function CheckLogin()
 		return true;
 	//Maybe he's logging in...
 	elseif (isset($_REQUEST['login'])) {
-		require($sourcedir.'/core/LoginOut.php');
+		require_once($sourcedir.'/core/LoginOut.php');
 		Login2();
 		LoadUser();
 		return true;
 	} else { //Ok, he isnt logged in and doesnt do it atm. Let's view a loginbox and die :)	
-		require($sourcedir.'/core/LoginOut.php');
+		require_once($sourcedir.'/core/LoginOut.php');
 		Login();
 		StopExecution();
 	}
@@ -266,7 +266,7 @@ function LogError($str, $file, $line, $flags = 0) {
 	}
 	
 	if(($flags & ERROR_FILE_ONLY) != ERROR_FILE_ONLY) {
-		$q = mysql_query("INSERT INTO {$pre}errors (time, user, file, line, msg, stacktrace, request) VALUES (".time().", {$ID_MEMBER}, '{$file}', {$line}, '".EscapeDBU($str)."', '".EscapeDBU($trace)."', '".EscapeDBU($request)."')");
+		$q = mysql_query("INSERT INTO {$pre}errors (time, user, file, line, msg, stacktrace, request) VALUES (".time().", {$ID_MEMBER}, '".EscapeDB($file)."', {$line}, '".EscapeDBU($str)."', '".EscapeDBU($trace)."', '".EscapeDBU($request)."')");
 		if($q === false) {
 			LogError("Mysql error logging failed: ".mysql_error(), __FILE__, __LINE__, ERROR_FILE_ONLY);
 			$flags |= ERROR_FILE_ONLY;

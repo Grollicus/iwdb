@@ -3,6 +3,49 @@
 	if (!defined("dddfd"))
 		die("Hacking attempt");
 
+	function SitterDoLogin() {
+		global $spiel, $user, $ID_MEMBER, $pre;
+		
+		$sitter= isset($_REQUEST['sitter']);
+		$id = intval($_REQUEST['ID']);
+		if(!$sitter && $id != $user['igmuser']) {
+			die("nö.");
+		}
+		
+		$victim = DBQueryOne("SELECT igmname, sitterpw, realpw FROM {$pre}igm_data AS igm_data WHERE igm_data.id=".$id, __FILE__, __LINE__);
+		if($victim === false)
+			die("noe.");
+		
+		$now = time();
+		DBQuery("UPDATE {$pre}igm_data SET lastLogin={$now} WHERE ID={$id}", __FILE__, __LINE__);
+		
+		if($spiel == 'iw')  {
+			$loginurl = 'http://www.icewars.de/index.php?action=login&submit=1';
+			if($sitter)
+				$loginurl .= '&sitter=1';
+			$loginurl .= '&name='.EscapeOU($victim[0]);
+			if($sitter)
+				$loginurl .= '&pswd='.EscapeO(rawurlencode(utf8_decode($victim[1])));
+			else
+				$loginurl.= '&pswd='.EscapeO(rawurlencode(utf8_decode($victim[1])));
+		} else {
+			$loginurl = 'http://www.crystalwars.de/index.php?action=login&submit_data=1';
+			if($sitter)
+				$loginurl .= '&login_sitter=1';
+			$loginurl .= '&login_name='.EscapeOU($victim[0]);
+			if($sitter)
+				$loginurl .= '&login_pswd='.EscapeOU(rawurlencode(utf8_decode($victim[1])));
+			else
+				$loginurl.= '&login_pswd='.EscapeO(rawurlencode(utf8_decode($victim[1])));
+		}
+		$sitterdata = DBQueryOne("SELECT sitterskin, sitteripchange FROM {$pre}users WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
+		if($sitterdata[0] != 0)
+			$loginurl .= '&serverskin=1&serverskin_typ='.$sitterdata[0];
+		if($sitterdata[1] == 1)
+			$loginurl .= '&ip_change=1';
+		Redirect($loginurl);
+	}
+		
 	function SitterLogin() {
 		global $ID_MEMBER, $pre, $content, $scripturl, $spiel, $sourcedir;
 
@@ -30,7 +73,6 @@
 			}
 			$content['job'] = 0;
 			$params = '&amp;uid='.$id.'&amp;from='.$from;
-			//Wenn sitterflags mal eingebaut werden, müssen die hier auch überprüft werden.
 		} else {
 			return;
 		}
@@ -41,24 +83,9 @@
 		$victim = DBQueryOne("SELECT igmname, sitterpw, lastLogin FROM {$pre}igm_data AS igm_data WHERE igm_data.id=".$id, __FILE__, __LINE__);
 		if($victim === false)
 			return;
-		$params .= '&amp;lastLogin='.$victim[2];
-		DBQuery("UPDATE {$pre}igm_data SET lastLogin={$now} WHERE ID={$id}", __FILE__, __LINE__);
-			
-		$sitterdata = DBQueryOne("SELECT sitterskin, sitteripchange FROM {$pre}users WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
-		if($spiel == 'iw')  {
-			$loginurl = 'http://www.icewars.de/index.php?action=login&amp;sitter=1&amp;submit=1';
-			$loginurl .= '&amp;name='.EscapeOU($victim[0]);
-			$loginurl .= '&amp;pswd='.EscapeO(rawurlencode(utf8_decode($victim[1])));
-		} else {
-			$loginurl = 'http://www.crystalwars.de/index.php?action=login&amp;login_sitter=1&amp;submit_data=1';
-			$loginurl .= '&amp;login_name='.EscapeOU($victim[0]);
-			$loginurl .= '&amp;login_pswd='.EscapeOU(rawurlencode(utf8_decode($victim[1])));
-		}
-		if($sitterdata[0] != 0)
-			$loginurl .= '&amp;serverskin=1&amp;serverskin_typ='.$sitterdata[0];
-		if($sitterdata[1] == 1)
-			$loginurl .= '&amp;ip_change=1';
-
+		$params .= '&amp;lastLogin='.$victim[1];
+		
+		$loginurl = $scripturl.'/index.php?action=sitter_dologin&amp;sitter=1&amp;ID='.$id;
 		$content['leftUtil'] = $scripturl.'/index.php?action=sitterutil_job'.$params.'&amp;pos=left';
 		$content['rightUtil'] = $scripturl.'/index.php?action=sitterutil_newscan'.$params.'&amp;pos=right';
 		$content['accName'] = EscapeOU($victim[0]);
@@ -73,23 +100,13 @@
 	function MainLogin() {
 		global $content, $pre, $ID_MEMBER, $scripturl, $user, $spiel, $sourcedir;
 		
-		$params = '&amp;id=0&amp;uid='.$user['igmuser'].'&amp;from=index';
+		$dta = DBQueryOne("SELECT igmname, lastLogin FROM {$pre}igm_data WHERE ID=".$user['igmuser'], __FILE__, __LINE__);
+		$params = '&amp;id=0&amp;uid='.$user['igmuser'].'&amp;from=index&amp;lastLogin='.$dta[1];
 		
-		$dta = DBQueryOne("SELECT igm_data.igmname, igm_data.realpw, users.sitteripchange, igm_data.lastLogin
-FROM {$pre}users AS users LEFT JOIN {$pre}igm_data AS igm_data ON users.igmuser=igm_data.id 
-WHERE users.ID={$ID_MEMBER}", __FILE__, __LINE__);
-		if($spiel == 'iw')
-			$loginurl = 'http://www.icewars.de/index.php?action=login&amp;submit=1&amp;name='.EscapeOU($dta[0]).'&amp;pswd='.EscapeO(rawurlencode(utf8_decode($dta[1])));
-		else
-			$loginurl = 'http://www.crystalwars.de/index.php?action=login&amp;submit_data=1&amp;login_name='.EscapeOU($dta[0]).'&amp;login_pswd='.EscapeO(rawurlencode(utf8_decode($dta[1])));
-		if($dta[2] == 1)
-			$loginurl .= '&amp;ip_change=1';
-		$params .= '&amp;lastLogin='.$dta[3];
-
 		$content['accName'] = EscapeOU($dta[0]);
 		$content['leftUtil'] = $scripturl.'/index.php?action=sitterutil_trade'.$params.'&amp;pos=left';
 		$content['rightUtil'] = $scripturl.'/index.php?action=sitterutil_newscan'.$params.'&amp;pos=right';
-		$content['loginUrl'] = $loginurl;
+		$content['loginUrl'] = $scripturl.'/index.php?action=sitter_dologin&amp;ID='.$user['igmuser'];
 		$content['loginWarning'] = false;
 		
 		TemplateInit('sitter');

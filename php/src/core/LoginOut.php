@@ -128,6 +128,7 @@ function Login2()
 		//Useragent-check
 		$_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
 		
+		$_SESSION['stay_loggedin'] = isset($_REQUEST['login_stay']);
 		//Redirect($scripturl.'/index.php?action=index');
 	}
 }

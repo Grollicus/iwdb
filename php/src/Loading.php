@@ -23,8 +23,16 @@ function LoadSession()
 	ini_set("session.name", $cookie['name']);
 	ini_set("session.cookie_path", $cookie['path']);
 	ini_set("session.cookie_domain", $cookie['domain']);
+	ini_set("session.cookie_lifetime", 31536000);
 	session_start();
+	if(isset($_SESSION['ID_MEMBER']) && !$_SESSION['stay_loggedin'] && $_SESSION['lastactive'] < time()-3600) {
+		//nicht- dauerhafte Session nach einer Stunde Inaktivität abgelaufen
+		$_SESSION = array();
+		session_destroy();
+		session_start();
+	}
 	$content['sid'] = session_id();
+	$_SESSION['lastactive'] = time();
 	//And... thats it ;)
 	//If there was something like "DB-Based-Sessions", we would have to do something more in here.
 }
