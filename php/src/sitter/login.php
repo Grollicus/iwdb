@@ -38,10 +38,10 @@
 			else
 				$loginurl.= '&login_pswd='.EscapeO(rawurlencode(utf8_decode($victim[1])));
 		}
-		$sitterdata = DBQueryOne("SELECT sitterskin, sitteripchange FROM {$pre}users WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
+		$sitterdata = DBQueryOne("SELECT sitterskin, ipsecurity FROM {$pre}users WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
 		if($sitterdata[0] != 0)
 			$loginurl .= '&serverskin=1&serverskin_typ='.$sitterdata[0];
-		if($sitterdata[1] == 1)
+		if($sitterdata[1] == 0)
 			$loginurl .= '&ip_change=1';
 		Redirect($loginurl);
 	}
