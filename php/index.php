@@ -143,6 +143,11 @@ function Main()
 	SetLinkParam('action', $action);
 	$content['debug_mode'] = $debug > 1 || $user['isAdmin'] ? $debug : 0;
 	$content['sitter_job_cnt'] = DBQueryOne("SELECT count(*) FROM {$pre}sitter AS sitter WHERE sitter.done=0 AND followUpTo=0 AND sitter.time <= ".time(), __FILE__, __LINE__);
+	$content['users_online'] = array();
+	
+	$q = DBQuery("SELECT visibleName FROM {$pre}users WHERE lastactive>".(time()-300), __FILE__, __LINE__);
+	while($row = mysql_fetch_row($q))
+		$content['users_online'][] = $row[0];
 	
 	//Actually do
 	require_once($sourcedir.'/'.$actionArr[$action][0]);

@@ -61,7 +61,7 @@
 					<td align="right">', $user['vCh'], '<br /><span class="sub">', $user['tCh'], ' ', $user['ch'], '</span></td>
 					<td align="right">', $user['vEi'], '<br /><span class="sub">', $user['tEi'], ' ', $user['ei'], '</span></td>
 					<td align="right">', $user['vWa'], '<br /><span class="sub">', $user['tWa'], ' ', $user['wa'], '</span></td>
-					<td align="right">', $user['vEn'], '<br /><span class="sub">', $user['en'], '</span></td>
+					<td align="right">', $user['vEn'], '<br /><span class="sub">', $user['tEn'], ' ', $user['en'], '</span></td>
 					<td align="right">', $user['fp'], '</td>
 					<td align="right">', $user['vCr'], '<br /><span class="sub">', $user['cr'], '</span></td>
 				</tr>';

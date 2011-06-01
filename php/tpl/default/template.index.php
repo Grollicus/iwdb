@@ -136,6 +136,7 @@ if (!function_exists('TemplateHeader'))
 				<a href="', $scripturl, '/index.php?action=iwlogin">[', strtoupper($spiel), ']</a>&nbsp;&nbsp;
 				<a href="/blub/">[Forum]</a>&nbsp;&nbsp;
 				<a href="', $scripturl, '/index.php?action=sitter_login&amp;from=', $content['action'], '&amp;id=next" title="Sitterlogin zum nächsten Account">[Sitten]</a>&nbsp;&nbsp;
+				<b>User Online:</b> ', implode(', ', $content['users_online']), '
 				</td><td class="categoryheader" style="text-align: right;">
 				<a href="', $scripturl, '/index.php?action=bugs">[Bugs]</a>
 			</td></tr>
