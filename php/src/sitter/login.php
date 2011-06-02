@@ -34,9 +34,9 @@
 				$loginurl .= '&login_sitter=1';
 			$loginurl .= '&login_name='.EscapeOU($victim[0]);
 			if($sitter)
-				$loginurl .= '&login_pswd='.EscapeOU(rawurlencode(utf8_decode($victim[1])));
+				$loginurl .= '&login_pswd='.EscapeOU(rawurlencode(utf8_decode($victim[2])));
 			else
-				$loginurl.= '&login_pswd='.EscapeO(rawurlencode(utf8_decode($victim[1])));
+				$loginurl.= '&login_pswd='.EscapeO(rawurlencode(utf8_decode($victim[2])));
 		}
 		$sitterdata = DBQueryOne("SELECT sitterskin, ipsecurity FROM {$pre}users WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
 		if($sitterdata[0] != 0)
