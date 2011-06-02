@@ -17,6 +17,7 @@ namespace IWDB {
         public readonly ushort Gala, Sys, Pla;
         public readonly String Planityp, Objekttyp, Ownername, Ownerally, Planiname;
         internal PlaniData(MySqlDataReader r) {
+			StringBuilder sb = new StringBuilder();
             Gala = r.GetUInt16(0);
             Sys = r.GetUInt16(1);
             Pla = r.GetUInt16(2);
@@ -24,7 +25,7 @@ namespace IWDB {
             Objekttyp = r.GetString(4);
             Ownername = r.GetString(5);
             Ownerally = r.IsDBNull(6) ? "" : r.GetString(6);
-            Planityp = r.GetString(7);
+			Planiname = r.GetString(7);
         }
     }
 }

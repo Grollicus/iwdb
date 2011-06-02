@@ -27,9 +27,9 @@ namespace IWDB {
         public const String SitterSpamColor = "\u00031,7";
         public const String FlottenSpamColor = "\u00031,11";
 
-		IRCModuleChan chan;
+		IIRCModuleChan chan;
 		XmlNode config;
-		MySqlConnection mysql;
+		String conStr;
 		String DBPrefix;
 		IWDBCore iwdb;
 
@@ -50,7 +50,7 @@ namespace IWDB {
 			planiKürzel = new Dictionary<string, string>();
 			planiKürzel.Add("", "FEHLER"); //Kann nur auftreten wenn beim Einfügen des Planis in die Datenbank etwas schief gegangen ist
 			planiKürzel.Add("Nichts", "---");
-            planiKürzel.Add("Steinklumpen", "Ste");
+			planiKürzel.Add("Steinklumpen", "Ste");
 			planiKürzel.Add("Gasgigant", "Gas");
 			planiKürzel.Add("Asteroid", "Ast");
 			planiKürzel.Add("Eisplanet", "Eis");
@@ -72,6 +72,7 @@ namespace IWDB {
 			chan.UnregisterCmd(this, ".sys");
             chan.UnregisterCmd(this, ".status");
             chan.UnregisterCmd(this, ".bauleerlauf");
+			chan.UnregisterCmd(this, ".tt");
 			sitterSpamEvent.Disable();
             bauLeerlaufSpamEvent.Disable();
 			return true;
@@ -89,12 +90,16 @@ namespace IWDB {
                 return false;
             }
 			iwdb.OnNeueFeindlFlottenGesichtet += NeueFeindFlottenEntdecktCallback;
-			mysql = chan.MysqlConnections.GetConnection(config["mysql"].InnerText);
+			//mysql = chan.MysqlConnections.GetConnection(config["mysql"].InnerText);
+			conStr = config["mysql"].InnerText;
+			MySqlConnection con = chan.AllocateConnection(this, conStr);
+			chan.FreeConnection(this, con);
 			chan.RegisterCmd(this, ".sitter", CmdSitter, IRCModuleUserAccess.Normal, "Sitterspam!");
 			chan.RegisterCmd(this, ".owner", CmdOwner, IRCModuleUserAccess.Normal, "<Besitzer> - Planisuche nach Besitzer");
 			chan.RegisterCmd(this, ".sys", CmdSystem, IRCModuleUserAccess.Normal, "<gala>:<sys> - Listet alle Planis in dem System auf");
             chan.RegisterCmd(this, ".status", CmdStatus, IRCModuleUserAccess.Normal, "Statusspam!");
             chan.RegisterCmd(this, ".bauleerlauf", CmdBauleerlauf, IRCModuleUserAccess.Normal);
+			chan.RegisterCmd(this, ".tt", CmdTimeTest, IRCModuleUserAccess.Mod, "TimeTest");
             chan.OnUserJoin += OnUserJoin;
 			chan.OnUserLeave += OnUserLeave;
 			chan.OnChannelJoined += OnChannelJoined;
@@ -104,8 +109,6 @@ namespace IWDB {
 		}
 
 		public bool ForceDisable() {
-			if (mysql.State == System.Data.ConnectionState.Open)
-				mysql.Close();
 			return Disable();
 		}
 
@@ -113,7 +116,7 @@ namespace IWDB {
 			get { return "iwdbspam"; }
 		}
 
-		public void Registered(IRCModuleChan Chan, XmlNode Config) {
+		public void Registered(IIRCModuleChan Chan, XmlNode Config) {
 			this.chan = Chan;
 			this.config = Config;
 		}
@@ -146,7 +149,7 @@ namespace IWDB {
             sb.Append(offeneAuftraege);
             sb.Append(" Sitteraufträge offen! ");
             if(offeneAuftraege>0) {
-                sb.Append("https://www.ancient-empires.de/tool/index.php?action=sitter_login&from=sitter_view&jobid=");
+                sb.Append("https://www.ancient-empires.de/schaftool/index.php?action=sitter_login&from=sitter_view&jobid=");
                 sb.Append(jobid);
             }
             SendGreetingMessage(joinedUsers, sb.ToString());
@@ -169,7 +172,7 @@ namespace IWDB {
 		void CheckChan(object timerIdentifyer) {
             List<String> checkingUsers = new List<string>();
 			foreach (IRCChanMember member in chan.Members) {
-                if (member.Name != chan.OwnNick)
+                if (member.Name != chan.OwnNick && member.Name != "ChanServ")
                     checkingUsers.Add(member.Name);
 			}
             iwdb.CheckUsers(chan.Name, checkingUsers);
@@ -216,18 +219,25 @@ namespace IWDB {
         void CmdBauleerlauf(IRCModuleMessage Msg) {
             BauLeerlaufSpam(true);
         }
+		void CmdTimeTest(IRCModuleMessage Msg) {
+			chan.SendChanMsg("Now:" + DateTime.Now.ToString());
+			uint timestamp = IWDBUtils.toUnixTimestamp(DateTime.Now);
+			uint utcTimestamp = IWDBUtils.toUnixTimestamp(DateTime.UtcNow);
+			chan.SendChanMsg("Timestamps: " + timestamp + " UTC: " + utcTimestamp);
+			chan.SendChanMsg("Back: " + IWDBUtils.fromUnixTimestamp(timestamp) + " UTC: " + IWDBUtils.fromUnixTimestamp(utcTimestamp));
+		}
 		
 		private void SendSystemResult(PlaniData dta) {
-            StringBuilder sb = new StringBuilder(dta.Gala);
+            StringBuilder sb = new StringBuilder(dta.Gala.ToString());
 			sb.Append(':');
 			sb.Append(dta.Sys);
 			sb.Append(':');
 			sb.Append(dta.Pla);
 			sb.Append(' ');
-            sb.Append(IWDBUtils.Get<string, string>(objektKürzel, dta.Objekttyp, "Fehler!"));
+            sb.Append(objektKürzel.GetOrDefault(dta.Objekttyp, "Fehler"));
 			sb.Append('@');
-			//sb.Append(planiKürzel[dta.Planityp]);
-            sb.Append(IWDBUtils.Get<string, string>(planiKürzel, dta.Planityp, "Fehler!"));
+            sb.Append(planiKürzel.GetOrDefault(dta.Planityp, "Fehler"));
+			//sb.Append(dta.Planityp);
 			sb.Append(" \"");
 			sb.Append(dta.Planiname);
 			sb.Append("\" von ");
@@ -269,11 +279,11 @@ namespace IWDB {
                 if (offen == 0) {
                     chan.SendChanMsg("Es sind momentan 0 Sitteraufträge offen!");
                 } else {
-                    chan.SendChanMsg(SitterSpamColor+"Es sind momentan " + offen + " Sitteraufträge offen! https://www.ancient-empires.de/tool/index.php?action=sitter_login&from=sitter_view&jobid=" + jobid);
+                    chan.SendChanMsg(SitterSpamColor+"Es sind momentan " + offen + " Sitteraufträge offen! https://www.ancient-empires.de/schaftool/index.php?action=sitter_login&from=sitter_view&jobid=" + jobid);
                 }
             if (verbose && naechster!=DateTime.MinValue) {
                 TimeSpan s = naechster - DateTime.Now;
-                chan.SendChanMsg("Der nächste Sitterauftrag ist um " + naechster.ToShortTimeString() + "( in " + s.ToString() + ")");
+                chan.SendChanMsg("Der nächste Sitterauftrag ist um " + naechster.ToShortTimeString() + " (in " + s.ToString("hh:mm:ss") + ")");
             }
 		}
 		void FlottenSpam(bool verbose) {

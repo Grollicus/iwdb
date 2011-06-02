@@ -50,7 +50,7 @@
 		global $ID_MEMBER, $pre, $content, $scripturl, $spiel, $sourcedir;
 
 		require_once($sourcedir.'/newscan/main.php');
-		ParseScansEx(); //für fastpaste
+		$tmpid = ParseScansEx(true); //für fastpaste
 		
 		$from = EscapeO(Param('from'));
 		if(isset($_GET['jobid'])) {
@@ -88,6 +88,8 @@
 		$loginurl = $scripturl.'/index.php?action=sitter_dologin&amp;sitter=1&amp;ID='.$id;
 		$content['leftUtil'] = $scripturl.'/index.php?action=sitterutil_job'.$params.'&amp;pos=left';
 		$content['rightUtil'] = $scripturl.'/index.php?action=sitterutil_newscan'.$params.'&amp;pos=right';
+		if($tmpid !== false)
+			$content['rightUtil'] .= '&amp;tmpid='.$tmpid;
 		$content['accName'] = EscapeOU($victim[0]);
 		$content['loginUrl'] = $loginurl;
 		$content['loginWarning'] = $lastloginid !== false;
@@ -338,6 +340,25 @@
 		
 		require($sourcedir.'/newscan/main.php');
 		ParseScansEx();
+		
+		if(isset($_REQUEST['tmpid'])) {
+			$tmpid = intval($_REQUEST['tmpid']);
+			$tmp = DbQueryOne("SELECT value FROM {$pre}temp WHERE ID=".$tmpid, __FILE__, __LINE__);
+			if($tmp !== false) {
+				DBQuery("DELETE FROM {$pre}temp WHERE ID={$tmpid}", __FILE__, __LINE__);
+				$arr = unserialize($tmp);
+				if(isset($arr['msg']))
+					if(isset($content['msg']))
+						$content['msg'] .= '<br />'.$arr['msg'];
+					else
+						$content['msg'] = '<br />'.$arr['msg'];
+				if(isset($arr['submsg']))
+					if(isset($content['submsg']))
+						$content['submsg'] .= '<br />'.$arr['submsg'];
+					else
+						$content['submsg'] = '<br />'.$arr['submsg'];
+			}
+		}
 		
 		GenRequestID();
 		$id = isset($_GET['id']) ? intval($_GET['id']) : 0;

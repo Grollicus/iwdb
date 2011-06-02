@@ -199,11 +199,12 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 		Dictionary<uint, OrderedList<FlottenCacheFlotte>> flottenCache;
         IWDBParser parser;
         public HauptseiteFeindlicheFlottenParser(NewscanHandler h, IWDBParser parser)
-			: base(@"feindliche\sFlotten\s+
+			: base(h) {
+			AddPatern(@"feindliche\sFlotten\s+
 Fremde\sFlotten\n
 Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 ((?:\s*\n" + KolonieName + @"\s" + Koordinaten + @"\s+" + KolonieName + @"\s" + Koordinaten + @"\n
-" + SpielerName + @"\s+" + PräziseIWZeit + @"[\s\-]+.*?\s+Angriff)+)", h) {
+" + SpielerName + @"\s+" + PräziseIWZeit + @"[\s\-]+.*?\s+Angriff)+)", PatternFlags.All );
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
 			this.parser = parser;
 		}

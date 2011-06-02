@@ -9,10 +9,6 @@ using System.Linq;
 
 namespace IWDB {
 	static class IWDBUtils {
-		private static DateTime unixBase;
-		static IWDBUtils() {
-			unixBase = (new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc));
-		}
 		public static uint parseIWTime(String toParse) {
 			//03.04.2008 11:27
 			return toUnixTimestamp(DateTime.ParseExact(toParse, "dd.MM.yyyy HH:mm", null, System.Globalization.DateTimeStyles.AssumeLocal|System.Globalization.DateTimeStyles.AdjustToUniversal));
@@ -27,13 +23,16 @@ namespace IWDB {
 
 		}
 		public static uint toUnixTimestamp(DateTime time) {
-			return (uint)((time.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
-            //return (uint)(time - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Local)).TotalSeconds;
+			//return (uint)((time.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
+			if(time.Kind == DateTimeKind.Utc)
+				return (uint)(time - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
+			else
+				return (uint)(time.ToUniversalTime() - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
 		}
 		public static DateTime fromUnixTimestamp(uint timestamp) {
             //TimeSpan sp = new TimeSpan(timestamp * (long)10000000);
-            //return (new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Local).Add(sp));
-			return new DateTime((long)timestamp * 10000000 + 621355968000000000, DateTimeKind.Utc);
+			return new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(timestamp).ToLocalTime();
+			//return new DateTime((long)timestamp * 10000000 + 621355968000000000, DateTimeKind.Utc);
 		}
         public static T2 Get<T1, T2>(Dictionary<T1, T2> dict, T1 key, T2 defaultValue) {
             T2 ret;
@@ -41,6 +40,12 @@ namespace IWDB {
                 return ret;
             return defaultValue;
         }
+		public static T2 GetOrDefault<T1, T2>(this Dictionary<T1, T2> dict, T1 key, T2 defaultValue) {
+			T2 ret;
+			if(dict.TryGetValue(key, out ret))
+				return ret;
+			return defaultValue;
+		}
     }
 	abstract class IWDBRegex {
 		public const String KolonieName = @"(?:(?:[a-zA-Z0-9_\-\.‰ˆ¸ƒ÷‹ﬂ*][a-zA-Z0-9_\-\. ‰ˆ¸ƒ÷‹ﬂ*]*[a-zA-Z0-9_\-\.‰ˆ¸ƒ÷‹ﬂ*])|[a-zA-Z0-9_\-\.‰ˆ¸ƒ÷‹ﬂ*])";

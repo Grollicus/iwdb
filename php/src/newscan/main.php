@@ -24,9 +24,8 @@ function NewscanEx() {
 	TemplateNewscanEx();
 }
 
-function ParseScansEx() {
-	global $content, $ID_MEMBER, $user;
-	
+function ParseScansEx($store_in_temp = false) {
+	global $content, $ID_MEMBER, $user, $pre;
 	
 	flush();
 	$content['scans'] = '';
@@ -47,9 +46,20 @@ function ParseScansEx() {
 		} else {
 			$content['submsg'] = $str;
 		}
+		if($store_in_temp) {
+			$arr = array();
+			if(isset($content['msg']))
+				$arr['msg'] = $content['msg'];
+			if(isset($content['submsg']))
+				$arr['submsg'] = $content['submsg'];
+			$str = serialize($arr);
+			DBQuery("INSERT INTO {$pre}temp (value) VALUES ('".EscapeDB($str)."')", __FILE__, __LINE__);
+			return mysql_insert_id();
+		}
 	} else {
 		$content['user'] = $user['igmuser'];
 	}
+	return false;
 }
 
 ?>

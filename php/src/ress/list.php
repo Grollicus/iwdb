@@ -53,11 +53,11 @@
 			$order = $orders[0];
 			$activeOrder = 0;
 		}
-		if(isset($_REQUEST['desc']) && $_REQUEST['desc'] == '1') {
-			$desc = true;
-			$order .= ' DESC';
+		if(isset($_REQUEST['asc']) && $_REQUEST['asc'] == '1') {
+			$asc = true;
 		} else {
-			$desc = false;
+			$asc = false;
+			$order .= ' DESC';
 		}
 		
 		$q = DBQuery("SELECT igm_data.igmname, igm_data.accounttyp, igm_data.squad $cols, SUM(fp), cr, SUM(vCr), MIN(ressuebersicht.time)
@@ -135,11 +135,11 @@ GROUP BY uid ORDER BY $order", __FILE__, __LINE__);
 		$content['sortLinks'] = array();
 		foreach($orders as $id => $o) {
 			$content['sortLinks'][] = array(
-				'link' => $scripturl.'/index.php?action=ressuserlist&amp;order='.$id.'&amp;desc='.($activeOrder == $id && !$desc ? '1' : '0'),
+				'link' => $scripturl.'/index.php?action=ressuserlist&amp;order='.$id.'&amp;asc='.($activeOrder == $id && !$asc ? '1' : '0'),
 				'active' => $activeOrder == $id,
 			);
 		}
-		$content['order'] = $desc ? 'down' : 'up';
+		$content['order'] = $asc ? 'up' :  'down';
 		
 		$content['color_stages'] = array();
 		foreach($unicolor_stages as $stage => $time) {
