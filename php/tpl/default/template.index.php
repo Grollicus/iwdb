@@ -139,7 +139,7 @@ if (!function_exists('TemplateHeader'))
 				<a href="', $scripturl, '/index.php?action=sitter_login&amp;from=', $content['action'], '&amp;id=next" title="Sitterlogin zum nächsten Account">[Sitten]</a>&nbsp;&nbsp;
 				<b>User Online:</b> ', implode(', ', $content['users_online']), '
 				</td><td class="categoryheader" style="text-align: right;">
-				<a href="', $scripturl, '/index.php?action=bugs">[Bugs]</a>
+				<a href="', $scripturl, '/index.php?action=help_page">[FAQ]</a>
 			</td></tr>
 		</table>
 	</div>'; 

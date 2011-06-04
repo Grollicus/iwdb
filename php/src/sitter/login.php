@@ -80,7 +80,7 @@
 		$lastloginid = DBQueryOne("SELECT userid FROM {$pre}sitterlog WHERE victimid={$id} AND userid<>{$ID_MEMBER} AND type='login' AND time >= ".(time()-300), __FILE__, __LINE__);
 		
 		DBQuery("INSERT INTO {$pre}sitterlog (userid, victimid, type, time) VALUES ({$ID_MEMBER}, $id, 'login', {$now})", __FILE__, __LINE__);
-		$victim = DBQueryOne("SELECT igmname, sitterpw, lastLogin FROM {$pre}igm_data AS igm_data WHERE igm_data.id=".$id, __FILE__, __LINE__);
+		$victim = DBQueryOne("SELECT igmname, lastLogin FROM {$pre}igm_data WHERE ID=".$id, __FILE__, __LINE__);
 		if($victim === false)
 			return;
 		$params .= '&amp;lastLogin='.$victim[1];

@@ -180,17 +180,17 @@ namespace IWDB.Parser {
                 chans.Add(chan);
             }
         }
-        public void BauleerlaufInfo(out int anz, out List<String> neu) {
+        public void BauleerlaufInfo(out int anz, out List<Pair<int, String>> neu) {
             mysql.Open();
 
             DateTime now = DateTime.Now;
-            MySqlCommand neuerLeerlaufQry = new MySqlCommand("SELECT igmname FROM (SELECT uid, MAX(end) AS end, igmname FROM " + DBPrefix + "building AS building INNER JOIN " + DBPrefix + "igm_data AS igm_data ON building.uid=igm_data.id WHERE igm_data.ikea = 0 OR plani=0 GROUP BY uid, plani) AS tmp GROUP BY tmp.uid HAVING min(tmp.end) BETWEEN ?time AND ?now", mysql);
+            MySqlCommand neuerLeerlaufQry = new MySqlCommand("SELECT uid, igmname FROM (SELECT uid, MAX(end) AS end, igmname FROM " + DBPrefix + "building AS building INNER JOIN " + DBPrefix + "igm_data AS igm_data ON building.uid=igm_data.id WHERE igm_data.ikea = 0 OR plani=0 GROUP BY uid, plani) AS tmp GROUP BY tmp.uid HAVING min(tmp.end) BETWEEN ?time AND ?now", mysql);
             neuerLeerlaufQry.Parameters.Add("?time", MySqlDbType.UInt32).Value = IWDBUtils.toUnixTimestamp(now.AddSeconds(-IWDBChanModule.BauleerlaufSpamIntervalInSeconds));
             neuerLeerlaufQry.Parameters.Add("?now", MySqlDbType.UInt32).Value = IWDBUtils.toUnixTimestamp(now);
             MySqlDataReader r = neuerLeerlaufQry.ExecuteReader();
-            neu = new List<string>();
+            neu = new List<Pair<int,string>>();
             while (r.Read()) {
-                neu.Add(r.GetString(0));
+                neu.Add(new Pair<int, String>(r.GetInt32(0), r.GetString(1)));
             }
             r.Close();
 

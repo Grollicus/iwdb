@@ -462,6 +462,7 @@ WHERE techtree_items.type='For' AND techtree_useritems.count IS NULL OR techtree
 		}
 	}
 	function CbEvaluateSchiff(&$data) {
+		$data['itemid'] = intval($_REQUEST['schiff']);
 	}
 	function CbValidateSchiff() {
 		if($_REQUEST['schiff'] == '0') {

@@ -62,7 +62,7 @@
 			case "del":
 				$id = intval($_REQUEST['id']);
 				DBQuery("DELETE FROM {$pre}irc_autologin WHERE id={$id}", __FILE__, __LINE__);
-				Redirect($scripturl.'/index.php?action=settings');
+				Redirect($scripturl.'/index.php?action=settingsex');
 				break;
 		}
 		

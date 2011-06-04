@@ -76,10 +76,10 @@ function Main()
 //Now, lets see what to do now.
 	//At first, all the Possibilities, as '$_REQUEST['action']' => array('includefile','Function to call')
 	$actionArr = array(
-	'bugs' => array('core/main.php', 'Bugs'),
 	'errors' => array('admin/errors.php', 'ListErrors'),
 	'flotten' => array('sitter/view.php', 'SitterFeindlFlottenUebersicht'),
 	'help' => array('core/main.php', 'HelpView'),
+	'help_page' => array('core/main.php', 'HelpPage'),
 	'ircmask' => array('core/irc.php', 'IrcMask'),
 	'index' => array('core/main.php', 'Index'),
 	'iwlogin' => array('sitter/login.php', 'MainLogin'),
@@ -87,7 +87,6 @@ function Main()
 	'mysql' => array('admin/mysql.php', 'MySQLClient'),
 	'newscanex' => array('newscan/main.php', 'NewscanEx'),
 	'ressuserlist' => array('ress/list.php', 'RessUserList'),
-	'settings' => array('core/UserSettings.php', 'UserSettings'),
 	'settingsex' => array('core/UserSettingsEx.php', 'UserSettingsEx'),
 	'scans_view' => array('scans/view.php', 'ScansView'), //scheint nicht verwendet zu werden
 	'shipdata' => array('admin/shipdata.php', 'EditShipData'),
