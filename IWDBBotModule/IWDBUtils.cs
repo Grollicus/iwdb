@@ -59,10 +59,10 @@ namespace IWDB {
 		public const String IWZeitspanne = @"(?:(?:1\s+Tag\s+)|(?:\d+\s+Tage\s+))?\d{2}:\d{2}:\d{2}";
 		public const String IWObjektTyp = @"Kolonie|Sammelbasis|Kampfbasis|Artefaktbasis|---";
 		public const String IWPlanetenTyp = @"Steinklumpen|Eisplanet|Gasgigant|Nichts|Asteroid|Elektrosturm|Raumverzerrung|Ionensturm|grav.\sAnomalie";
-        public static String Number { get { return "[0-9"+System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator+"]+"; } }
-        public const String RessourcenName = @"(?:Eisen|Stahl|VV4A|chem\.\sElemente|Eis|Wasser|Energie|Pinguine|Credits|Bevölkerung)";
+		public static String Number { get { return "[0-9" + System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator + "]+"; } }
+		public const String RessourcenName = @"(?:Eisen|Stahl|VV4A|chem\.\sElemente|Eis|Wasser|Energie|Pinguine|Credits|Bevölkerung)";
 	}
-    class Pair<T1, T2> {
+   public class Pair<T1, T2> {
         public T1 Item1;
         public T2 Item2;
         public Pair(T1 item1, T2 item2) {

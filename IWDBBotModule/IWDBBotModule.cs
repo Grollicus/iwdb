@@ -13,7 +13,7 @@ namespace IWDB {
 		void CheckLogout(string nick, string username, string host);
         void CheckUsers(string p, List<string> checkingUsers);
         event NeueFlottenGesichtetDelegate OnNeueFeindlFlottenGesichtet;
-        void BauleerlaufInfo(out int Anzahl, out List<String> neuerLeerlauf);
+		void BauleerlaufInfo(out int Anzahl, out List<Pair<int, String>> neuerLeerlauf);
         void SitterauftraegeOffen(out int offeneAuftraege, out int firstJobId, out DateTime naechsterAuftrag);
         void AnfliegendeFlotten(out uint flottenAnz, out uint zielplaniAnz);
         List<PlaniData> PlanisMitBesitzer(String name);
@@ -32,6 +32,7 @@ namespace IWDB {
 		String conStr;
 		String DBPrefix;
 		IWDBCore iwdb;
+		String baseUrl;
 
 		List<String> joinedUsers = new List<string>();
         TimerEvent sitterSpamEvent;
@@ -81,7 +82,9 @@ namespace IWDB {
 		public bool Enable() {
             ConfigUtils.SetDefaultElementValue(config, "mysql", "");
             ConfigUtils.SetDefaultElementValue(config, "dbprefix", "");
+			ConfigUtils.SetDefaultElementValue(config, "baseurl", "https://www.ancient-empires.de/schaftool/");
             DBPrefix = config["dbprefix"].InnerText;
+			baseUrl = config["baseurl"].InnerText;
             IWDBParserManager parserMan = (IWDBParserManager)chan.getUtil("iwdb");
             try {
                 iwdb = parserMan.GetCore(config["name"].InnerText);
@@ -103,8 +106,8 @@ namespace IWDB {
             chan.OnUserJoin += OnUserJoin;
 			chan.OnUserLeave += OnUserLeave;
 			chan.OnChannelJoined += OnChannelJoined;
-			sitterSpamEvent = chan.SetTimerEvent(DateTime.Now.AddMinutes(1), SitterSpamEventCallback, null);
-            bauLeerlaufSpamEvent = chan.SetTimerEvent(DateTime.Now.AddMinutes(1), BauLeerlaufSpamCallback, null);
+			sitterSpamEvent = chan.SetTimerEvent(DateTime.Now.AddMinutes(1), this, SitterSpamEventCallback, null);
+            bauLeerlaufSpamEvent = chan.SetTimerEvent(DateTime.Now.AddMinutes(1), this, BauLeerlaufSpamCallback, null);
 			return true;
 		}
 
@@ -130,14 +133,14 @@ namespace IWDB {
 			}
 			joinedUsers.Add(nick);
 			if (joinedUsers.Count == 1)
-				chan.SetTimerEvent(DateTime.Now.AddSeconds(3), SendGreetingMessages, null);
+				chan.SetTimerEvent(DateTime.Now.AddSeconds(3), this, SendGreetingMessages, null);
 		}
 		void OnUserLeave(string nick, string username, string host) {
             Log.WriteLine(nick + " has Left Channel (IWDBChanModule.OnUserLeave)");
 			iwdb.CheckLogout(nick, username, host);
 		}
 		void OnChannelJoined(object Sender, EventArgs args) {
-			chan.SetTimerEvent(DateTime.Now.AddSeconds(5), CheckChan, null);
+			chan.SetTimerEvent(DateTime.Now.AddSeconds(5), this, CheckChan, null);
 		}
 		void SendGreetingMessages(object timerIdentifyer) {
 			SendGreetingMessage(joinedUsers, "Hallo!");
@@ -149,13 +152,14 @@ namespace IWDB {
             sb.Append(offeneAuftraege);
             sb.Append(" Sitteraufträge offen! ");
             if(offeneAuftraege>0) {
-                sb.Append("https://www.ancient-empires.de/schaftool/index.php?action=sitter_login&from=sitter_view&jobid=");
+				sb.Append(baseUrl);
+                sb.Append("index.php?action=sitter_login&from=sitter_view&jobid=");
                 sb.Append(jobid);
             }
             SendGreetingMessage(joinedUsers, sb.ToString());
 			if (naechsterAuftrag != DateTime.MinValue) {
                 TimeSpan s = naechsterAuftrag - DateTime.Now;
-                SendGreetingMessage(joinedUsers, "Der nächste Sitterauftrag ist um " + naechsterAuftrag.ToShortTimeString() + " (in " + s.ToString() + ")");
+                SendGreetingMessage(joinedUsers, "Der nächste Sitterauftrag ist um " + naechsterAuftrag.ToString("HH:mm:ss") + " (in " + s.ToString("hh\\:mm\\:ss") + ")");
 			}
 			joinedUsers.Clear();
 		}
@@ -214,7 +218,7 @@ namespace IWDB {
         void CmdStatus(IRCModuleMessage Msg) {
             joinedUsers.Add(Msg.SenderNick);
             if (joinedUsers.Count == 1)
-                chan.SetTimerEvent(DateTime.Now.AddSeconds(3), SendGreetingMessages, null);
+                chan.SetTimerEvent(DateTime.Now.AddSeconds(3), this, SendGreetingMessages, null);
         }
         void CmdBauleerlauf(IRCModuleMessage Msg) {
             BauLeerlaufSpam(true);
@@ -252,19 +256,19 @@ namespace IWDB {
 
 		void SitterSpamEventCallback(object timerIdentifyer) {
 			SitterSpam(false);
-			sitterSpamEvent = chan.SetTimerEvent(DateTime.Now.AddMinutes(1), SitterSpamEventCallback, null);
+			sitterSpamEvent = chan.SetTimerEvent(DateTime.Now.AddMinutes(1), this, SitterSpamEventCallback, null);
 		}
         void BauLeerlaufSpamCallback(object timerIdentifyer) {
             BauLeerlaufSpam(false);
-			bauLeerlaufSpamEvent = chan.SetTimerEvent(DateTime.Now.AddSeconds(BauleerlaufSpamIntervalInSeconds), BauLeerlaufSpamCallback, null);
+			bauLeerlaufSpamEvent = chan.SetTimerEvent(DateTime.Now.AddSeconds(BauleerlaufSpamIntervalInSeconds), this, BauLeerlaufSpamCallback, null);
         }
 
         void BauLeerlaufSpam(bool verbose) {
             int anzahl;
-            List<String> neuerLeerlauf;
+			List<Pair<int, String>> neuerLeerlauf;
             iwdb.BauleerlaufInfo(out anzahl, out neuerLeerlauf);
-            foreach(String name in neuerLeerlauf) {
-                chan.SendDelayedChanMsg(name+ " hat jetzt Leerlauf!");
+			foreach(Pair<int, String> igmAccount in neuerLeerlauf) {
+				chan.SendDelayedChanMsg(igmAccount.Item2 + " hat jetzt Leerlauf! " + baseUrl + "index.php?action=sitter_login&from=sitter_list&id=" + igmAccount.Item1);
             }
             if (anzahl > 0 || verbose) {
                 chan.SendChanMsg(anzahl + " Leute haben momentan Bau- oder Forschungsleerlauf!");
@@ -279,11 +283,11 @@ namespace IWDB {
                 if (offen == 0) {
                     chan.SendChanMsg("Es sind momentan 0 Sitteraufträge offen!");
                 } else {
-                    chan.SendChanMsg(SitterSpamColor+"Es sind momentan " + offen + " Sitteraufträge offen! https://www.ancient-empires.de/schaftool/index.php?action=sitter_login&from=sitter_view&jobid=" + jobid);
+					chan.SendChanMsg(SitterSpamColor + "Es sind momentan " + offen + " Sitteraufträge offen! " + baseUrl + "index.php?action=sitter_login&from=sitter_view&jobid=" + jobid);
                 }
             if (verbose && naechster!=DateTime.MinValue) {
                 TimeSpan s = naechster - DateTime.Now;
-                chan.SendChanMsg("Der nächste Sitterauftrag ist um " + naechster.ToShortTimeString() + " (in " + s.ToString("hh:mm:ss") + ")");
+				chan.SendChanMsg("Der nächste Sitterauftrag ist um " + naechster.ToString("HH:mm:ss") + " (in " + s.ToString("hh\\:mm\\:ss") + ")");
             }
 		}
 		void FlottenSpam(bool verbose) {
