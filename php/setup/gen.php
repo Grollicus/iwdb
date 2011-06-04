@@ -1,5 +1,5 @@
 <?php
-
+define('dddfd', 'LoneStar');
 require "../Settings.php";
 require "$sourcedir/Commons.php";
 
