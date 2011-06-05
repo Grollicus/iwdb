@@ -29,14 +29,14 @@
 			if($sitter)
 				$loginurl .= '&pswd='.EscapeO(rawurlencode(utf8_decode($victim[1])));
 			else
-				$loginurl.= '&pswd='.EscapeO(rawurlencode(utf8_decode($victim[1])));
+				$loginurl.= '&pswd='.EscapeO(rawurlencode(utf8_decode($victim[2])));
 		} else {
 			$loginurl = 'http://www.crystalwars.de/index.php?action=login&submit_data=1';
 			if($sitter)
 				$loginurl .= '&login_sitter=1';
 			$loginurl .= '&login_name='.EscapeOU($victim[0]);
 			if($sitter)
-				$loginurl .= '&login_pswd='.EscapeOU(rawurlencode(utf8_decode($victim[2])));
+				$loginurl .= '&login_pswd='.EscapeOU(rawurlencode(utf8_decode($victim[1])));
 			else
 				$loginurl.= '&login_pswd='.EscapeO(rawurlencode(utf8_decode($victim[2])));
 		}

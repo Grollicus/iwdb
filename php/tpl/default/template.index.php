@@ -92,6 +92,7 @@ if(!function_exists('TemplateHtmlHeader')) {
 	<meta name="description" content="StonedSheep - IWDB" />
 	<title>StonedSheep-DB</title>
 	<link rel="stylesheet" type="text/css" href="'.$themeurl.'/style.css" />
+	<link rel="icon" href="favicon.png" type="image/png" />
 	<script type="text/javascript"><!-- // --><![CDATA[
 		var themeurl = "', $themeurl, '";
 		var scriptinterface = "', $scripturl, '/scriptinterface.php";
@@ -164,7 +165,7 @@ if (!function_exists('TemplateFooter'))
 		if($content['debug_mode'] >= 1) {
 			echo '
 		<hr style="margin-top:20px;" />
-		It is now ', FormatDate(time()), ' (', microtime(true), ')<br />
+		It is now ', FormatDate(time()), ' (', time(), ')<br />
 		Needed '.number_format(microtime(true)-$starttime,3).' secs for this useless stuff<br />
 		Browser: ', $_SERVER['HTTP_USER_AGENT'];
 			if($content['debug_mode'] >= 2) {
