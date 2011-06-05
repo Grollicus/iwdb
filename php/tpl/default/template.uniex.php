@@ -2,17 +2,23 @@
 	if(!defined('dddfd'))
 		die();
 	function TemplateUniViewEx() {
-		global $content;
+		global $content, $themeurl;
 		
 		echo '<table width="99%" cellpadding="0" cellspacing="0" border="0">
 			<tr><td colspan="', $content['uni']['columns'], '">
 				<table width="100%" border="0" style="border: none;" class="subtable"><tr><td align="left" style="width: 90px;">', $content['uni']['hasPrevLink'] ? '<a href="'.$content['uni']['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td>
 				<th align="center">Universumsansicht</th>
 				<td align="right" style="width: 90px;">', $content['uni']['hasNextLink'] ? '<a href="'.$content['uni']['nextLink'].'">Nächste Seite</a>' : 'Nächste Seite', '</td></tr></table>
-			</td></tr><tr>';
+			</td></tr><tr style="white-space:nowrap;">';
 		foreach($content['uni']['titles'] as $title) {
 			if(!$title['hidden'])
-				echo '<th title="', $title['desc'], '">', $title['title'], '</th>';
+				echo '<th title="', $title['desc'], '">',
+					$title['hasImage'] ? '<img src="'.$themeurl.'/img/'.$title['image'].'" />' : '', 
+					$title['hasLink'] ? '<a href="'.$title['link'].'">' : '' , 
+					$title['title'], 
+					$title['hasLink'] ? '</a>' : '',
+					$title['hasImage'] ? '<img src="'.$themeurl.'/img/'.$title['image'].'" />' : '',
+					 '</th>';
 		}
 		echo '</tr>';
 		foreach($content['uni']['data'] as $row) {

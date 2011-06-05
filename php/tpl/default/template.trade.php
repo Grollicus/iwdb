@@ -1,4 +1,4 @@
-<?
+<?php
 	if(!defined('dddfd'))
 		exit();
 	function TemplateTradeList() {
