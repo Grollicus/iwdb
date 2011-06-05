@@ -21,15 +21,15 @@ function HighScore() {
 	$content['hs'][] = array('title' => 'Sitterzeit', 'data' => $arr);
 	
 	$qs = array(
-		'Eisen' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vFe) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
-		'Stahl' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vSt) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
-		'VV4A' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vVv) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
-		'Chemie' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vCh) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
-		'Eis' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vEi) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
-		'Wasser' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vWa) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
-		'Energie' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vEn) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
-		'FP' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, fp AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
-		'Credits' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vCr) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
+		'Eisen' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vFe) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
+		'Stahl' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vSt) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
+		'VV4A' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vVv) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
+		'Chemie' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vCh) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
+		'Eis' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vEi) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
+		'Wasser' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vWa) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
+		'Energie' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vEn) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
+		'FP' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, fp AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
+		'Credits' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vCr) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,5"),
 	);
 	
 	foreach($qs as $title => $qry) {
