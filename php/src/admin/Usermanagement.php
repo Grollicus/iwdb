@@ -9,7 +9,7 @@
 			die('Epic fail.');
 		
 		if(isset($_GET['new'])) {
-			DBQuery("INSERT INTO {$pre}igm_data VALUES ()", __FILE__, __LINE__);
+			DBQuery("INSERT INTO {$pre}igm_data (lastLogin) VALUES (".time().")", __FILE__, __LINE__);
 			$igmid = mysql_insert_id();
 			DBQuery("INSERT INTO {$pre}users (userName, igmuser) VALUES ('".EscapeDB(Param('name'))."', {$igmid})", __FILE__, __LINE__);
 		}
