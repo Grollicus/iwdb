@@ -91,7 +91,7 @@ if(!function_exists('TemplateHtmlHeader')) {
 	<meta name="description" content="StonedSheep - IWDB" />
 	<title>StonedSheep-DB</title>
 	<link rel="stylesheet" type="text/css" href="'.$themeurl.'/style.css" />
-	<link rel="icon" href="favicon.png" type="image/png">
+	<link rel="icon" href="favicon.png" type="image/png" />
 	<script type="text/javascript"><!-- // --><![CDATA[
 		var themeurl = "', $themeurl, '";
 		var scriptinterface = "', $scripturl, '/scriptinterface.php";

@@ -87,6 +87,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<meta name="description" content="StonedSheep - IWDB" />
+	<link rel="icon" href="favicon.png" type="image/png" />
 	<title>', $spiel == 'iw' ? 'IW' : 'CW', ' - ', $content['accName'], ' - StonedSheep-DB</title>
 </head>
 ';
