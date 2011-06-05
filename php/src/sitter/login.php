@@ -178,7 +178,8 @@
 	}
 	
 	function SitterUtilJobDone() {
-		global $pre, $ID_MEMBER, $content;
+		global $pre, $ID_MEMBER, $content, $user;
+		
 		$id = intval($_REQUEST['id']);
 		$job = DBQueryOne("SELECT sitter.ID, sitter.done, users.visibleName, sitter.igmid, igm_data.igmname, 
 		sitter.time, sitter.type, techtree_items.Name, sitter.stufe, universum.gala, universum.sys, universum.pla,
@@ -228,7 +229,8 @@
 		
 		DBQuery("UPDATE {$pre}sitter SET done=1 WHERE id=".$id, __FILE__, __LINE__);
 		DBQuery("INSERT INTO {$pre}sitterlog (userid, victimid, type, time, text) VALUES ({$ID_MEMBER}, ".$job[0].", 'auftrag', ".time().", '{$text}')", __FILE__, __LINE__);
-		DBQuery("UPDATE {$pre}users SET sitterpts=sitterpts+1 WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
+		if($id != $user['igmuser'])
+			DBQuery("UPDATE {$pre}users SET sitterpts=sitterpts+1 WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
 		
 		$_GET['id'] = 0;
 		SitterUtilJobView();

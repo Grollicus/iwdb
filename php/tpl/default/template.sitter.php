@@ -170,8 +170,8 @@
 		if(isset($content['msg'])) {
 			echo '<div class="imp">', $content['msg'], '</div>';
 		}
-	if(isset($content['smsg'])) {
-			echo '<div class="simp">', $content['msg'], '</div>';
+		if(isset($content['smsg'])) {
+			echo '<div class="simp">', $content['smsg'], '</div>';
 		}
 		if($content['hasjob']) {
 			echo '
