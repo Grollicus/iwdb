@@ -73,7 +73,7 @@ function TemplateInit ( $templateName )
 		
 #The Template is there now, it's time for adding some default
 #Stuff might be needed within the template
-		if (file_exists($themedir.'/'.$user['theme'].'/template.index.php'))
+	if (file_exists($themedir.'/'.$user['theme'].'/template.index.php'))
 		require_once($themedir.'/'.$user['theme'].'/template.index.php');
 	//Doesnt exist? Then fall back to the default one
 	elseif (file_exists($themedir.'/default/template.index.php'))

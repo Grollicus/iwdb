@@ -140,8 +140,15 @@
 	function TemplateSitterUtilLinks() {
 		global $content, $scripturl;
 		echo '
-			<div class="sitterutil_links" style="text-align: ', $content['position'] ,';">
-				', $content['hasExitLink'] ? '<a target="_top" href="'.$content['exitLink'].'">Zur&uuml;ck</a> --' : ' <span title="Wie lange der Account nicht mehr gesittet wurde" class="'.$content['nextLoginColor'].'" style="left:0px; width:30px; position:absolute;">&nbsp;</span>', '
+			<div class="sitterutil_links" style="text-align: ', $content['position'] ,';">';
+			if(!$content['hasExitLink']) {
+				echo '<div style="bottom:0px; left: 35px; position:absolute;"><select size="1" style="font-size:smaller;" id="loginSelect">';
+				foreach($content['userLogins'] as $user) {
+					echo '<option value="', $user['value'], '" ', $user['isSelected'] ? 'selected="selected"' : '', '>', $user['name'], '</option>';
+				}
+				echo '</select><button onclick="var s = getElById(\'loginSelect\');parent.location.href=s.options[s.selectedIndex].value;" style="font-size:smaller;">Login</button></div>';
+			}
+			echo $content['hasExitLink'] ? '<a target="_top" href="'.$content['exitLink'].'">Zur&uuml;ck</a> --' : ' <span title="Wie lange der Account nicht mehr gesittet wurde" class="'.$content['nextLoginColor'].'" style="left:0px; width:30px; position:absolute;">&nbsp;</span>', '
 				<a href="'.$scripturl.'/index.php?action=sitterutil_job'.$content['params'].'">Sitteraufträge</a> --
 				<a href="'.$scripturl.'/index.php?action=sitterutil_newscan'.$content['params'].'">Scans einlesen</a> --
 				<a href="'.$scripturl.'/index.php?action=sitterutil_trade'.$content['params'].'">Handel</a> -- 
@@ -160,6 +167,9 @@
 		TemplateHtmlHeader();
 		echo '<body><div class="sitterutil_box">';
 		if(isset($content['msg'])) {
+			echo '<div class="imp">', $content['msg'], '</div>';
+		}
+	if(isset($content['smsg'])) {
 			echo '<div class="simp">', $content['msg'], '</div>';
 		}
 		if($content['hasjob']) {
@@ -169,19 +179,19 @@
 				var bs = getElById("bauschleife");
 				if(bs) {
 					if(bs.value == "") {
-						alert("Bauschleife nicht angegeben!");
+						alert("Für den Sitterauftrag gibt es einen Folgeauftrag, gib deshalb bitte die aktuelle Bauschleife an, damit die Zeit für den Folgeauftrag berechnet werden kann!");
 						return false;
 					}
 				}
 				return confirm("Sitterauftrag wirklich erledigt?");
 			}
 		// ]]></script>
-		<h2>', $content['longType'], '</h2><form action="', $content['formAction'], '" method="post"><table border="1" align="center" width="100%">
+		<form action="', $content['formAction'], '" method="post"><table border="1" align="center" width="100%">
 			<tr align="left"><th>Zeit:</th><td>', $content['time'], '</td></tr>
 			<tr align="left"><th>Planet:</th><td>[', $content['coords'], '] ', $content['planiName'], '</td></tr>
 			<tr align="left"><th>Auftrag:</th><td><b>', $content['longType'], '</b><br />', $content['text'], '</td></tr>';
 			if($content['hasFollowUp']) {
-				echo '<tr><th>Bauschleife</th><td><textarea name="bauschleife" id="bauschleife"></textarea></td></tr>';
+				echo '<tr><th>Bauschleife<br /><i style="font-size:smaller">Strg+a, Strg+c der Bauseite</i></th><td><textarea name="bauschleife" id="bauschleife"></textarea></td></tr>';
 			}
 			echo '
 				<tr><td colspan="2" align="center">

@@ -151,7 +151,6 @@
 		ViewFilteredUniverseEx(array_diff_key($_REQUEST, $_COOKIE), true);
 	}
 	function ViewFilteredUniverseEx($request, $do_show) {
-		
 		global $content, $scripturl, $filter_modules;
 		
 		$data = array();
@@ -256,17 +255,18 @@
 				$req[$k][] = EscapeOU($v);
 			}
 		}
-		$prev_link = '';
-		if($limit >= 50) {
-			$req['limit'] = array($limit - 50);
-			$prev_link = $scripturl.'/index.php?'.ImplodeReq($req);
-		}
+		$req['limit'] = array($limit >= 50 ? $limit - 50 : 0);
+		$prev_link = $scripturl.'/index.php?'.ImplodeReq($req);
 		$req['limit'] = array($limit + 50);
 		$next_link = $scripturl.'/index.php?'.ImplodeReq($req);
+		$req['limit'] = array($limit);
+		unset($req['sortby[]']);
+		unset($req['orders[]']);
+		$current_link = $scripturl.'/index.php?'.ImplodeReq($req);
 		$content['hasResults'] = $do_show;
 
 		if($do_show) {
-			ViewEx($active_mods, $cond, $sortby, $limit, $next_link, $prev_link);
+			ViewEx($active_mods, $cond, $sortby, $limit, $current_link, $next_link, $prev_link);
 		}
 		$content['submitUrl'] = $scripturl. '/?action=uni_view';
 		TemplateInit('uniex');
@@ -572,7 +572,14 @@
 		return StringLikeFilter('gebs.name', 'scan_geb', $req);
 	}
 	
-	function ViewEx(array $active_mods, $where_condition, array $order, $limit_min, $next_link = '', $previous_link = '') {
+	//$active_mods = array (keys of $modules)
+	//$where_condition = string to filter results (SQL) - without WHERE
+	//$order = array('columy by which to sort' => >0 if DESC)
+	//$limit_min = int lower bound, upper will be $limit_mit+50
+	//$current_link = string complete link to the current page - without order
+	//$next_link = string complete link to next page
+	//previous_link = string complete link to previous page
+	function ViewEx(array $active_mods, $where_condition, array $order, $limit_min, $current_link = '', $next_link = '', $previous_link = '') {
 		//Uni anzeigen beruhend auf Datenmodulen, gefiltert durch Filtermodule
 		//Datenmodul:	-benötigte Tabellen (in der Reihenfolge so dass von uni ausgehend gejoint werden kann) mit einem Verknüpfungstyp
 		//				-benötigte Spalten 
@@ -640,39 +647,40 @@
 		);
 		
 		// $modules = array('modulename' => module, ..);
-		// $module = array('cols' => array(col, col, col...), 'tables' => array(table, table, table));
+		// $module = array('cols' => array(col, col, col, ..), 'tables' => array(table, table, table, ..), 'cb' => 'Callback to format', 'titles' => array(name => title, name => title, name => title, ..);
 		// $table = array('name', jointyp)
 		// $jointyp = 0, wenn left join, 1, wenn inner
+		// $title = array('Title, Column will be hidden if empty', 'Description, shown on mouseover', priority - the more, the more left, 'sort - none if empty'),
 		$modules = array(
 			'coords' => array(
 				'cols' => array('uni.gala', 'uni.sys', 'uni.pla', 'uni.inserttime', 'uni.aktuell', 'uni.planityp'),
 				'tables' => array(array('uni', 0)),
 				'cb' => 'ModCoordsCb',
-				'titles' => array('coords' => array('Koords', 'Koordinaten', 0)),
+				'titles' => array('coords' => array('Koords', 'Koordinaten', 0, 'coords')),
 			),
 			'geo_ch' => array(
 				'cols' => array('geoscans.chemie', 'geoscans.timestamp AS geotime', 'geoscans.reset AS georeset', 'geoscans.gebtimemod'),
 				'tables' => array(array('uni', 0), array('geoscans', 0)),
 				'cb' => 'ModGeoChCb',
-				'titles' => array('geo_ch' => array('rChem%', 'reale Chemiedichte', 11)),
+				'titles' => array('geo_ch' => array('rChem%', 'reale Chemiedichte', 11, 'geo_ch')),
 			),
 			'geo_ei' => array(
 				'cols' => array('geoscans.eis', 'geoscans.timestamp AS geotime', 'geoscans.reset AS georeset', 'geoscans.gebtimemod'),
 				'tables' => array(array('uni', 0), array('geoscans', 0)),
 				'cb' => 'ModGeoEiCb',
-				'titles' => array('geo_ei' => array('rEis%', 'reale Eisdichte', 12)),
+				'titles' => array('geo_ei' => array('rEis%', 'reale Eisdichte', 12, 'geo_ei')),
 			),
 			'geo_fe' => array(
 				'cols' => array('geoscans.eisen', 'geoscans.timestamp AS geotime', 'geoscans.reset AS georeset', 'geoscans.gebtimemod'),
 				'tables' => array(array('uni', 0), array('geoscans', 0)),
 				'cb' => 'ModGeoFeCb',
-				'titles' => array('geo_fe' => array('rEisen%', 'reale Eisendichte', 10)),
+				'titles' => array('geo_fe' => array('rEisen%', 'reale Eisendichte', 10, 'geo_fe')),
 			),
 			'geo_gravilb' => array(
 				'cols' => array('geoscans.gravi', 'geoscans.lbed', 'geoscans.timestamp AS geotime', 'geoscans.reset AS georeset'),
 				'tables' => array(array('uni', 0), array('geoscans', 0)),
 				'cb' => 'ModGeoGraviLbCb',
-				'titles' => array('geo_gravi' => array('Gravi', 'Gravitation', 14), 'geo_lb' => array('Lbed', 'Lebensbedingungen', 13)),
+				'titles' => array('geo_gravi' => array('Gravi', 'Gravitation', 14, 'geo_gravi'), 'geo_lb' => array('Lbed', 'Lebensbedingungen', 13, 'geo_lb')),
 			),
 			'geo_mods' => array(
 				'cols' => array('geoscans.fmod','geoscans.gebmod','geoscans.gebtimemod','geoscans.shipmod','geoscans.shiptimemod', 'geoscans.timestamp AS geotime', 'geoscans.reset AS georeset'),
@@ -690,7 +698,7 @@
 				'cols' => array('uni.ownername', 'userdata.allytag'),
 				'tables' => array(array('uni', 0), array('userdata', 0)),
 				'cb' => 'ModOwnerCb',
-				'titles' => array('owner' => array('Besitzer', 'Besitzername', 2), 'tag' => array('Ally', 'Allianztag', 3)),
+				'titles' => array('owner' => array('Besitzer', 'Besitzername', 2, 'owner'), 'tag' => array('Ally', 'Allianztag', 3, 'ally')),
 			),
 			'planiname' => array(
 				'cols' => array('uni.planiname'),
@@ -702,7 +710,7 @@
 				'cols' => array('uni.planityp', 'uni.objekttyp'),
 				'tables' => array(array('uni', 0)),
 				'cb' => 'ModTypesCb',
-				'titles' => array('planityp' => array('Planityp', 'Planetentyp', 6), 'objekttyp' => array('Objekttyp', 'Objekttyp', 7)),
+				'titles' => array('planityp' => array('Planityp', 'Planetentyp', 6, 'planityp'), 'objekttyp' => array('Objekttyp', 'Objekttyp', 7, 'objecttype')),
 			),
 			'scan_gebs' => array(
 				//'cols' => array("(SELECT GROUP_CONCAT(scans_gebs.anzahl, '|', gebs.name SEPARATOR '/') FROM ({$pre}scans_gebs As scans_gebs INNER JOIN {$pre}gebs AS gebs on scans_gebs.gebid=gebs.id) WHERE scans_gebs.scanid=(SELECT id FROM {$pre}scans AS scans WHERE scans.gala=uni.gala AND scans.sys=uni.sys AND scans.pla=uni.pla AND scans.typ='geb' ORDER BY time DESC LIMIT 0,1) GROUP BY scans_gebs.scanid) AS scan_gebs"),
@@ -788,6 +796,10 @@
 					'title' => $title[0],
 					'desc' => $title[1],
 					'num' => $title[2],
+					'hasLink' => !empty($title[3]),
+					'link' => !empty($title[3]) ? $current_link.'&amp;sortby[]='.$title[3].'&amp;orders[]='.((isset($order[$title[3]]) && $order[$title[3]]) <= 0 ? '1' : '0') : '',
+					'hasImage' => !empty($title[3]) && isset($order[$title[3]]),
+					'image' => (!empty($title[3]) && isset($order[$title[3]]) && $order[$title[3]]) <= 0 ? 'down.png' : 'up.png',
 				);
 				if(!empty($title[0]))
 					$title_count++;

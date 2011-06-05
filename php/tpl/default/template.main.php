@@ -177,4 +177,40 @@
 		echo '<div class="content">', $content['text'], '</div>';
 		TemplateFooter();
 	}
+	
+	function TemplateHighscore() {
+		global $content;
+		TemplateHeader();
+		TemplateMenu();
+		echo '<div class="content">';
+		
+		$i = 0;
+		foreach($content['hs'] as $hs) {
+			switch ($i++ % 3) {
+				case 0:
+					echo '<table style="float:left; min-width:150px; margin-right:5px;">';
+					break;
+				case 1:
+					if($i == 11)
+						echo '<table style="margin-right: 5px; min-width:150px;">';
+					else
+						echo '<table style="float:left; margin-right: 5px; min-width:150px;">';
+					break;
+				case 2:
+					echo '<table style="min-width:150px;">';
+					break;
+			}
+			echo '<tr><th colspan="2">', $hs['title'], '</th></tr>';
+			foreach($hs['data'] as $line) {
+				echo '<tr><td>', $line['name'], '</td><td>', $line['value'], '</td></tr>';
+			}
+			echo '</table>';
+			if(($i % 3) == 0) {
+				echo '<br />';
+			}
+		}
+		
+		echo '</div>';
+		TemplateFooter();
+	}
 ?>

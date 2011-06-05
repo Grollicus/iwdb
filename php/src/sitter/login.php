@@ -17,7 +17,9 @@
 			die("noe.");
 		
 		$now = time();
+		$last = DBQueryOne("SELECT lastLogin FROM {$pre}igm_data WHERE ID={$id}", __FILE__, __LINE__);
 		DBQuery("UPDATE {$pre}igm_data SET lastLogin={$now} WHERE ID={$id}", __FILE__, __LINE__);
+		DBQuery("UPDATE {$pre}users SET sittertime=sittertime+".($now-$last)." WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
 		
 		if($spiel == 'iw')  {
 			$loginurl = 'http://www.icewars.de/index.php?action=login&submit=1';
@@ -115,7 +117,53 @@
 		TemplateSitterLogin();
 	}
 	
-
+	function SitterUtilPrepare() {
+		global $content, $pre, $scripturl, $params;
+		
+		$lastLogin = intval($_REQUEST['lastLogin']);
+		$content['nextLoginColor'] = LastLoginColor($lastLogin);
+		$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+		$uid = intval($_REQUEST['uid']);
+		$content['uid'] = $uid;
+		$from = EscapeO(Param('from'));
+		$pos = $_GET['pos'] == 'left' ? 'left' : 'right';
+		$content['position'] = $pos;
+		$params = "&amp;id={$id}&amp;uid={$uid}&amp;from={$from}&amp;pos={$pos}&amp;lastLogin={$lastLogin}";
+		$content['params'] = $params;
+		$content['hasExitLink'] = ($pos == 'left');
+		
+		if($_REQUEST['pos'] == 'right') {
+			$content['nextLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=next";
+			$content['idleLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=idle";
+			
+			$q = DBQuery("SELECT id, igmname FROM {$pre}igm_data ORDER BY igmname", __FILE__, __LINE__);
+			$content['users'] = array();
+			while($row = mysql_fetch_row($q)) {
+				$content['userLogins'][] = array(
+					'name' => EscapeOU($row[1]),
+					'value' => $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=".$row[0],
+					'isSelected' => $row[0] == $uid, 
+				);
+			}
+			
+		} else {
+			$content['exitLink'] = $scripturl. '/index.php?action='. $from;
+			$infos = DBQueryOne("SELECT accounttyp, ikea, mdp FROM {$pre}igm_data WHERE ID={$uid}", __FILE__, __LINE__);
+			$accTypes = array(
+				'fle' => array('<b>F</b>', 'Dieser Account ist ein Fleeter-Account'),
+				'bud' => array('B', 'Dieser Account ist ein Buddler-Account'),
+				'mon' => array('M', 'Dieser Account ist ein Monarch-Account'),
+				'all' => array('A', 'Dieser Account ist ein Allrounder-Account'),
+			);
+			$content['accountInfo'] = array(
+				'type' => $accTypes[$infos[0]][0],
+				'typeDesc' => $accTypes[$infos[0]][1],
+				'ikea' => $infos[1] != 0,
+				'mdp' => $infos[2] !=0,
+			);
+		}
+	}
+	
 	function SitterUtilJob() {
 		
 		if(isset($_REQUEST['done'])) {
@@ -130,7 +178,7 @@
 	}
 	
 	function SitterUtilJobDone() {
-		global $pre, $ID_MEMBER;
+		global $pre, $ID_MEMBER, $content;
 		$id = intval($_REQUEST['id']);
 		$job = DBQueryOne("SELECT sitter.ID, sitter.done, users.visibleName, sitter.igmid, igm_data.igmname, 
 		sitter.time, sitter.type, techtree_items.Name, sitter.stufe, universum.gala, universum.sys, universum.pla,
@@ -148,8 +196,13 @@
 		
 		if(isset($_REQUEST['bauschleife'])) {
 			$coords = $job[9].':'.$job[10].':'.$job[11];
+			$bs = ParseIWBuildingQueue(Param('bauschleife'), $coords);
+			if($bs === false || count($bs) == 0) {
+				$content['msg'] = 'Konnte mit der Bauschleife nichts anfangen!';
+				SitterUtilJobView();
+				return;
+			}
 			$q = DBQuery("SELECT sitter.ID, sitter.usequeue FROM {$pre}sitter AS sitter WHERE FollowUpTo={$id}", __FILE__, __LINE__);
-			$bs = ParseIWBuildingQueue(Param('bauschleife'), $coords); 
 			while($row = mysql_fetch_row($q)) {
 				if(count($bs) == 0) {
 					$time = $job[5];
@@ -174,7 +227,8 @@
 		$text .= EscapeDBU(SitterText($job));
 		
 		DBQuery("UPDATE {$pre}sitter SET done=1 WHERE id=".$id, __FILE__, __LINE__);
-		DBQUery("INSERT INTO {$pre}sitterlog (userid, victimid, type, time, text) VALUES ({$ID_MEMBER}, ".$job[0].", 'auftrag', ".time().", '{$text}')", __FILE__, __LINE__);
+		DBQuery("INSERT INTO {$pre}sitterlog (userid, victimid, type, time, text) VALUES ({$ID_MEMBER}, ".$job[0].", 'auftrag', ".time().", '{$text}')", __FILE__, __LINE__);
+		DBQuery("UPDATE {$pre}users SET sitterpts=sitterpts+1 WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
 		
 		$_GET['id'] = 0;
 		SitterUtilJobView();
@@ -186,27 +240,7 @@
 		$uid = intval($_REQUEST['uid']);
 		$from = EscapeO(Param('from'));
 		$pos = $_GET['pos'] == 'left' ? 'left' : 'right';
-		$lastLogin = intval($_REQUEST['lastLogin']);
 		$params = "&amp;id={$id}&amp;uid={$uid}&amp;from={$from}&amp;pos={$pos}&amp;lastLogin={$lastLogin}";
-		if($pos == 'right') {
-			$content['nextLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=next";
-			$content['idleLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=idle";
-		} else {
-			$infos = DBQueryOne("SELECT accounttyp, ikea, mdp FROM {$pre}igm_data WHERE ID={$uid}", __FILE__, __LINE__);
-			$accTypes = array(
-				'fle' => array('<b>F</b>', 'Dieser Account ist ein Fleeter-Account'),
-				'bud' => array('B', 'Dieser Account ist ein Buddler-Account'),
-				'mon' => array('M', 'Dieser Account ist ein Monarch-Account'),
-				'all' => array('A', 'Dieser Account ist ein Allrounder-Account'),
-			);
-			$content['accountInfo'] = array(
-				'type' => $accTypes[$infos[0]][0],
-				'typeDesc' => $accTypes[$infos[0]][1],
-				'ikea' => $infos[1] != 0,
-				'mdp' => $infos[2] !=0,
-			);
-		}
-		$content['nextLoginColor'] = LastLoginColor($lastLogin);
 		$content['params'] = $params;
 		$content['position'] = $pos;
 		
@@ -257,46 +291,19 @@
 	}
 	
 	function SitterUtilJobView() {
-		global $content, $ID_MEMBER, $pre, $scripturl, $sourcedir;
+		global $content, $ID_MEMBER, $pre, $scripturl, $params;
 		$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-		$uid = intval($_REQUEST['uid']);
-		$from = EscapeO(Param('from'));
-		$pos = $_GET['pos'] == 'left' ? 'left' : 'right';
-		$lastLogin = intval($_REQUEST['lastLogin']);
-		$params = "&amp;id={$id}&amp;uid={$uid}&amp;from={$from}&amp;pos={$pos}&amp;lastLogin={$lastLogin}";
-		$content['params'] = $params;
-		$content['position'] = $pos;
-		$content['hasExitLink'] = ($pos == 'left');
-		$content['exitLink'] = $scripturl. '/index.php?action='. $from;
-		$content['nextLoginColor'] = LastLoginColor($lastLogin);
-		if($pos == 'right') {
-			$content['nextLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=next";
-			$content['idleLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=idle";
-		} else {
-			$infos = DBQueryOne("SELECT accounttyp, ikea, mdp FROM {$pre}igm_data WHERE ID={$uid}", __FILE__, __LINE__);
-			$accTypes = array(
-				'fle' => array('<b>F</b>', 'Dieser Account ist ein Fleeter-Account'),
-				'bud' => array('B', 'Dieser Account ist ein Buddler-Account'),
-				'mon' => array('M', 'Dieser Account ist ein Monarch-Account'),
-				'all' => array('A', 'Dieser Account ist ein Allrounder-Account'),
-			);
-			$content['accountInfo'] = array(
-				'type' => $accTypes[$infos[0]][0],
-				'typeDesc' => $accTypes[$infos[0]][1],
-				'ikea' => $infos[1] != 0,
-				'mdp' => $infos[2] !=0,
-			);
-		}
-		
 		if($id == 0) {
+			$uid = intval($_REQUEST['uid']);
 			$id = DBQueryOne("SELECT ID FROM {$pre}sitter WHERE igmid={$uid} AND done=0 AND time <= ".time()." ORDER BY time ASC LIMIT 1", __FILE__, __LINE__);
 			if($id === false) {
 				$id = 0;
 			} else {
-				$content['msg'] = 'Für den Account ist ein Sitterauftrag offen!';
-				$params = "&amp;id={$id}&amp;uid={$uid}&amp;from={$from}&amp;pos={$pos}&amp;lastLogin={$lastLogin}";
+				$content['smsg'] = 'Für den Account ist ein Sitterauftrag offen!';
+				$_GET['id'] = $id; //Ekliger Hack, um die Auftrags-ID in den Prepare() rein zu kriegen
 			}
 		}
+		SitterUtilPrepare();
 		
 		if($id != 0) { //Benutzer bearbeitet grade einen Sitterauftrag
 			$job = DBQueryOne("SELECT sitter.ID, sitter.uid, users.visibleName, sitter.igmid, igm_data.igmname, 
@@ -308,7 +315,7 @@
 		LEFT JOIN ({$pre}techtree_items AS techtree_items) ON sitter.itemid = techtree_items.ID
 	WHERE sitter.ID={$id}", __FILE__, __LINE__);
 			if($job !== false) {
-				require_once dirname(__FILE__)."/view.php";
+				require_once dirname(__FILE__)."/view.php";//need: SitterText
 				$types = array(
 					'Geb' => 'Bauauftrag',
 					'For' => 'Forschungsauftrag',
@@ -336,7 +343,7 @@
 	}
 	
 	function SitterUtilNewscan() {
-		global $content, $sourcedir, $scripturl, $pre;
+		global $content, $sourcedir, $scripturl, $pre, $params;
 		
 		require($sourcedir.'/newscan/main.php');
 		ParseScansEx();
@@ -361,76 +368,21 @@
 		}
 		
 		GenRequestID();
-		$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-		$uid = intval($_REQUEST['uid']);
+		SitterUtilPrepare();
+
 		$from = EscapeO(Param('from'));
-		$pos = $_GET['pos'] == 'left' ? 'left' : 'right';
-		$lastLogin = intval($_REQUEST['lastLogin']);
-		$params = "&amp;id={$id}&amp;uid={$uid}&amp;from={$from}&amp;pos={$pos}&amp;lastLogin={$lastLogin}";
-		$content['params'] = $params;
-		$content['position'] = $pos;
-		$content['hasExitLink'] = ($pos == 'left');
-		$content['exitLink'] = $scripturl. '/index.php?action='. $from;
 		$content['fastPasteTarget'] = $scripturl.'/index.php?action=sitter_login&from='.$from.'&id=next';
 		$content['idlePasteTarget'] = $scripturl.'/index.php?action=sitter_login&from='.$from.'&id=idle';
-		$content['nextLoginColor'] = LastLoginColor($lastLogin);
-		if($pos == 'right') {
-			$content['nextLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=next";
-			$content['idleLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=idle";
-		} else {
-			$infos = DBQueryOne("SELECT accounttyp, ikea, mdp FROM {$pre}igm_data WHERE ID={$uid}", __FILE__, __LINE__);
-			$accTypes = array(
-				'fle' => array('<b>F</b>', 'Dieser Account ist ein Fleeter-Account'),
-				'bud' => array('B', 'Dieser Account ist ein Buddler-Account'),
-				'mon' => array('M', 'Dieser Account ist ein Monarch-Account'),
-				'all' => array('A', 'Dieser Account ist ein Allrounder-Account'),
-			);
-			$content['accountInfo'] = array(
-				'type' => $accTypes[$infos[0]][0],
-				'typeDesc' => $accTypes[$infos[0]][1],
-				'ikea' => $infos[1] != 0,
-				'mdp' => $infos[2] !=0,
-			);
-		}
-		
-		$content['uid'] = $uid;
 		
 		TemplateInit('sitter');
 		TemplateSitterUtilNewscan();
 	}
 
 	function SitterUtilTrade() {
-		global $content, $ID_MEMBER, $scripturl, $pre;
-		$id = intval($_REQUEST['id']);
-		$uid = intval($_REQUEST['uid']);
-		$from = EscapeO(Param('from'));
-		$pos = $_GET['pos'] == 'left' ? 'left' : 'right';
-		$lastLogin = intval($_REQUEST['lastLogin']);
-		$params = "&amp;id={$id}&amp;uid={$uid}&amp;from={$from}&amp;pos={$pos}&amp;lastLogin={$lastLogin}";
-		$content['params'] = $params;
-		$content['position'] = $pos;
-		$content['hasExitLink'] = ($content['position'] == 'left');
-		$content['exitLink'] = $scripturl. '/index.php?action='. $from;
+		global $content, $ID_MEMBER, $scripturl, $pre, $params;
+
+		SitterUtilPrepare();
 		$content['submitUrl'] = $scripturl. '/index.php?action=sitterutil_trade'.$params;
-		$content['nextLoginColor'] = LastLoginColor($lastLogin);
-		if($pos == 'right') {
-			$content['nextLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=next";
-			$content['idleLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=idle";
-		} else {
-			$infos = DBQueryOne("SELECT accounttyp, ikea, mdp FROM {$pre}igm_data WHERE ID={$uid}", __FILE__, __LINE__);
-			$accTypes = array(
-				'fle' => array('<b>F</b>', 'Dieser Account ist ein Fleeter-Account'),
-				'bud' => array('B', 'Dieser Account ist ein Buddler-Account'),
-				'mon' => array('M', 'Dieser Account ist ein Monarch-Account'),
-				'all' => array('A', 'Dieser Account ist ein Allrounder-Account'),
-			);
-			$content['accountInfo'] = array(
-				'type' => $accTypes[$infos[0]][0],
-				'typeDesc' => $accTypes[$infos[0]][1],
-				'ikea' => $infos[1] != 0,
-				'mdp' => $infos[2] !=0,
-			);
-		}
 		
 		if(isset($_REQUEST['ignore']) && CheckRequestID()) {
 			DBQuery("INSERT INTO {$pre}trade_ignores (id, uid, end) VALUES (".intval($_REQUEST['rid']).", {$ID_MEMBER}, ".(time()+604800).") ON DUPLICATE KEY UPDATE end=VALUES(end)", __FILE__, __LINE__);
@@ -487,35 +439,8 @@ FROM (({$pre}trade_reqs AS trade_reqs INNER JOIN {$pre}igm_data AS igm_data ON t
 
 	function SitterUtilLog() {
 		global $content, $pre, $scripturl;
-		$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 		$uid = intval($_REQUEST['uid']);
-		$from = EscapeO(Param('from'));
-		$pos = $_GET['pos'] == 'left' ? 'left' : 'right';
-		$lastLogin = intval($_REQUEST['lastLogin']);
-		$params = "&amp;id={$id}&amp;uid={$uid}&amp;from={$from}&amp;pos={$pos}&amp;lastLogin={$lastLogin}";
-		$content['params'] = $params;
-		$content['position'] = $pos;
-		$content['hasExitLink'] = ($pos == 'left');
-		$content['exitLink'] = $scripturl. '/index.php?action='. $from;
-		$content['nextLoginColor'] = LastLoginColor($lastLogin);
-		if($pos == 'right') {
-			$content['nextLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=next";
-			$content['idleLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=idle";
-		} else {
-			$infos = DBQueryOne("SELECT accounttyp, ikea, mdp FROM {$pre}igm_data WHERE ID={$uid}", __FILE__, __LINE__);
-			$accTypes = array(
-				'fle' => array('<b>F</b>', 'Dieser Account ist ein Fleeter-Account'),
-				'bud' => array('B', 'Dieser Account ist ein Buddler-Account'),
-				'mon' => array('M', 'Dieser Account ist ein Monarch-Account'),
-				'all' => array('A', 'Dieser Account ist ein Allrounder-Account'),
-			);
-			$content['accountInfo'] = array(
-				'type' => $accTypes[$infos[0]][0],
-				'typeDesc' => $accTypes[$infos[0]][1],
-				'ikea' => $infos[1] != 0,
-				'mdp' => $infos[2] !=0,
-			);
-		}
+		SitterUtilPrepare();
 		
 		$q = DBQuery("SELECT users.visibleName, sitterlog.type, sitterlog.time, sitterlog.Text 
 FROM ({$pre}sitterlog AS sitterlog INNER JOIN {$pre}users AS users ON sitterlog.userid = users.ID)
@@ -538,38 +463,12 @@ WHERE sitterlog.victimid=".$uid." ORDER BY time DESC LIMIT 0, 6", __FILE__, __LI
 	}
 	
 	function SitterUtilRess() {
-		global $content, $pre, $scripturl, $user;
+		global $content, $pre, $scripturl, $user, $params;
 		
-		$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+		SitterUtilPrepare();
 		$uid = intval($_REQUEST['uid']);
-		$from = EscapeO(Param('from'));
-		$pos = $_GET['pos'] == 'left' ? 'left' : 'right';
-		$lastLogin = intval($_REQUEST['lastLogin']);
-		$params = "&amp;id={$id}&amp;uid={$uid}&amp;from={$from}&amp;pos={$pos}&amp;lastLogin={$lastLogin}";
-		$content['params'] = $params;
-		$content['position'] = $pos;
-		$content['hasExitLink'] = ($pos == 'left');
-		$content['exitLink'] = $scripturl. '/index.php?action='. $from;
 		$content['submitUrl'] = $scripturl.'/index.php?action=sitterutil_ress'.$params;
-		$content['nextLoginColor'] = LastLoginColor($lastLogin);
-		if($pos == 'right') {
-			$content['nextLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=next";
-			$content['idleLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;from={$from}&amp;id=idle";
-		} else {
-			$infos = DBQueryOne("SELECT accounttyp, ikea, mdp FROM {$pre}igm_data WHERE ID={$uid}", __FILE__, __LINE__);
-			$accTypes = array(
-				'fle' => array('<b>F</b>', 'Dieser Account ist ein Fleeter-Account'),
-				'bud' => array('B', 'Dieser Account ist ein Buddler-Account'),
-				'mon' => array('M', 'Dieser Account ist ein Monarch-Account'),
-				'all' => array('A', 'Dieser Account ist ein Allrounder-Account'),
-			);
-			$content['accountInfo'] = array(
-				'type' => $accTypes[$infos[0]][0],
-				'typeDesc' => $accTypes[$infos[0]][1],
-				'ikea' => $infos[1] != 0,
-				'mdp' => $infos[2] !=0,
-			);
-		}
+		
 		
 		$ress = array(
 			'fe' => 'Eisen',

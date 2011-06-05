@@ -35,6 +35,7 @@ if(!function_exists('TemplateMenu')) {
 			<tr><th>M000h</th></tr>
 			<tr><td><a class="',$content['action'] == 'index' ? 'active' : 'item','" href="', $scripturl, '/?action=index">Index</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'newscanex' ? 'active' : 'item','" href="', $scripturl, '/?action=newscanex">Neuer Bericht</a></td></tr>
+			<tr><td><a class="',$content['action'] == 'hs' ? 'active' : 'item','" href="', $scripturl, '/?action=hs">Top 5</a></td></tr>
 			<tr><th>Universum</th></tr>
 			<tr><td><a class="',$content['action'] == 'uni_map' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_map">Karte</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'uni_view' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_view">Suche</a>';
