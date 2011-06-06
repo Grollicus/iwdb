@@ -32,7 +32,7 @@ function HighScore() {
 		'Eis' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vEi) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,{$cnt}"),
 		'Wasser' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vWa) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,{$cnt}"),
 		'Energie' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vEn) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,{$cnt}"),
-		'FP' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, fp AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,{$cnt}"),
+		'FP' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(fp) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,{$cnt}"),
 		'Credits' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vCr) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,{$cnt}"),
 	);
 	

@@ -242,6 +242,7 @@
 		$uid = intval($_REQUEST['uid']);
 		$from = EscapeO(Param('from'));
 		$pos = $_GET['pos'] == 'left' ? 'left' : 'right';
+		$lastLogin = intval($_REQUEST['lastLogin']);
 		$params = "&amp;id={$id}&amp;uid={$uid}&amp;from={$from}&amp;pos={$pos}&amp;lastLogin={$lastLogin}";
 		$content['params'] = $params;
 		$content['position'] = $pos;
