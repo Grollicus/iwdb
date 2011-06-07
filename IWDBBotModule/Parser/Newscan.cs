@@ -55,6 +55,7 @@ namespace IWDB.Parser {
             parserList.Add(new UniXMLLinkParser(this));
             parserList.Add(new RessTransport(this));
             parserList.Add(new OperaDummyParser(this));
+			parserList.Add(new KBParser(this));
             return parserList;
         }
         public bool HasParser(String comma, String dot, Type t) {
@@ -192,8 +193,13 @@ namespace IWDB.Parser {
                             con.Close();
                         ParserResponse errResp = new ParserResponse();
                         errResp.RespondError("<b>Schwerer Parserfehler:</b><br />" + e.ToString());
-                        toHandle.Answer(errResp.ToString());
-                        toHandle.Handled();
+						try {
+							toHandle.Answer(errResp.ToString());
+							toHandle.Handled();
+						} catch(Exception ex) {
+							IRCeX.Log.WriteException(e);
+							IRCeX.Log.WriteException(ex);
+						}
                     }
                 }
             } finally {

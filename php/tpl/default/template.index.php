@@ -49,6 +49,7 @@ if(!function_exists('TemplateMenu')) {
 			<tr><td><a class="',$content['action'] == 'uni_allyoverview' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_allyoverview">Ally-Gala-&Uuml;bersicht</a></td></tr>
 			<tr><th>Handel</th></tr>
 			<tr><td><a class="',$content['action'] == 'trade_list' ? 'active' : 'item','" href="', $scripturl, '/?action=trade_list">Übersicht</a></td></tr>
+			<tr><td><a class="',$content['action'] == 'raids' ? 'active' : 'item','" href="', $scripturl, '/?action=raids">Raids</a></td></tr>
 			<tr><th>Sitterzeugs</th></tr>
 			<tr><td><a class="',$content['action'] == 'sitter_view' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_view">Sitterauftr&auml;ge <span id="sitter_job_cnt">', $content['sitter_job_cnt'] > 0 ? ' ('.$content['sitter_job_cnt'].')' : '', '</span></a></td></tr>
 			<tr><td><a class="',$content['action'] == 'sitter_list' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_list">Sitterlogins</a></td></tr>
@@ -83,7 +84,7 @@ echo '		<tr><th>&nbsp;</th></tr>
 
 
 if(!function_exists('TemplateHtmlHeader')) {
-	function TemplateHtmlHeader() {
+	function TemplateHtmlHeader($html_header_add = '') {
 		global $themeurl, $user, $scripturl, $content;
 		echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -110,7 +111,7 @@ if(!function_exists('TemplateHtmlHeader')) {
 		window.setTimeout(timerCallback, 120000);
 		', '
 	// ]]></script>
-	<script type="text/javascript" src="', $themeurl, '/dhtml.js"></script>
+	<script type="text/javascript" src="', $themeurl, '/dhtml.js"></script>', $html_header_add, '
 </head>
 ';
 	}
@@ -119,7 +120,7 @@ if(!function_exists('TemplateHtmlHeader')) {
 
 if (!function_exists('TemplateHeader'))
 {
-	function TemplateHeader()
+	function TemplateHeader($html_header_add = '')
 	{
 		global $themeurl, $user, $scripturl, $content, $spiel;
 		TemplateHtmlHeader();
