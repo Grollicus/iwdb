@@ -27,7 +27,7 @@ function HighScore() {
 	$q = DBQuery("SELECT angreifer, SUM(score) AS sum FROM {$pre}raidberichte GROUP BY angreifer ORDER BY sum DESC LIMIT 0,{$cnt}", __FILE__, __LINE__);
 	$arr = array();
 	while($row = mysql_fetch_row($q))
-		$arr[] = array('name' => EscapeOU($row[0]), 'value' => number_format($row[1], 2, ',', '.'));
+		$arr[] = array('name' => EscapeOU($row[0]), 'value' => number_format($row[1], 0, ',', '.'));
 	$content['hs'][] = array('title' => 'Raids', 'data' => $arr);
 	
 	
