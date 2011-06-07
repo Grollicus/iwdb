@@ -281,12 +281,12 @@
 			echo '
 		<form action="', $content['submitUrl'], '" method="post">
 		<table border="1" width="100%">
+<tr><td colspan="2" align="center"><input value="Done" name="fullDone" type="submit" /> -- <input type="text" name="cnt" size="6" /><input type="submit" value="Teilw." name="partDone" /> -- <input type="submit" name="ignore" value="Ignorieren" /></td></tr>
 			<tr><th>Zeit</th><td>', $content['req']['time'], '</td></tr>
 			<tr><th>Ziel</th><td>', $content['req']['ziel'], ' (bei ', $content['req']['user'], ')</td></tr>
 			<tr><th>Priorität</th><td>', $content['req']['priority'], '</td></tr>
 			<tr><th>Bedarf</th><td>(', $content['req']['soll'], '-', $content['req']['ist'], '=)', $content['req']['fehl'], 'x ', $content['req']['nameLong'], '</td></tr>
 			<tr><th>Kommentar</th><td>', $content['req']['comment'], '</td></tr>
-			<tr><td colspan="2"><input value="Done" name="fullDone" type="submit" /> -- <input type="text" name="cnt" size="6" /><input type="submit" value="Teilw." name="partDone" /> -- <input type="submit" name="ignore" value="Ignorieren" /></td></tr>
 		</table>
 		<input type="hidden" name="rid" value="', $content['req']['id'],'" />
 		', ReqID(), '
