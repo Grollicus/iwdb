@@ -188,26 +188,26 @@
 		foreach($content['hs'] as $hs) {
 			switch ($i++) {
 				case 0:
-				case 2:
-				case 5:
-				case 8:
-				case 11:
-					echo '<table style="float:left; min-width:150px; margin-right:5px;">';
-					break;
-				case 1:
 				case 3:
 				case 6:
 				case 9:
 				case 12:
-					if($i == 11 || $i == 2)
-						echo '<table style="margin-right: 5px; min-width:150px;">';
-					else
-						echo '<table style="float:left; margin-right: 5px; min-width:150px;">';
+					echo '<table style="float:left; min-width:150px; margin-right:5px;">';
 					break;
-				case 2:
+				case 1:
 				case 4:
 				case 7:
 				case 10:
+				case 13:
+					//if($i == 11 || $i == 5)
+					//	echo '<table style="margin-right: 5px; min-width:150px;">';
+					//else
+						echo '<table style="float:left; margin-right: 5px; min-width:150px;">';
+					break;
+				case 2:
+				case 5:
+				case 8:
+				case 11:
 					echo '<table style="min-width:150px;">';
 					break;
 			}
@@ -216,7 +216,7 @@
 				echo '<tr><td>', $line['name'], '</td><td>', $line['value'], '</td></tr>';
 			}
 			echo '</table>';
-			if($i == 2 || $i == 5 || $i == 8) {
+			if($i == 3 || $i == 6 || $i == 9) {
 				echo '<br />';
 			}
 		}

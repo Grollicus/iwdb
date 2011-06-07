@@ -83,6 +83,7 @@
     <Compile Include="Parser\Hauptseite.cs" />
     <Compile Include="IWDBBotModule.cs" />
     <Compile Include="IWDBUtils.cs" />
+    <Compile Include="Parser\KBParser.cs" />
     <Compile Include="Parser\Newscan.cs" />
     <Compile Include="Parser\IWDBParser.cs" />
     <Compile Include="Parser\ResskoloUebersicht.cs" />

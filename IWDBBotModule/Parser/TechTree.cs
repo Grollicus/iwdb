@@ -445,6 +445,20 @@ abstract class TechtreeItem {
 			Eisen = Stahl = Chemie = VV4A = Eis = Wasser = Energie = Credits = Bev = FP = 0;
 			Sonstiges = "";
 		}
+		public static ResourceSet operator -(ResourceSet rs1, ResourceSet rs2) {
+			ResourceSet ret = new ResourceSet();
+			ret.Eisen = rs1.Eisen-rs2.Eisen;
+			ret.Stahl = rs1.Stahl-rs2.Stahl;
+			ret.Chemie = rs1.Chemie-rs2.Chemie;
+			ret.VV4A = rs1.VV4A-rs2.VV4A;
+			ret.Eis = rs1.Eis-rs2.Eis;
+			ret.Wasser = rs1.Wasser-rs2.Wasser;
+			ret.Energie = rs1.Energie-rs2.Energie;
+			ret.Credits = rs1.Credits-rs2.Credits;
+			ret.Bev = rs1.Bev-rs2.Bev;
+			ret.FP = rs1.FP-rs2.FP;
+			return ret;
+		}
 		public void Set(String name, String value) {
 			switch (name) {
 				case "Eisen":
@@ -487,7 +501,7 @@ abstract class TechtreeItem {
 			}
 		}
         public void Set(int num, String value) {
-            float val = float.Parse(value);
+			float val = float.Parse(value);
             switch (num) {
                 case 0:
                     Eisen = val;
@@ -518,6 +532,13 @@ abstract class TechtreeItem {
 				Set(id - 1, n.SelectSingleNode("anzahl").InnerText);
 			}
 		}
+		public void ParseXmlKb(XmlNode ressourcenXml) {
+			foreach(XmlNode n in ressourcenXml.SelectNodes("resource")) {
+				int id = int.Parse(n.SelectSingleNode("id").Attributes["value"].InnerText);
+				Set(id - 1, n.SelectSingleNode("anzahl").Attributes["value"].InnerText);
+			}
+		}
+		public float RaidScore { get { return Eisen * 1 + Stahl * 2 + Chemie * 1.5f + Eis * 2 + Wasser * 4 + Energie; } }
 	}
 	class TechtreeItemStufe {
 		public int Stufe;

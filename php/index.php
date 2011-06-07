@@ -87,6 +87,7 @@ function Main()
 	'logout' => array('core/LoginOut.php','Logout'),
 	'mysql' => array('admin/mysql.php', 'MySQLClient'),
 	'newscanex' => array('newscan/main.php', 'NewscanEx'),
+	'raids' => array('kbs/raids.php', 'RaidOverview'),
 	'ressuserlist' => array('ress/list.php', 'RessUserList'),
 	'settingsex' => array('core/UserSettingsEx.php', 'UserSettingsEx'),
 	'scans_view' => array('scans/view.php', 'ScansView'), //scheint nicht verwendet zu werden
