@@ -230,7 +230,7 @@
 		
 		DBQuery("UPDATE {$pre}sitter SET done=1 WHERE id=".$id, __FILE__, __LINE__);
 		DBQuery("INSERT INTO {$pre}sitterlog (userid, victimid, type, time, text) VALUES ({$ID_MEMBER}, ".$job[0].", 'auftrag', ".time().", '{$text}')", __FILE__, __LINE__);
-		if($id != $user['igmuser'])
+		if($job[3] != $user['igmuser'])
 			DBQuery("UPDATE {$pre}users SET sitterpts=sitterpts+1 WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
 		
 		$_GET['id'] = 0;
@@ -238,7 +238,7 @@
 	}
 	
 	function SitterUtilJobMove() {
-		global $pre, $user, $scripturl, $content, $user;
+		global $pre, $user, $scripturl, $content, $user, $ID_MEMBER;
 		$id = intval($_REQUEST['id']);
 		$uid = intval($_REQUEST['uid']);
 		$from = EscapeO(Param('from'));
@@ -255,13 +255,14 @@
 				$time = ParseTime($_REQUEST['zeit1']);
 			}
 			if(!empty($_REQUEST['bauschleife'])) {
-				$c = DBQueryOne("SELECT sitter.time, sitter.usequeue, universum.gala, universum.sys, universum.pla
+				$c = DBQueryOne("SELECT sitter.time, sitter.usequeue, universum.gala, universum.sys, universum.pla, sitter.igmid
 	FROM ({$pre}sitter AS sitter LEFT JOIN {$pre}universum AS universum ON sitter.planID = universum.ID)
 	WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 				$coords = $c[2].':'.$c[3].':'.$c[4];
 				$bs = ParseIWBuildingQueue(Param('bauschleife'), $coords);
 				if(count($bs) == 0 || $bs === false) {
 					$time = $c[0];
+					$content['msg'] = 'Konnte mit der angegebenen Bauschleife nix anfangen!';
 				} else {
 					if($c[1] == '1') {
 						$time = $bs[0];
@@ -271,10 +272,17 @@
 				}
 			}
 			if($time !== false) {
+				$dta = DBQueryOne("SELECT sitter.time, sitter.igmid
+FROM ({$pre}sitter AS sitter LEFT JOIN {$pre}universum AS universum ON sitter.planID = universum.ID)
+WHERE sitter.ID = {$id}", __FILE__, __LINE__);
+				if(($time-$dta[0]) > 300 && $dta[1] != $user['igmuser'] && $time > time()) {
+					DBQuery("UPDATE {$pre}users SET sitterpts=sitterpts+1 WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
+				}
+				
 				$update .= "time={$time}, ";
 			}
 			if(!empty($_REQUEST['kommentar'])) {
-				$text = "\nKommentar von ".$user['visibleName'].":".EscapeDB($_REQUEST['kommentar']);
+				$text = "\nKommentar von ".$user['visibleName'].": ".EscapeDB($_REQUEST['kommentar']);
 				$update .= "notes=CONCAT(notes,'{$text}'), ";
 			}
 			if(strlen($update) > 0) {
