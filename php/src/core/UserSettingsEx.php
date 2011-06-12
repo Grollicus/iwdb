@@ -159,6 +159,15 @@ if(!defined('dddfd'))
 			'prepare' => 'CbPrepareMdp',
 			'evaluate' => 'CbEvaluateMdp',
 		),
+		'iwsa' => array(
+			'name' => 'IWSA',
+			'desc' => '',
+			'table' => 'igm_data',
+			'col' => 'iwsa',
+			'isValid' => 'CbValidateNoSettings',
+			'prepare' => 'CbPrepareIwsa',
+			'evaluate' => 'CbEvaluateIwsa',
+		),
 		'tsdTrennZeichen' => array (
 			'name' => 'Tausendertrennzeichen',
 			'desc' => 'das Leerzeichen in 1 000 000',
@@ -462,6 +471,12 @@ if(!defined('dddfd'))
 	}
 	function CbEvaluateMdp() {
 		return "mdp=".(isset($_REQUEST['mdp']) ? "'1', " : "'0', ");
+	}
+	function CbPrepareIwsa($dta) {
+		return isset($_REQUEST['submit']) ? isset($_REQUEST['iwsa']) : $dta['iwsa'];
+	}
+	function CbEvaluateIwsa() {
+		return "iwsa=".(isset($_REQUEST['iwsa']) ? "'1', " : "'0', ");
 	}
 	function CbValidateTsdTrennz() {
 		global $content;

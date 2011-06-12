@@ -55,9 +55,17 @@ namespace IWDB.Parser {
 				bauCleanup.Prepare();
 				bauCleanup.ExecuteNonQuery();
 
+				MySqlCommand iwsaQry = new MySqlCommand("SELECT iwsa FROM " + DBPrefix + "igm_data WHERE ID=?id", con);
+				iwsaQry.Parameters.Add("?id", MySqlDbType.UInt32).Value = uid;
+				iwsaQry.Prepare();
+				bool iwsa = (bool)iwsaQry.ExecuteScalar();
+
 				MySqlCommand qry = new MySqlCommand("INSERT INTO " + DBPrefix + "building (uid, plani, end) VALUES (?uid, 0, ?end)", con);
 				qry.Parameters.Add("?uid", MySqlDbType.UInt32).Value = uid;
-				qry.Parameters.Add("?end", MySqlDbType.UInt32).Value = IWDBUtils.parseIWTime(timeMatch.Groups[1].Value);
+				if(iwsa)
+					qry.Parameters.Add("?end", MySqlDbType.UInt32).Value = IWDBUtils.parseIWTime(timeMatch.Groups[1].Value) + 10800;
+				else
+					qry.Parameters.Add("?end", MySqlDbType.UInt32).Value = IWDBUtils.parseIWTime(timeMatch.Groups[1].Value);
 				qry.Prepare();
 				qry.ExecuteNonQuery();
 

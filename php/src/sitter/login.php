@@ -148,7 +148,7 @@
 			
 		} else {
 			$content['exitLink'] = $scripturl. '/index.php?action='. $from;
-			$infos = DBQueryOne("SELECT accounttyp, ikea, mdp FROM {$pre}igm_data WHERE ID={$uid}", __FILE__, __LINE__);
+			$infos = DBQueryOne("SELECT accounttyp, ikea, mdp, iwsa FROM {$pre}igm_data WHERE ID={$uid}", __FILE__, __LINE__);
 			$accTypes = array(
 				'fle' => array('<b>F</b>', 'Dieser Account ist ein Fleeter-Account'),
 				'bud' => array('B', 'Dieser Account ist ein Buddler-Account'),
@@ -160,6 +160,7 @@
 				'typeDesc' => $accTypes[$infos[0]][1],
 				'ikea' => $infos[1] != 0,
 				'mdp' => $infos[2] !=0,
+				'iwsa' => $infos[3] != 0,
 			);
 		}
 	}

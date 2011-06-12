@@ -106,6 +106,7 @@
 				case 'ipsec':
 				case 'ikea':
 				case 'mdp':
+				case 'iwsa':
 					echo '<td><input type="checkbox" name="', $name, '" value="1" ', $mod['data'] ? 'checked="checked"' : '' ,' /></td>';
 					break;
 				case 'isAdmin':

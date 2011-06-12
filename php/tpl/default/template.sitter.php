@@ -157,7 +157,7 @@
 				<a href="'.$scripturl.'/index.php?action=sitterutil_ress'.$content['params'].'">Ress</a>
 				', !$content['hasExitLink'] 
 					? ' -- <a title="In den nächsten Account mit Leerlauf einloggen" target="_top" href="'.$content['idleLoginLink'].'">LeerlfAcc</a> -- <a title="In den Account einloggen, der am längsten nicht mehr gesittet wurde" target="_top" href="'.$content['nextLoginLink'].'">NxtAcc</a>' 
-					: ' <span title="Wie lange der Account nicht mehr gesittet wurde" class="'.$content['nextLoginColor'].'" style="left:480px; right:0px; position:absolute;text-align:right;">&nbsp;<span title="'.$content['accountInfo']['typeDesc'].'">'.$content['accountInfo']['type'].'</span>'.($content['accountInfo']['ikea'] ? '&nbsp;<span title="Ikea-Account">I</span>':'').($content['accountInfo']['mdp'] ? '&nbsp;<span title="Meister der Peitschen-Account">M</span>':'').'</span>',
+					: ' <span title="Wie lange der Account nicht mehr gesittet wurde" class="'.$content['nextLoginColor'].'" style="left:480px; right:0px; position:absolute;text-align:right;">&nbsp;<span title="'.$content['accountInfo']['typeDesc'].'">'.$content['accountInfo']['type'].'</span>'.($content['accountInfo']['iwsa'] ? '&nbsp;<span title="Supporter-Account">IWSA</span>':'').($content['accountInfo']['ikea'] ? '&nbsp;<span title="Ikea-Account">I</span>':'').($content['accountInfo']['mdp'] ? '&nbsp;<span title="Meister der Peitschen-Account">M</span>':'').'</span>',
 				 '
 			</div>';
 	}
