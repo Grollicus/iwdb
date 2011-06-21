@@ -36,7 +36,10 @@
 				echo '<option value="', $prio, '"', $prio == 0 ? ' selected="selected"' : '', '>', $prio, ' - ', $txt, '</option>';
 			echo '</select>
 		</td></tr>
-		<tr><td>Koords</td><td><input type="text" name="coords" value="" /></td></tr>
+		<tr><td>Koords</td><td><input type="text" name="coords" value="" id="coords" /><select name="planiselect" onchange="getElById(\'coords\').value=this.value;" onkeyup="getElById(\'coords\').value=this.value;">';
+		foreach($content['planis'] as $plani) 
+			echo '<option value="', $plani['text'], '">', $plani['text'], '</option>';
+		echo '</select></td></tr>
 		<tr><td>Anzahl</td><td><input type="text" name="anz" value="" /></td></tr>
 		<tr><td>Kommentar</td><td><input type="text" name="comment" value="" /></td></tr>
 		<tr><td colspan="2"><input type="submit" name="new" /></td></tr>

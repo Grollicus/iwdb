@@ -61,19 +61,20 @@ namespace IWDB {
 		public const String IWPlanetenTyp = @"Steinklumpen|Eisplanet|Gasgigant|Nichts|Asteroid|Elektrosturm|Raumverzerrung|Ionensturm|grav.\sAnomalie";
 		public static String Number { get { return "[0-9" + System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator + "]+"; } }
 		public const String RessourcenName = @"(?:Eisen|Stahl|VV4A|chem\.\sElemente|Eis|Wasser|Energie|Pinguine|Credits|Bevölkerung)";
+		public const String AbladeAktionen = @"Erforscht\sgrade\sseine\sNase|Erklaert\sdie\sInfinitesimalrechnung|Faselt\swas\svon\sWurzelzwergen|Faselt\swirres\sZeug\sins\sInterkom|Hört\sMusik|Im\sLandeanflug|Liegt\sbesoffen\sin\sder\sEcke|Pfeift\sder\sfeschen\sPilotin\shinterher\sund\smacht\skomische\sAndeutungen|Quatscht\smit\sder\sBodenkontrolle|Schaut\sder\sfeschen\sPilotin\shinterher|Sabbert\sdie\sInstrumente\svoll|Surft\sim\sBordnetz|Versucht\sdie\srichtigen\sKnöpfe\sfür\sdie\sLandung\szu\sfinden|Wartet\sauf\sLandeplatz|Wartet\sauf\sWeihnachten|Wurzelzwergen,\süberall\sWurzelzwergen|Wartet\sauf\sWeihnachten";
 	}
-   public class Pair<T1, T2> {
-        public T1 Item1;
-        public T2 Item2;
-        public Pair(T1 item1, T2 item2) {
-            this.Item1 = item1;
-            this.Item2 = item2;
-        }
-        public Pair() {
-            this.Item1 = default(T1);
-            this.Item2 = default(T2);
-        }
-    }
+	public class Pair<T1, T2> {
+		public T1 Item1;
+		public T2 Item2;
+		public Pair(T1 item1, T2 item2) {
+			this.Item1 = item1;
+			this.Item2 = item2;
+		}
+		public Pair() {
+			this.Item1 = default(T1);
+			this.Item2 = default(T2);
+		}
+	}
     
 
     [Flags]

@@ -42,18 +42,25 @@ VALUES (".$user['igmuser'].", ".time().", ".intval($_REQUEST['priority']).", '$r
 					DBQuery("DELETE FROM {$pre}trade_reqs WHERE uid={$ID_MEMBER} AND id IN ({$ids})", __FILE__, __LINE__);
 					break;
 				case 'done':
+					$ids_done = array();
 					foreach($_REQUEST['anz'] as $id => $anz) {
 						if(!empty($anz)) {
-							DBQuery("UPDATE {$pre}trade_reqs SET ist=ist+".intval($anz)." WHERE id=".intval($id), __FILE__, __LINE__);
+							$id = intval($id);
+							DBQuery("UPDATE {$pre}trade_reqs SET ist=ist+".intval($anz)." WHERE id=".$id, __FILE__, __LINE__);
+							$ids_done[] = $id;
 						}
 					}
 					$ids = '';
 					if(isset($_REQUEST['id'])) {
 						foreach($_REQUEST['id'] as $id) {
-							$ids .= intval($id).', ';
+							$i = intval($id);
+							if(!in_array($i, $ids_done))
+								$ids .= $i.', ';
 						}
-						$ids = substr($ids, 0, -2);
-						DBQuery("UPDATE {$pre}trade_reqs SET ist=soll WHERE id IN ($ids)", __FILE__, __LINE__);
+						if($ids != '') {
+							$ids = substr($ids, 0, -2);
+							DBQuery("UPDATE {$pre}trade_reqs SET ist=soll WHERE id IN ($ids)", __FILE__, __LINE__);
+						}
 					}
 					break;
 			}
@@ -82,13 +89,19 @@ VALUES (".$user['igmuser'].", ".time().", ".intval($_REQUEST['priority']).", '$r
 			'Nicht so dringend' => 10,
 			'(fast) total irrelevant' => 20,
 		);
+		$q = DBQuery("SELECT universum.gala, universum.sys, universum.pla, planiname FROM {$pre}universum AS universum INNER JOIN {$pre}igm_data AS igm_data ON universum.ownername=igm_data.igmname WHERE igm_data.ID=".$user['igmuser']." ORDER BY CASE objekttyp WHEN 'Kolonie' THEN 1 ELSE 0 END, universum.gala, universum.sys, universum.pla", __FILE__, __LINE__);
+		$content['planis'] = array(array('text' => 'Plani-Schnellauswahl'));
+		while($row = mysql_fetch_row($q)) {
+			$content['planis'][] = array('text' => "({$row[0]}:{$row[1]}:{$row[2]}) ".EscapeOU($row[3])); 
+		}
+		
 		$prioritys = array(
 			-20 => '++',
 			-10 => '+',
 			  0 => '0',
 			 10 => '-',
 			 20 => '--',
-		); 
+		);
 		
 		
 		$q = DBQuery("SELECT trade_reqs.id,
