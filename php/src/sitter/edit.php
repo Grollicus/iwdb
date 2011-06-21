@@ -369,9 +369,14 @@
 		} else {
 			$s = 0;
 		}
-		if(isset($_REQUEST['planet']) && $_REQUEST['planet'] != '0') {
-			$planid = intval($_REQUEST['planet']);
-			$igmid = intval($_REQUEST['account']);
+		if(isset($_REQUEST['planet']) && $_REQUEST['planet'] != '0' || $row !== false ) {
+			if(isset($_REQUEST['planet']) && $_REQUEST['planet'] != '0') {
+				$planid = intval($_REQUEST['planet']);
+				$igmid = intval($_REQUEST['account']);
+			} else {
+				$planid = $row['planID'];
+				$igmid = $row['igmid'];
+			}
 			$c = DBQueryOne("SELECT gala, sys, pla FROM {$pre}universum WHERE ID={$planid}", __FILE__, __LINE__);
 			$plani = "{$c[0]}:{$c[1]}:{$c[2]}";
 
@@ -404,8 +409,8 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 				$content['stufe'] = array(array('name' => 'Stufe auswählen!', 'id' => 0, 'selected' => false));
 			}
 		} else {
-			$content['stufe'] = array(array('name' => 'Gebäude auswählen!', 'id' => 0, 'selected' => false));
-			$content['gebaeude'] = array(array('name' => 'Plani auswählen!', 'id' => 0, 'selected' => false));
+			$content['stufe'] = array(array('name' => 'Stufe auswählen!', 'id' => 0, 'selected' => false));
+			$content['gebaeude'] = array(array('name' => 'Gebäude auswählen!', 'id' => 0, 'selected' => false));
 		}
 	}
 	function CbValidateForschung() {
