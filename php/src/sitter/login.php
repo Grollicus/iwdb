@@ -70,7 +70,7 @@
 				$id = DBQueryOne("SELECT ID FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
 			} elseif($_GET['id'] == 'idle') {
 				$now = time();
-				$id = DBQueryOne("SELECT building.uid AS uid FROM {$pre}building AS building INNER JOIN {$pre}igm_data AS igm_data ON building.uid=igm_data.ID WHERE igm_data.ikea=0 OR building.plani=0 GROUP BY building.plani ORDER BY IF(MAX(building.end)<{$now}, 0, MAX(building.end)), igm_data.lastLogin LIMIT 0,1", __FILE__, __LINE__);
+				$id = DBQueryOne("SELECT building.uid AS uid FROM {$pre}building AS building INNER JOIN {$pre}igm_data AS igm_data ON building.uid=igm_data.ID WHERE igm_data.ikea=0 OR building.plani=0 GROUP BY building.plani, uid ORDER BY IF(MAX(building.end)<{$now}, 0, MAX(building.end)), igm_data.lastLogin LIMIT 0,1", __FILE__, __LINE__);
 			} else {
 				$id = intval($_GET['id']);
 			}
