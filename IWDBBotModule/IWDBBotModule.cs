@@ -7,12 +7,12 @@ using MySql.Data.MySqlClient;
 
 namespace IWDB {
     
-	public delegate void NeueFlottenGesichtetDelegate(String zielName, int Anzahl);
+	public delegate void NeueFlottenGesichtetDelegate(String zielName, int Anzahl, bool angriff);
 	public interface IWDBCore {
 		void CheckLogin(string nick, string username, string host);
 		void CheckLogout(string nick, string username, string host);
         void CheckUsers(string p, List<string> checkingUsers);
-        event NeueFlottenGesichtetDelegate OnNeueFeindlFlottenGesichtet;
+        event NeueFlottenGesichtetDelegate OnNeueFlottenGesichtet;
 		void BauleerlaufInfo(out int Anzahl, out List<Pair<int, String>> neuerLeerlauf);
         void SitterauftraegeOffen(out int offeneAuftraege, out int firstJobId, out DateTime naechsterAuftrag);
         void AnfliegendeFlotten(out uint flottenAnz, out uint zielplaniAnz);
@@ -64,7 +64,7 @@ namespace IWDB {
 
 #region IIRCChanModule Member
 		public bool Disable() {
-			iwdb.OnNeueFeindlFlottenGesichtet -= NeueFeindFlottenEntdecktCallback;
+			iwdb.OnNeueFlottenGesichtet -= NeueFlottenEntdecktCallback;
 			chan.OnUserJoin -= OnUserJoin;
 			chan.OnUserLeave -= OnUserLeave;
 			chan.OnChannelJoined -= OnChannelJoined;
@@ -92,7 +92,7 @@ namespace IWDB {
                 Log.WriteLine(LogLevel.E_ERROR, "IWDBChanModule@" + chan.Name + ": iwdbcore nicht gefunden!");
                 return false;
             }
-			iwdb.OnNeueFeindlFlottenGesichtet += NeueFeindFlottenEntdecktCallback;
+			iwdb.OnNeueFlottenGesichtet += NeueFlottenEntdecktCallback;
 			//mysql = chan.MysqlConnections.GetConnection(config["mysql"].InnerText);
 			conStr = config["mysql"].InnerText;
 			MySqlConnection con = chan.AllocateConnection(this, conStr);
@@ -297,8 +297,11 @@ namespace IWDB {
                 chan.SendChanMsg(FlottenSpamColor+"Innerhalb der nächsten 5 Minuten kommen " + flottenAnz + " Flotten bei " + zielPlaniAnz + " verschiedenen Zielplanis an!");
 
 		}
-		void NeueFeindFlottenEntdecktCallback(String spieler, int anz) {
-            chan.SendChanMsg(SitterSpamColor + "Bei " + spieler + " wurden " + anz + " neue angreifende Flotten entdeckt!");
+		void NeueFlottenEntdecktCallback(String spieler, int anz, bool angriff) {
+			if(angriff)
+				chan.SendChanMsg(FlottenSpamColor + IrcFormat.Bold + "ANGRIFF " + IrcFormat.Bold + " auf " + spieler + " - " + anz + " neue angreifende Flotten!");
+			else
+				chan.SendChanMsg(FlottenSpamColor + IrcFormat.Bold + "SCAN" + IrcFormat.Bold + " auf " + spieler + " - " + anz + " neue Scans!");
 		}
 	}
 	public class IWDBChanModuleFactory:IIRCChanModuleFactory {

@@ -36,6 +36,7 @@ $util_port = 5124;
 ######### Stuff #########
 $default_gala = 9;
 $spiel = 'iw';
+$token_seed = 'dftg.36qxy';
 $sittercolor_stages = array(
 	1 => 1800, //30 mins
 	2 => 7200, //2h

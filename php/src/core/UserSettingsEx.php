@@ -86,6 +86,15 @@ if(!defined('dddfd'))
 			'prepare' => 'CbPrepareSitterSkin',
 			'evaluate' => 'CbEvaluateSitterSkin',
 		),
+		'token' => array(
+			'name' => 'Token',
+			'desc' => 'Damit kannst du den Reminder mit dem Tool verbinden',
+			'table' => 'users',
+			'col' => 'id',
+			'isValid' => 'CbValidateNoSettings',
+			'prepare' => 'CbPrepareToken',
+			'evaluate' => 'CbEvaluateNoSettings',
+		),
 		'currentPW' => array(
 			'name' => 'Aktuelles PW',
 			'desc' => 'Zur Sicherheit muss bei Änderungen immer das aktuelle PW mit angegeben werden',
@@ -395,6 +404,11 @@ if(!defined('dddfd'))
 	}
 	function CbEvaluateSitterSkin() {
 		return "sitterskin='".intval($_REQUEST['sitterskin'])."', ";
+	}
+	function CbPrepareToken($dta) {
+		global $token_seed, $ID_MEMBER, $user;
+		$id = (isset($_REQUEST['ID']) && $user['isAdmin']) ? intval($_REQUEST['ID']) : $ID_MEMBER;
+		return $id.':'.sha1($token_seed.$id);
 	}
 	function CbValidateCurrentPW() {
 		global $pre, $content, $user, $ID_MEMBER;

@@ -11,6 +11,8 @@ Header('Accept-Charset: UTF-8');
 
 $starttime = microtime(true);
 
+//Load default config settings
+require(dirname(__FILE__)."/Settings.default.php");
 //Read the User Configuration
 require(dirname(__FILE__)."/Settings.php");
 

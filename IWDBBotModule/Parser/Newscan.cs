@@ -48,12 +48,14 @@ namespace IWDB.Parser {
             parserList.Add(new ForschungsübersichtParser(this));
             //parserList.Add(new UniversumsAnsichtStargateParser(this));
             parserList.Add(new GebäudeübersichtParser(this));
-            parserList.Add(new HauptseiteFremdeFlottenParser(this));
+            parserList.Add(new HauptseiteFremdeFlottenParser(this, this.parser));
             parserList.Add(new HauptseiteFeindlicheFlottenParser(this, this.parser));
             parserList.Add(new RessourcenKoloÜbersichtParser(this));
             parserList.Add(new RessourcenKoloÜbersichtTeil2Parser(this));
             parserList.Add(new UniXMLLinkParser(this));
             parserList.Add(new RessTransport(this));
+			parserList.Add(new EigeneUebergabe(this));
+			parserList.Add(new FremdeUebergabe(this));
             parserList.Add(new OperaDummyParser(this));
 			parserList.Add(new KBParser(this));
             return parserList;

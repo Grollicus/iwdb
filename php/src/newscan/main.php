@@ -24,7 +24,19 @@ function NewscanEx() {
 	TemplateNewscanEx();
 }
 
-function ParseScansEx($store_in_temp = false) {
+function ApiNewscans() {
+	global $ID_MEMBER, $user;
+	
+	if(!isset($_REQUEST['scans']))
+		die("fail.");
+	$_POST['uid'] = $user['igmuser'];
+	$_POST['abs'] = true;
+	
+	ParseScansEx(false, false);
+	echo "ok";
+}
+
+function ParseScansEx($store_in_temp = false, $check_reqid = true) {
 	global $content, $ID_MEMBER, $user, $pre;
 	
 	flush();
@@ -35,7 +47,7 @@ function ParseScansEx($store_in_temp = false) {
 		$scan = str_replace($search, $replace, Param('scans'));
 		$uid = intval($_POST['uid']);
 		$content['user'] = $uid;
-		if(!CheckRequestID()) {
+		if($check_reqid && !CheckRequestID()) {
 			$content['scans'] = EscapeO($scan);
 			$content['msg'] = "Fehler mit der Request-ID! Wurden diese Scans schon einmal eingetragen?";
 			return;

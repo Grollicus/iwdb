@@ -40,7 +40,7 @@ namespace IWDB.Parser {
 
         List<String> usersLoggedIn;
         Dictionary<String, List<string>> checkingUsers;
-        public event NeueFlottenGesichtetDelegate OnNeueFeindlFlottenGesichtet;
+        public event NeueFlottenGesichtetDelegate OnNeueFlottenGesichtet;
 
 
         internal IWDBParser(XmlNode config, IWDBParserModule parserMod) {
@@ -300,9 +300,9 @@ AND action IN('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/R
             }
             return true;
         }
-        internal void NeueFeindlicheFlottenGesichtet(String ziel, int anz) {
-            if (OnNeueFeindlFlottenGesichtet != null)
-                OnNeueFeindlFlottenGesichtet(ziel, anz);
+        internal void NeueFlottenGesichtet(String ziel, int anz, bool angriff) {
+            if (OnNeueFlottenGesichtet != null)
+                OnNeueFlottenGesichtet(ziel, anz, angriff);
         }
         internal void Disable() {
             mysql = null;

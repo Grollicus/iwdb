@@ -20,7 +20,6 @@ namespace IWDB {
 			} catch (FormatException) {
 				return toUnixTimestamp(DateTime.Now);
 			}
-
 		}
 		public static uint toUnixTimestamp(DateTime time) {
 			//return (uint)((time.ToUniversalTime().Ticks - 621355968000000000) / 10000000);

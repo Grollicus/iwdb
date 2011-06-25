@@ -126,7 +126,8 @@ namespace IWDB.Parser {
 	class HauptseiteFremdeFlottenParser:ReportParser {
 		const String Aktionen = @"Sondierung\s\(Gebäude/Ress\)|Sondierung\s\(Geologie\)|Sondierung\s\(Schiffe/Def/Ress\)|Transport|Übergabe|Ressourcenhandel\s\(ok\)|Ressourcenhandel";
 		Dictionary<uint, OrderedList<FlottenCacheFlotte>> flottenCache;
-		public HauptseiteFremdeFlottenParser(NewscanHandler h)
+		IWDBParser parser;
+		public HauptseiteFremdeFlottenParser(NewscanHandler h, IWDBParser parser)
 			: base(h) {
             AddPatern(@"fremde\sFlotten\s+
 Fremde\sFlotten\n
@@ -135,6 +136,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 ((?:\s*\n" + KolonieName + @"\s" + Koordinaten + @"\s+" + KolonieName + @"\s" + Koordinaten + @"\n
 " + SpielerName + @"\s+(?:" + PräziseIWZeit + @"|" + AbladeAktionen + @")\s+(?:[\d:]+|angekommen)\s+(?:" + Aktionen + @")(?:[\s\S]+?\+)?)+)", PatternFlags.All);
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
+			this.parser = parser;
 		}
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			PlaniIDFetcher idFetcherStartID = new PlaniIDFetcher(KnownData.Name|KnownData.Owner, con, DBPrefix);
@@ -160,7 +162,8 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 
 			foreach (Match outerMatch in matches) {
 				MatchCollection innerMatches = Regex.Matches(outerMatch.Groups[0].Value, "(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\s+(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\n
-(" + SpielerName + @")\s+(" + PräziseIWZeit + @"|" + AbladeAktionen + @")\s+(?:[\d:]+|angekommen)\s+(" + Aktionen + @")", RegexOptions.IgnorePatternWhitespace);
+(" + SpielerName + @")\s+(" + PräziseIWZeit + @"|" + AbladeAktionen + @")\s+
+(?:[\d:]+|angekommen)\s+(" + Aktionen + @")", RegexOptions.IgnorePatternWhitespace);
 				if (innerMatches.Count > 0) {
 					OrderedList<FlottenCacheFlotte> flotten = new OrderedList<FlottenCacheFlotte>(new FlottenComparer());
 					uidQuery.Parameters["?gala"].Value = int.Parse(innerMatches[0].Groups[2].Value);
@@ -183,6 +186,8 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 						cachedFlotten = new OrderedList<FlottenCacheFlotte>(new FlottenComparer());
 					}
 					List<OrderedListDifference<FlottenCacheFlotte>> diffs = cachedFlotten.Differences(flotten);
+					int neu = 0;
+					String ziel = "";
 					foreach (OrderedListDifference<FlottenCacheFlotte> diff in diffs) {
 						if (diff.Item.Action == "Angriff")
 							continue;
@@ -195,8 +200,17 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 							insertQry.Parameters["?action"].Value = diff.Item.Action;
 							insertQry.Parameters["?ankunft"].Value = diff.Item.ankunft;
 							insertQry.ExecuteNonQuery();
+							if(neu == 0) {
+								MySqlCommand zielQry = new MySqlCommand("SELECT ownername FROM " + DBPrefix + "universum WHERE id=?id", con);
+								zielQry.Parameters.Add("?id", MySqlDbType.UInt32).Value = diff.Item.zielid;
+								ziel = zielQry.ExecuteScalar() as String;
+							}
+							if(diff.Item.Action == "Sondierung (Gebäude/Ress)" || diff.Item.Action == "Sondierung (Geologie)" ||diff.Item.Action == "Sondierung (Schiffe/Def/Ress)")
+								++neu;
 						}
 					}
+					if(neu > 0)
+						parser.NeueFlottenGesichtet(ziel, neu, false);
 					cachedFlotten.RemoveMatching(delegate(FlottenCacheFlotte f) { return f.Action != "Angriff"; });
 					resp.Respond("Fremde Flotten eingelesen!\n");
 				}
@@ -266,7 +280,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 					int neu = 0;
 					String ziel = "";
 					foreach (OrderedListDifference<FlottenCacheFlotte> diff in diffs) {
-						if (diff.Item.Action != "Angriff")
+						if(diff.Item.Action != "Angriff")
 							continue;
 						if (diff.Difference == OrderedListDifferenceType.MissingInCompared) {
 							deleteQry.Parameters["?id"].Value = diff.Item.id;
@@ -286,7 +300,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 						}
 					}
 					if (neu > 0)
-						parser.NeueFeindlicheFlottenGesichtet(ziel, neu);
+						parser.NeueFlottenGesichtet(ziel, neu, true);
 					cachedFlotten.RemoveMatching(delegate(FlottenCacheFlotte f) { return f.Action == "Angriff"; });
 					resp.Respond("Feindliche Flotten eingelesen!\n");
 				}

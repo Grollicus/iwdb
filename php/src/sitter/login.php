@@ -57,7 +57,8 @@
 		$from = EscapeO(Param('from'));
 		if(isset($_GET['jobid'])) {
 			$jid = intval($_GET['jobid']);
-			$jobdata = DBQueryOne("SELECT igmid FROM {$pre}sitter WHERE ID={$jid} AND done=0", __FILE__, __LINE__);
+			$now = time();
+			$jobdata = DBQueryOne("SELECT igmid FROM {$pre}sitter WHERE ID={$jid} AND done=0 AND time<={$now}", __FILE__, __LINE__);
 			if($jobdata === false) { //race condition - andere hat den Auftrag als erledigt markiert während sich hier jemand grade für den Job einloggen will
 				Redirect($scripturl. '/index.php?action='. $from.'&msg=sitter_racecondition');
 			}

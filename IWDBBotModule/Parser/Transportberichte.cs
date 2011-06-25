@@ -51,11 +51,11 @@ namespace IWDB.Parser {
                     break;
             }
         }
-        public bool ToDB(MySqlConnection con, String DBPrefix, BesonderheitenData dta, ParserResponse resp) {
+        public bool ToDB(MySqlConnection con, String DBPrefix, BesonderheitenData dta, ParserResponse resp, String desc) {
             PlaniFetcher f = new PlaniFetcher(dta, con, DBPrefix) {Gala = zielGala, Sys=zielSys, Pla=zielPla};
             List<PlaniInfo> ids = f.FetchMatching(PlaniDataFlags.ID);
             if (ids.Count == 0) {
-                resp.RespondError("Transportbericht übersprungen, Unidaten fehlerhaft bei " + zielGala + ":" + zielSys);
+                resp.RespondError(desc+" übersprungen, Unidaten fehlerhaft bei " + zielGala + ":" + zielSys);
                 return false;
             }
             uint planid = ids[0].ID;
@@ -73,9 +73,9 @@ namespace IWDB.Parser {
             cmd.Parameters.Add("?en", MySqlDbType.UInt32).Value = energie;
             cmd.Parameters.Add("?bev", MySqlDbType.UInt32).Value = bev;
             if (cmd.ExecuteNonQuery() == 0)
-                resp.Respond("Bereits bekannten Transportbericht übersprungen!");
+                resp.Respond("Bereits bekannten "+desc+" übersprungen!");
             else
-                resp.Respond("Transportbericht eingelesen!");
+                resp.Respond(desc+" eingelesen!");
             return true;
         }
     }
@@ -104,8 +104,89 @@ Ressourcen
                 foreach (Match m in c) {
                     t.SetRess(m.Groups[1].Value, int.Parse(m.Groups[2].Value, System.Globalization.NumberStyles.Any));
                 }
-                t.ToDB(con, DBPrefix, handler.BesData, resp);
+                t.ToDB(con, DBPrefix, handler.BesData, resp, "Transportbericht");
             }
         }
     }
+	class EigeneUebergabe : ReportParser {
+		public EigeneUebergabe(NewscanHandler h)
+			: base(h) {
+			AddPatern(@"Schiffe\sübergeben\s" + KoordinatenEinzelMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+
+Übergabe\s+
+Es\swurde\seine\sFlotte\sauf\sdem\sPlaneten\s" + KolonieName + @"\s\d+:\d+:\d+\sübergeben\.\sDer\sEmpfänger\sist\s(" + SpielerName + @")\s+
+Es\swurden\sfolgende\sSachen\sübergeben\s+
+Schiffe\s+
+(.+?)\s+
+Ressourcen
+((?:\s+" + RessourcenName + @"\s+" + Number + @")+)\s");
+		}
+
+		public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+			Dictionary<uint, String> uidToIgmNameCache = new Dictionary<uint, string>();
+			foreach(Match outerMatch in matches) {
+				String absender;
+				if(!uidToIgmNameCache.TryGetValue(victimID, out absender)) {
+					MySqlCommand igmNameQry = new MySqlCommand("SELECT igmname FROM " + DBPrefix + "igm_data WHERE id=?igmid", con);
+					igmNameQry.Parameters.Add("?igmid", MySqlDbType.UInt32).Value = victimID;
+					Object obj = igmNameQry.ExecuteScalar();
+					absender = (String)obj;
+					uidToIgmNameCache.Add(victimID, absender);
+				}
+				Transport t = new Transport(
+					uint.Parse(outerMatch.Groups[1].Value),
+					uint.Parse(outerMatch.Groups[2].Value),
+					uint.Parse(outerMatch.Groups[3].Value),
+					outerMatch.Groups[5].Value,
+					absender,
+					IWDBUtils.parsePreciseIWTime(outerMatch.Groups[4].Value)
+				);
+				MatchCollection c = Regex.Matches(outerMatch.Groups[7].Value, @"\s(" + RessourcenName + @")\s+(" + Number + ")");
+				foreach(Match m in c) {
+					t.SetRess(m.Groups[1].Value, int.Parse(m.Groups[2].Value, System.Globalization.NumberStyles.Any));
+				}
+				t.ToDB(con, DBPrefix, handler.BesData, resp, "Übergabebericht");
+			}
+		}
+	}
+
+	class FremdeUebergabe : ReportParser {
+		public FremdeUebergabe(NewscanHandler h)
+			: base(h) {
+			AddPatern(@"Schiffe\sübergeben\s" + KoordinatenEinzelMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+
+Übergabe\s+
+Eine\sFlotte\sist\sauf\sdem\sPlaneten\s" + KolonieName + @"\s\d+:\d+:\d+\sangekommen\.\sDer\sAbsender\sist\s(" + SpielerName + @")\s+
+Es\swurden\sfolgende\sSachen\sübergeben\s+
+Schiffe\s+
+(.+?)\s+
+Ressourcen
+((?:\s+" + RessourcenName + @"\s+" + Number + @")+)\s");
+		}
+
+		public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+			Dictionary<uint, String> uidToIgmNameCache = new Dictionary<uint, string>();
+			foreach(Match outerMatch in matches) {
+				String empfaenger;
+				if(!uidToIgmNameCache.TryGetValue(victimID, out empfaenger)) {
+					MySqlCommand igmNameQry = new MySqlCommand("SELECT igmname FROM " + DBPrefix + "igm_data WHERE id=?igmid", con);
+					igmNameQry.Parameters.Add("?igmid", MySqlDbType.UInt32).Value = victimID;
+					Object obj = igmNameQry.ExecuteScalar();
+					empfaenger = (String)obj;
+					uidToIgmNameCache.Add(victimID, empfaenger);
+				}
+				Transport t = new Transport(
+					uint.Parse(outerMatch.Groups[1].Value),
+					uint.Parse(outerMatch.Groups[2].Value),
+					uint.Parse(outerMatch.Groups[3].Value),
+					empfaenger,
+					outerMatch.Groups[5].Value,
+					IWDBUtils.parsePreciseIWTime(outerMatch.Groups[4].Value)
+				);
+				MatchCollection c = Regex.Matches(outerMatch.Groups[7].Value, @"\s(" + RessourcenName + @")\s+(" + Number + ")");
+				foreach(Match m in c) {
+					t.SetRess(m.Groups[1].Value, int.Parse(m.Groups[2].Value, System.Globalization.NumberStyles.Any));
+				}
+				t.ToDB(con, DBPrefix, handler.BesData, resp, "Übergabebericht");
+			}
+		}
+	}
 }

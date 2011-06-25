@@ -124,6 +124,9 @@
 				case 'Komma':
 					echo '<td><input type="text" size="3" name="', $name, '" value="', $mod['data'], '" /></td>';
 					break;
+				case 'token':
+					echo '<td>', $mod['data'], '</td>';
+					break;
 				default:
 					echo $name, ' => ', var_dump($mod), '<br />';
 			}
