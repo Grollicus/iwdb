@@ -98,8 +98,8 @@
 				alert("Achtung, in diesem Account hat sich innerhalb der letzten Minuten schon ', $content['loginLastUser'], ' eingeloggt!");
 			// ]]></script>';
 		echo '
-		<frameset rows="*,150">
-			<frame src="', $content['loginUrl'], '" name="IW-Frame"/>
+		<frameset rows="*,150" onload="document.getElementById(\'iwframe\').focus()">
+			<frame src="', $content['loginUrl'], '" name="IW-Frame" id="iwframe"/>
 			<frameset cols="50%, 50%">
 				<frame src="', $content['leftUtil'], '" name="LeftUtil" />
 				<frame src="', $content['rightUtil'], '" name="RightUtil" />
