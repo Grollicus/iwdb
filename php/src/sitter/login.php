@@ -106,7 +106,7 @@
 		global $content, $pre, $ID_MEMBER, $scripturl, $user, $spiel, $sourcedir;
 		
 		$dta = DBQueryOne("SELECT igmname, lastLogin FROM {$pre}igm_data WHERE ID=".$user['igmuser'], __FILE__, __LINE__);
-		$params = '&amp;id=0&amp;uid='.$user['igmuser'].'&amp;from=index&amp;lastLogin='.$dta[1];
+		$params = '&amp;id=0&amp;uid='.$user['igmuser'].'&amp;from='.EscapeO(Param('from')).'&amp;lastLogin='.$dta[1];
 		
 		$content['accName'] = EscapeOU($dta[0]);
 		$content['leftUtil'] = $scripturl.'/index.php?action=sitterutil_trade'.$params.'&amp;pos=left';
