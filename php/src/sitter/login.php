@@ -82,7 +82,7 @@
 		$now = time();
 		$lastloginid = DBQueryOne("SELECT userid FROM {$pre}sitterlog WHERE victimid={$id} AND userid<>{$ID_MEMBER} AND type='login' AND time >= ".(time()-300), __FILE__, __LINE__);
 		
-		DBQuery("INSERT INTO {$pre}sitterlog (userid, victimid, type, time) VALUES ({$ID_MEMBER}, $id, 'login', {$now})", __FILE__, __LINE__);
+		LogAction($id, 'login', '');
 		$victim = DBQueryOne("SELECT igmname, lastLogin FROM {$pre}igm_data WHERE ID=".$id, __FILE__, __LINE__);
 		if($victim === false)
 			return;
@@ -226,11 +226,15 @@
 			'Sch' => 'Schiffbauauftrag',
 			'Sonst' => 'sonstiger Auftrag',
 		);
-		$text = '<b>'.$types[$job[6]].'</b><br />';
+		$text = '<b>Erledigt</b><br />';
+		$text .= FormatDate($job[5]).'<br />';
+		$text .= '['.$job[9]. ':'. $job[10]. ':'. $job[11].'] '.EscapeOU($job[12])."<br />";
+		$text .= '<b>'.$types[$job[6]].'</b><br />';
 		$text .= EscapeDBU(SitterText($job));
 		
 		DBQuery("UPDATE {$pre}sitter SET done=1 WHERE id=".$id, __FILE__, __LINE__);
-		DBQuery("INSERT INTO {$pre}sitterlog (userid, victimid, type, time, text) VALUES ({$ID_MEMBER}, ".$job[0].", 'auftrag', ".time().", '{$text}')", __FILE__, __LINE__);
+		//DBQuery("INSERT INTO {$pre}sitterlog (userid, victimid, type, time, text) VALUES ({$ID_MEMBER}, ".$job[3].", 'auftrag', ".time().", '{$text}')", __FILE__, __LINE__);
+		LogAction($job[3], 'auftrag', $text);
 		if($job[3] != $user['igmuser'])
 			DBQuery("UPDATE {$pre}users SET sitterpts=sitterpts+1 WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
 		
@@ -289,6 +293,22 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 			if(strlen($update) > 0) {
 				$update = substr($update, 0, -2);
 				DBQuery("UPDATE {$pre}sitter SET {$update} WHERE ID={$id}", __FILE__, __LINE__);
+				
+				$job = DBQueryOne("SELECT sitter.ID, sitter.done, users.visibleName, sitter.igmid, igm_data.igmname, 
+		sitter.time, sitter.type, techtree_items.Name, sitter.stufe, universum.gala, universum.sys, universum.pla,
+		universum.planiname, sitter.usequeue, sitter.anzahl, sitter.notes
+	FROM (((({$pre}sitter AS sitter) INNER JOIN ({$pre}users AS users) ON sitter.uid = users.ID)
+		LEFT JOIN {$pre}igm_data AS igm_data ON sitter.igmid = igm_data.id)
+		LEFT JOIN ({$pre}universum AS universum) ON sitter.planID = universum.ID)
+		LEFT JOIN ({$pre}techtree_items AS techtree_items) ON sitter.itemid = techtree_items.ID
+	WHERE sitter.ID={$id}", __FILE__, __LINE__);
+				$text = '<b>Aktualisiert</b><br />';
+				$text .= FormatDate($job[5]).'<br />';
+				$text .= '['.$job[9]. ':'. $job[10]. ':'. $job[11].'] '.EscapeOU($job[12])."<br />";
+				$text .= '<b>'.$types[$job[6]].'</b><br />';
+				$text .= EscapeDBU(SitterText($job));
+				LogAction($job[3], 'auftrag', $text);
+				
 				$_GET['id']=0;
 				SitterUtilJobView();
 				StopExecution();
@@ -339,7 +359,7 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 				$content['time'] = FormatDate($job[5]);
 				$content['text'] = SitterText($job);
 				$content['longType'] = $types[$job[6]];
-				$content['coords'] = $job[5]!= null ? ($job[9]. ':'. $job[10]. ':'. $job[11]) : '-';
+				$content['coords'] = $job[9]. ':'. $job[10]. ':'. $job[11];
 				$content['planiName'] = EscapeOU($job[12]);
 				
 				$content['formAction'] = $scripturl.'/index.php?action=sitterutil_job'.$params;

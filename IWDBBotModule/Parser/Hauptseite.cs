@@ -134,7 +134,7 @@ Fremde\sFlotten\n
 (?:\(Es\ssind\sfremde\sFlotten\süber\sdem\sPlaneten\sstationiert\.\)\s+)?
 Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 ((?:\s*\n" + KolonieName + @"\s" + Koordinaten + @"\s+" + KolonieName + @"\s" + Koordinaten + @"\n
-" + SpielerName + @"\s+(?:" + PräziseIWZeit + @"|" + AbladeAktionen + @")\s+(?:[\d:]+|angekommen)\s+(?:" + Aktionen + @")(?:[\s\S]+?\+)?)+)", PatternFlags.All);
+" + SpielerName + @"\s+(?:" + PräziseIWZeit + @"|" + AbladeAktionen + @")[\s\-]+(?:[\d:]+|angekommen)\s+(?:" + Aktionen + @")(?:[\s\S]+?\+)?)+)", PatternFlags.All);
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
 			this.parser = parser;
 		}
@@ -162,7 +162,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 
 			foreach (Match outerMatch in matches) {
 				MatchCollection innerMatches = Regex.Matches(outerMatch.Groups[0].Value, "(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\s+(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\n
-(" + SpielerName + @")\s+(" + PräziseIWZeit + @"|" + AbladeAktionen + @")\s+
+(" + SpielerName + @")\s+(" + PräziseIWZeit + @"|" + AbladeAktionen + @")[\s\-]+
 (?:[\d:]+|angekommen)\s+(" + Aktionen + @")", RegexOptions.IgnorePatternWhitespace);
 				if (innerMatches.Count > 0) {
 					OrderedList<FlottenCacheFlotte> flotten = new OrderedList<FlottenCacheFlotte>(new FlottenComparer());

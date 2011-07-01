@@ -70,6 +70,9 @@
 					case 'geo_gtmod':
 					case 'geo_smod':
 					case 'geo_stmod':
+					case 'geo_ttch':
+					case 'geo_ttei':
+					case 'geo_ttfe':
 					case 'geo_ttl':
 						echo '<td class="', $row['geotime'], '">', $row[$v['id']], '</td>';
 					break;

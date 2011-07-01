@@ -187,6 +187,7 @@
 			'geo_fe' => array('desc' => 'Eisendichte', 'selected' => false),
 			'geo_ch' => array('desc' => 'Chemiedichte', 'selected' => false),
 			'geo_ei' => array('desc' => 'Eisdichte', 'selected' => false),
+			'geo_tt' => array('desc' => 'Techteam-Werte', 'selected' => false),
 			'geo_gravilb' => array('desc' => 'Gravitation/Lebensbed.', 'selected' => false),
 			'geo_ttl' => array('desc' => 'Zeit bis zur Sprengung', 'selected' => false),
 			'geo_mods' => array('desc' => 'Dauer-, Kosten- und Forschungsmod.', 'selected' => false),
@@ -650,7 +651,7 @@
 		// $module = array('cols' => array(col, col, col, ..), 'tables' => array(table, table, table, ..), 'cb' => 'Callback to format', 'titles' => array(name => title, name => title, name => title, ..);
 		// $table = array('name', jointyp)
 		// $jointyp = 0, wenn left join, 1, wenn inner
-		// $title = array('Title, Column will be hidden if empty', 'Description, shown on mouseover', priority - the more, the more left, 'sort - none if empty'),
+		// $title = array('Title, Column will be hidden if empty', 'Description, shown on mouseover', priority - the more, the more right, 'sort - none if empty'),
 		$modules = array(
 			'coords' => array(
 				'cols' => array('uni.gala', 'uni.sys', 'uni.pla', 'uni.inserttime', 'uni.aktuell', 'uni.planityp'),
@@ -686,13 +687,19 @@
 				'cols' => array('geoscans.fmod','geoscans.gebmod','geoscans.gebtimemod','geoscans.shipmod','geoscans.shiptimemod', 'geoscans.timestamp AS geotime', 'geoscans.reset AS georeset'),
 				'tables' => array(array('uni', 0), array('geoscans', 0)),
 				'cb' => 'ModGeoModsCb',
-				'titles' => array('geo_fmod' => array('Fmod', 'Forschungsmodifikator', 15), 'geo_gmod' => array('GebK', 'GebäudeKostenmodifikator', 16), 'geo_gtmod' => array('GebZ', 'GebäudeBauzeitmodifikator', 17), 'geo_smod' => array('SchK', 'SchiffsKostenmodifikator', 18), 'geo_stmod' => array('SchD', 'SchiffsDauermodifikator', 19)),
+				'titles' => array('geo_fmod' => array('Fmod', 'Forschungsmodifikator', 18), 'geo_gmod' => array('GebK', 'GebäudeKostenmodifikator', 19), 'geo_gtmod' => array('GebZ', 'GebäudeBauzeitmodifikator', 20), 'geo_smod' => array('SchK', 'SchiffsKostenmodifikator', 21), 'geo_stmod' => array('SchD', 'SchiffsDauermodifikator', 22)),
+			),
+			'geo_tt' => array(
+				'cols' => array('geoscans.tt_eisen', 'geoscans.tt_chemie', 'geoscans.tt_eis', 'geoscans.timestamp AS geotime', 'geoscans.reset AS georeset', 'geoscans.gebtimemod'),
+				'tables' => array(array('uni', 0), array('geoscans', 0)),
+				'cb' => 'ModGeoTechTeamCb',
+				'titles' => array('geo_ttfe' => array('TT Eisen', 'reale Eisendichte mit TechTeam', 15), 'geo_ttch' => array('TT Chem', 'reale Chemiedichte mit TechTeam', 16), 'geo_ttei' => array('TT Eis', 'reale Eisdichte mit TechTeam', 17))
 			),
 			'geo_ttl' => array(
 				'cols' => array('geoscans.timestamp AS geotime', 'geoscans.reset AS georeset'),
 				'tables' => array(array('uni', 0), array('geoscans', 0)),
 				'cb' => 'ModGeoTTLCb',
-				'titles' => array('geo_ttl' => array('TTL', 'Zeit bis der Plani gesprengt wird in Tagen', 20))
+				'titles' => array('geo_ttl' => array('TTL', 'Zeit bis der Plani gesprengt wird in Tagen', 23))
 			),
 			'owner' => array(
 				'cols' => array('uni.ownername', 'userdata.allytag'),
@@ -937,6 +944,13 @@
 		$data['geo_gtmod'] = is_null($row['gebtimemod']) ? '???' : number_format($row['gebtimemod']*0.01, 2, ',', '.');
 		$data['geo_smod'] = is_null($row['shipmod']) ? '???' : number_format($row['shipmod']*0.01, 2, ',', '.');
 		$data['geo_stmod'] = is_null($row['shiptimemod']) ? '???' : number_format($row['shiptimemod']*0.01, 2, ',', '.');
+		if(!isset($data['geotime']))
+			$data['geotime'] = GeoActualityColor($row['geotime'], $row['georeset']);
+	}
+	function ModGeoTechTeamCb($row, &$data) {
+		$data['geo_ttfe'] = is_null($row['tt_eisen']) ? '???' : (($row['gebtimemod'] == 0) ? number_format($row['tt_eisen']*0.1, 1, ',', '.').'/???' : number_format($row['tt_eisen']*10/$row['gebtimemod'], 1, ',', '.'));
+		$data['geo_ttch'] = is_null($row['tt_chemie']) ? '???' : (($row['gebtimemod'] == 0) ? number_format($row['tt_chemie']*0.1, 1, ',', '.').'/???' : number_format($row['tt_chemie']*10/$row['gebtimemod'], 1, ',', '.'));
+		$data['geo_ttei'] = is_null($row['tt_eis']) ? '???' : (($row['gebtimemod'] == 0) ? number_format($row['tt_eis']*0.1, 1, ',', '.').'/???' : number_format($row['tt_eis']*10/$row['gebtimemod'], 1, ',', '.'));
 		if(!isset($data['geotime']))
 			$data['geotime'] = GeoActualityColor($row['geotime'], $row['georeset']);
 	}

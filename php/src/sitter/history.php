@@ -8,12 +8,13 @@
 		$longTypes = array(
 			'login' => 'Sitterlogin',
 			'auftrag' => 'Sitterauftrag',
+			'scan' => 'Bericht eingelesen',
 		);
 		
 		//Was andere bei dem User gemacht haben
 		$q = DBQuery("SELECT users.visibleName, sitterlog.type, sitterlog.time, sitterlog.Text 
 FROM ({$pre}sitterlog AS sitterlog INNER JOIN {$pre}users AS users ON sitterlog.userid = users.ID)
-WHERE sitterlog.victimid=".$user['igmuser']." ORDER BY time DESC LIMIT 0, 20", __FILE__, __LINE__);
+WHERE sitterlog.victimid=".$user['igmuser']." ORDER BY time DESC LIMIT 0, 30", __FILE__, __LINE__);
 		$content['ownlog'] = array();
 		while($row = mysql_fetch_row($q)) {
 			$content['ownlog'][] = array(
@@ -27,7 +28,7 @@ WHERE sitterlog.victimid=".$user['igmuser']." ORDER BY time DESC LIMIT 0, 20", _
 		//Was der User bei anderen gemacht hat
 		$q = DBQuery("SELECT igm_data.igmname, sitterlog.type, sitterlog.time, sitterlog.Text 
 FROM ({$pre}sitterlog AS sitterlog INNER JOIN {$pre}igm_data AS igm_data ON sitterlog.victimid = igm_data.id)
-WHERE sitterlog.userid={$ID_MEMBER} ORDER BY time DESC LIMIT 0, 20", __FILE__, __LINE__);
+WHERE sitterlog.userid={$ID_MEMBER} ORDER BY time DESC LIMIT 0, 30", __FILE__, __LINE__);
 		$content['otherlog'] = array();
 		while($row = mysql_fetch_row($q)) {
 			$content['otherlog'][] = array(

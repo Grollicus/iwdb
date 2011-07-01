@@ -202,7 +202,7 @@ ORDER BY flotten.ankunft ASC", __FILE__, __LINE__);
 				'text' => SitterText($row),
 				'igmName' => EscapeOU($row[4]),
 				'userName' => EscapeOU($row[2]),
-				'coords' => $row[7] != null ? ($row[9]. ':'. $row[10]. ':'. $row[11]) : '-',
+				'coords' => $row[9]. ':'. $row[10]. ':'. $row[11],
 				'planiName' => EscapeOU($row[12]),
 				'editLink' => $scripturl.'/index.php?action=sitter_edit&amp;page='.$row[6].'&amp;ID='.$row[0],
 				'delLink' => $scripturl.'/index.php?action=sitter_own&amp;del='.$row[0],

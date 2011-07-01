@@ -438,7 +438,10 @@ function GenLink($params) {
 	}
 	return EscapeO(substr($ret, 0, -1));
 }
-
+function LogAction($victimID, $action, $text) {
+	global $pre, $ID_MEMBER;
+	DBQuery("INSERT INTO {$pre}sitterlog (userid, victimid, type, time, text) VALUES ({$ID_MEMBER}, {$victimID}, '{$action}', ".time().", '{$text}')", __FILE__, __LINE__);
+}
 
 
 ?>
