@@ -1,6 +1,3 @@
 bin/Debug
-bin/Release/*
 obj
-!bin/Release/IWDBModule.dll
-!bin/Release/Bot.exe
 
