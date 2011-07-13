@@ -68,9 +68,9 @@ namespace IWDB.Parser {
 	class SchiffsinfoParser:ReportParser {
 		public SchiffsinfoParser(NewscanHandler newscanHandler)
             : base(newscanHandler) {
-            AddPatern(@"Schiffinfo:\s+([a-zA-Z0-9 äöü()]+)\n
+            AddPatern(@"Schiffinfo:\s+([a-zA-Z0-9 äöü()\-]+)\n
 [\s\S]+
-Kosten\s+(.*)\n
+Kosten\s+([\s\S]*?)\n
 Dauer\s+(" + IWZeitspanne + @")\n
 Voraussetzungen\sForschungen\s+((?:\(.+\))*)\n
 benötigt\sWerften\s+([\s\S]+?)\n
@@ -78,6 +78,7 @@ mögliche\sAktionen([\s\S]+?)\n
 Daten\n
 Geschwindigkeit\sSol\s+(\d+)\n
 Geschwindigkeit\sGal\s+(\d+)\n
+(?:.*Galaxie\sverlassen.*\n)?
 Verbrauch\schem.\sElemente\s+(\d+)\n
 Verbrauch\sEnergie\s+(\d+)\n", PatternFlags.Firefox);
         }
@@ -680,8 +681,9 @@ abstract class TechtreeItem {
 	(?:(.*?)\n)?
 	(?:Zuerst\serforscht\svon\s+(.+?)\n)?
 	Kosten\s+("+IWDBRegex.Number+@"\s+Forschungspunkte(?:\n.+?)?)\n
-	(?:\s*\(von\s\d+\sLeuten\serforscht,\s\d+%\sFPKosten\)\n)?
-	Voraussetzungen\sForschungen\s+?((?:\(.*\))*)\n
+	(?:\s*\(von\s\d+%\sLeuten\serforscht,\s\d+%\sFPKosten\)\n)?
+	(?:\s*Prototyp.+?\n)?
+	\s*Voraussetzungen\sForschungen\s+?((?:\(.*\))*)\n
 	Voraussetzungen\sGebäude\s+?((?:\(.*\))*)\n
 	Voraussetzungen\sObjekte\s+(.*?)\n
 	Ermöglicht\sForschungen\s+?((?:\(.*\))*)\n

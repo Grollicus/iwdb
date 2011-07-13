@@ -36,7 +36,12 @@
 				echo '<option value="', $prio, '"', $prio == 0 ? ' selected="selected"' : '', '>', $prio, ' - ', $txt, '</option>';
 			echo '</select>
 		</td></tr>
-		<tr><td>Koords</td><td><input type="text" name="coords" value="" id="coords" /><select name="planiselect" onchange="getElById(\'coords\').value=this.value;" onkeyup="getElById(\'coords\').value=this.value;">';
+		<tr><td>Account</td><td><select name="account" id="account">';
+		foreach($content['accounts'] as $acc) {
+			echo '<option value="',$acc['val'],'" ', $acc['sel'] ? 'selected="selected"' : '', '>', $acc['text'], '</option>';
+		}
+		echo '</select></td></tr>
+		<tr><td>Koords</td><td><input type="text" name="coords" value="" id="coords" /><select name="planiselect" id="planiselect" onchange="if(this.selectedIndex != 0) getElById(\'coords\').value=this.value;" onkeyup="if(this.selectedIndex != 0) getElById(\'coords\').value=this.value;">';
 		foreach($content['planis'] as $plani) 
 			echo '<option value="', $plani['text'], '">', $plani['text'], '</option>';
 		echo '</select></td></tr>
@@ -44,7 +49,25 @@
 		<tr><td>Kommentar</td><td><input type="text" name="comment" value="" /></td></tr>
 		<tr><td colspan="2"><input type="submit" name="new" /></td></tr>
 	</table>
-</form>
+</form><br />
+<table>
+	<tr><th colspan="42">History</th></tr>';
+		foreach($content['history'] as $hline) {
+			echo '<tr><td>', $hline['time'], '</td><td>', $hline['type'], '</td><td>', $hline['sender'], '</td><td>', $hline['receiver'], '</td><td>', $hline['dest'], '</td><td>', $hline['ress'], '</td><td>', $hline['diff'], '</td></tr>';
+		}
+echo '
+</table>
+<script type="text/javascript"><!-- // --><![CDATA[
+function UpdatePlanet() {
+	var accSel = getElById("account");
+	var igmid = accSel.options[accSel.selectedIndex].value;
+	scriptRequest("sitter_planis", "igmid="+igmid, UpdatePlanetCallback);
+}
+function UpdatePlanetCallback(req) {
+	FillSelect("planiselect", req.responseXML, false);
+}
+OnSelectChanged("account", UpdatePlanet);
+// ]]></script>
 </div>';
 		TemplateFooter();
 	}

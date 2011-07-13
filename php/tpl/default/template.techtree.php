@@ -95,21 +95,24 @@ function sTemplateTechtreeDetails() {
 	echo '
 			</td></tr>
 		</table>
-		<table width="100%">
-			<tr><th colspan="2">Stufen</th></tr>';
+		<table width="100%">';
 	foreach($content['stufen'] as $stufe) {
-		echo '<td><b>Stufe ', $stufe['stufe'], '</b></td><td>';
+		if(count($content['stufen'])>1)
+			echo '<td>Stufe ', $stufe['stufe'], '</td><td>';
+		else
+			echo '<td colspan="2">';
 		if(!empty($stufe['dauer'])) {
-			echo 'Dauer: ', $stufe['dauer'];
+			echo '<b>Dauer:</b> ', $stufe['dauer'], '<br />';
 		}
 		if(!empty($stufe['kosten']) > 0) {
-			echo '<br />Kosten: ';
+			echo '<b>Kosten:</b> ';
 			foreach($stufe['kosten'] as $k) {
 				echo $k['name'], ': ', $k['anz'].' ';
 			}
+			echo '<br />';
 		}
 		if(!empty($stufe['bringt']) > 0) {
-			echo '<br />Bringt: ';
+			echo '<b>Bringt:</b> ';
 			foreach($stufe['bringt'] as $b) {
 				echo $b['name'], ': ', $b['anz'].' ';
 			}

@@ -114,7 +114,9 @@ function scriptRequestCallback() {
 	}
 }
 
-function FillSelect(SelectID, XML) {
+function FillSelect(SelectID, XML, useValues) {
+	if(useValues == null)
+		useValues = true;
 	var fillSelect = getElById(SelectID);
 	var reselectValue = fillSelect.options[fillSelect.selectedIndex].value;
 	
@@ -126,7 +128,11 @@ function FillSelect(SelectID, XML) {
 	var options="";
 	for(var i = 0; i < data.length; ++i) {
 		var option = data[i];
-		var value = option.getElementsByTagName("value")[0].textContent;
+		var value;
+		if(useValues)
+			value = option.getElementsByTagName("value")[0].textContent;
+		else
+			value = option.getElementsByTagName("description")[0].textContent;
 		var desc = option.getElementsByTagName("description")[0].textContent;
 		if(reselectValue == value) {
 			options += "<option value=\""+value+"\" selected=\"selected\">"+desc+"<\/option>";
