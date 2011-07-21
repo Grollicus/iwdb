@@ -427,9 +427,15 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 		if(isset($_REQUEST['ignore']) && CheckRequestID()) {
 			DBQuery("INSERT INTO {$pre}trade_ignores (id, uid, end) VALUES (".intval($_REQUEST['rid']).", {$ID_MEMBER}, ".(time()+604800).") ON DUPLICATE KEY UPDATE end=VALUES(end)", __FILE__, __LINE__);
 		} elseif(isset($_REQUEST['fullDone']) && CheckRequestID()) {
-			DBQuery("UPDATE {$pre}trade_reqs SET ist=soll WHERE id=".intval($_REQUEST['rid']), __FILE__, __LINE__);
+			$id = intval($_REQUEST['rid']);
+			DBQuery("UPDATE {$pre}trade_reqs SET ist=soll WHERE id=".$id, __FILE__, __LINE__);
+			$row = DBQueryOne("SELECT uid,ziel,ress,schiffid,soll-ist FROM {$pre}trade_reqs WHERE id=".$id, __FILE__, __LINE__);
+			DBQuery("INSERT INTO {$pre}trade_history (time, type, sender, receiver, dst, ress, schiffid, resscnt) VALUES ({$now}, 'edit', {$ID_MEMBER}, ".intval($row[0]).", '".EscapeDB($row[1])."', '".EscapeDB($row[2])."', ".intval($row[3]).", ".intval($row[4]).")" , __FILE__, __LINE__);
 		} elseif(isset($_REQUEST['partDone']) && CheckRequestID()) {
-			DBQuery("UPDATE {$pre}trade_reqs SET ist=ist+".intval($_REQUEST['cnt'])." WHERE id=".intval($_REQUEST['rid']), __FILE__, __LINE__);
+			$id = intval($_REQUEST['rid']);
+			DBQuery("UPDATE {$pre}trade_reqs SET ist=ist+".intval($_REQUEST['cnt'])." WHERE id=".$id, __FILE__, __LINE__);
+			$row = DBQueryOne("SELECT uid,ziel,ress,schiffid FROM {$pre}trade_reqs WHERE id=".$id, __FILE__, __LINE__);
+			DBQuery("INSERT INTO {$pre}trade_history (time, type, sender, receiver, dst, ress, schiffid, resscnt) VALUES ({$now}, 'edit', {$ID_MEMBER}, $row[0], '".EscapeDB($row[1])."', '".EscapeDB($row[2])."', ".intval($row[3]).", ".intval($anz).")", __FILE__, __LINE__);
 		}
 		
 		$req = DBQueryOne("SELECT trade_reqs.id, trade_reqs.time, trade_reqs.priority, trade_reqs.ress, trade_reqs.ziel, trade_reqs.soll, trade_reqs.ist, trade_reqs.comment, igm_data.igmname, techtree_items.Name
