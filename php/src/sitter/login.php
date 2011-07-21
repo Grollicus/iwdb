@@ -302,6 +302,13 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 		LEFT JOIN ({$pre}universum AS universum) ON sitter.planID = universum.ID)
 		LEFT JOIN ({$pre}techtree_items AS techtree_items) ON sitter.itemid = techtree_items.ID
 	WHERE sitter.ID={$id}", __FILE__, __LINE__);
+				require_once dirname(__FILE__)."/view.php";//need: SitterText
+				$types = array(
+                  		      'Geb' => 'Bauauftrag',
+                        		'For' => 'Forschungsauftrag',
+                        		'Sch' => 'Schiffbauauftrag',
+                        		'Sonst' => 'sonstiger Auftrag',
+                		);
 				$text = '<b>Aktualisiert</b><br />';
 				$text .= FormatDate($job[5]).'<br />';
 				$text .= '['.$job[9]. ':'. $job[10]. ':'. $job[11].'] '.EscapeOU($job[12])."<br />";
