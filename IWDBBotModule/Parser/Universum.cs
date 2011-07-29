@@ -13,7 +13,7 @@ namespace IWDB.Parser {
 				this.parser = parser;
 		}
         public void Parse(List<XmlNode> xmls, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
-            MySqlCommand checkQuery = new MySqlCommand(@"SELECT ownername FROM " + DBPrefix + "universum WHERE gala=?gal AND sys=?sys AND pla=?pla AND inserttime < ?time", con);
+            MySqlCommand checkQuery = new MySqlCommand(@"SELECT ownername, inserttime FROM " + DBPrefix + "universum WHERE gala=?gal AND sys=?sys AND pla=?pla", con);
             checkQuery.Parameters.Add("?gal", MySqlDbType.UInt32);
             checkQuery.Parameters.Add("?sys", MySqlDbType.UInt32);
             checkQuery.Parameters.Add("?pla", MySqlDbType.UInt32);
@@ -24,7 +24,7 @@ namespace IWDB.Parser {
             allyTagInsert.Parameters.Add("?tag", MySqlDbType.String);
             allyTagInsert.Parameters.Add("?time", MySqlDbType.UInt32);
             allyTagInsert.Prepare();
-            MySqlCommand insertQry = new MySqlCommand("INSERT IGNORE INTO " + DBPrefix + "universum (iwid, gala, sys, pla, inserttime, planityp, objekttyp, ownername, planiname) VALUES (?iwid, ?gala, ?sys, ?pla, ?time, ?ptyp, ?otyp, ?oname, ?pname)", con);
+            MySqlCommand insertQry = new MySqlCommand("INSERT INTO " + DBPrefix + "universum (iwid, gala, sys, pla, inserttime, planityp, objekttyp, ownername, planiname) VALUES (?iwid, ?gala, ?sys, ?pla, ?time, ?ptyp, ?otyp, ?oname, ?pname)", con);
             insertQry.Parameters.Add("?iwid", MySqlDbType.UInt32);
             insertQry.Parameters.Add("?gala", MySqlDbType.UInt32);
             insertQry.Parameters.Add("?sys", MySqlDbType.UInt32);
@@ -48,6 +48,7 @@ namespace IWDB.Parser {
             updateQry.Prepare();
             uint insert = 0;
             uint update = 0;
+			uint skipped = 0;
             foreach (XmlNode xml in xmls) {
                 uint age = uint.Parse(xml.SelectSingleNode("planeten_data/informationen/aktualisierungszeit").InnerText);
                 List<UniXmlPlani> planis = new List<UniXmlPlani>();
@@ -58,7 +59,6 @@ namespace IWDB.Parser {
                     checkQuery.Parameters["?gal"].Value = plani.gala;
                     checkQuery.Parameters["?sys"].Value = plani.sys;
                     checkQuery.Parameters["?pla"].Value = plani.pla;
-                    checkQuery.Parameters["?time"].Value = age;
                     if (plani.ownerName.Length > 0) {
                         allyTagInsert.Parameters["?name"].Value = plani.ownerName;
                         allyTagInsert.Parameters["?tag"].Value = plani.allyTag;
@@ -67,29 +67,20 @@ namespace IWDB.Parser {
                     }
 					MySqlDataReader checkReader = checkQuery.ExecuteReader();
 					String oldOwner = null;
-					bool checkSuccess;
+					bool alreadyExists;
 					try {
-						checkSuccess = checkReader.Read();
-						if(checkSuccess)
+						alreadyExists = checkReader.Read();
+						if(alreadyExists) {
+							if(checkReader.GetUInt32(1) >= age) {
+								++skipped;
+								continue;
+							}
 							oldOwner = checkReader.GetString(0);
+						}
 					} finally {
 						checkReader.Close();
 					}
-					if(!checkSuccess) {
-						if(plani.objektTyp == "Kampfbasis")
-							parser.NeueKbGesichtet(plani.gala, plani.sys, plani.pla, plani.ownerName, plani.allyTag);
-						insertQry.Parameters["?iwid"].Value = plani.iwid;
-						insertQry.Parameters["?gala"].Value = plani.gala;
-						insertQry.Parameters["?sys"].Value = plani.sys;
-						insertQry.Parameters["?pla"].Value = plani.pla;
-						insertQry.Parameters["?time"].Value = age;
-						insertQry.Parameters["?ptyp"].Value = plani.planiTyp;
-						insertQry.Parameters["?otyp"].Value = plani.objektTyp;
-						insertQry.Parameters["?oname"].Value = plani.ownerName;
-						insertQry.Parameters["?pname"].Value = plani.planiName;
-						insertQry.ExecuteNonQuery();
-						++insert;
-					} else {
+					if(alreadyExists) {
 						if(oldOwner != plani.ownerName && plani.objektTyp == "Kampfbasis")
 							parser.NeueKbGesichtet(plani.gala, plani.sys, plani.pla, plani.ownerName, plani.allyTag);
 						updateQry.Parameters["?iwid"].Value = plani.iwid;
@@ -103,11 +94,24 @@ namespace IWDB.Parser {
 						updateQry.Parameters["?pname"].Value = plani.planiName;
 						updateQry.ExecuteNonQuery();
 						++update;
+					} else {
+						if(plani.objektTyp == "Kampfbasis")
+							parser.NeueKbGesichtet(plani.gala, plani.sys, plani.pla, plani.ownerName, plani.allyTag);
+						insertQry.Parameters["?iwid"].Value = plani.iwid;
+						insertQry.Parameters["?gala"].Value = plani.gala;
+						insertQry.Parameters["?sys"].Value = plani.sys;
+						insertQry.Parameters["?pla"].Value = plani.pla;
+						insertQry.Parameters["?time"].Value = age;
+						insertQry.Parameters["?ptyp"].Value = plani.planiTyp;
+						insertQry.Parameters["?otyp"].Value = plani.objektTyp;
+						insertQry.Parameters["?oname"].Value = plani.ownerName;
+						insertQry.Parameters["?pname"].Value = plani.planiName;
+						insertQry.ExecuteNonQuery();
+						++insert;
 					}
-
                 }
             }
-            resp.Respond(insert + " neue Planeten eingelesen und " + update + " aktualisiert!");
+            resp.Respond(insert + " neue Planeten eingelesen, " + update + " aktualisiert und "+skipped+" übersprungen!");
         }
     }
     class UniXMLUniversumsParser : UniXmlParser {
