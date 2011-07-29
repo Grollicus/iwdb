@@ -12,6 +12,7 @@
 			'RequestIDCleanup' => array( 'fkt' => 'CleanupRequestIDs', 'desc' => 'Lösche alte Request-IDs.'),
 			'TradeCleanup' => array('fkt' => 'TradeCleanup', 'desc' => 'Löscht erledigte Handelseinträge'),
 			'CacheCleanup' => array('fkt' => 'CacheCleanup', 'desc' => 'Entfernt alte Einträge aus dem IW-Cache'),
+			'KabaFilterUpdate' => array('fkt' => 'KabaFilterUpdate', 'desc' => 'KabaFilter im Bot aktualisieren'),
 			'ServerInfo' => array('fkt' => 'ServerInfo', 'desc' => 'Informationen über den aktuellen Server'),
 			'HardReset' => array('fkt' => 'HardReset', 'desc' => 'Setzt das Tool in den Ausgangszustand zurück! (nur der aktuelle Benutzer und Techtree bleiben übrig)'),
 		);
@@ -77,6 +78,15 @@
 		
 		DBQuery("DELETE FROM {$pre}iw_cache WHERE timestamp < DATE_SUB(NOW(), INTERVAL 1 MONTH)", __FILE__, __LINE__);
 		$content['result'] = "Deleted cache entires: ".mysql_affected_rows();
+	}
+	
+	function KabaFilterUpdate() {
+		global $pre, $content;
+		
+		if(QueryIWDBUtil("KabaFilter", array(), $resp))
+			return "Erfolgreich aktualisiert!";
+		else
+			return "Fehlgeschlagen!";
 	}
 	
 	function ServerInfo() {
