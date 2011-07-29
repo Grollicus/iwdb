@@ -75,7 +75,7 @@ namespace IWDB.Parser {
 					} finally {
 						checkReader.Close();
 					}
-					if(checkSuccess) {
+					if(!checkSuccess) {
 						if(plani.objektTyp == "Kampfbasis")
 							parser.NeueKbGesichtet(plani.gala, plani.sys, plani.pla, plani.ownerName, plani.allyTag);
 						insertQry.Parameters["?iwid"].Value = plani.iwid;
@@ -90,10 +90,8 @@ namespace IWDB.Parser {
 						insertQry.ExecuteNonQuery();
 						++insert;
 					} else {
-						if(checkReader.GetString(0) != plani.ownerName) {
-							if(plani.objektTyp == "Kampfbasis")
-								parser.NeueKbGesichtet(plani.gala, plani.sys, plani.pla, plani.ownerName, plani.allyTag);
-						}
+						if(oldOwner != plani.ownerName && plani.objektTyp == "Kampfbasis")
+							parser.NeueKbGesichtet(plani.gala, plani.sys, plani.pla, plani.ownerName, plani.allyTag);
 						updateQry.Parameters["?iwid"].Value = plani.iwid;
 						updateQry.Parameters["?gala"].Value = plani.gala;
 						updateQry.Parameters["?sys"].Value = plani.sys;
