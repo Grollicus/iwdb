@@ -10,10 +10,11 @@
 			'TechTreeLevels' => array('fkt' => 'UpdateTechTreeLevels', 'desc' => 'Aktualisiert die Techtree-Levels'),
 			'IrcAutoLoginMasks' => array('fkt' => 'IrcAutoLoginMasksOverview', 'desc' => 'Listet IRC-Autologinmasken auf'), 
 			'RequestIDCleanup' => array( 'fkt' => 'CleanupRequestIDs', 'desc' => 'Lösche alte Request-IDs.'),
+			'TradeCleanup' => array('fkt' => 'TradeCleanup', 'desc' => 'Löscht erledigte Handelseinträge'),
+			'CacheCleanup' => array('fkt' => 'CacheCleanup', 'desc' => 'Entfernt alte Einträge aus dem IW-Cache'),
 			'ServerInfo' => array('fkt' => 'ServerInfo', 'desc' => 'Informationen über den aktuellen Server'),
 			'HardReset' => array('fkt' => 'HardReset', 'desc' => 'Setzt das Tool in den Ausgangszustand zurück! (nur der aktuelle Benutzer und Techtree bleiben übrig)'),
 		);
-		
 		
 		$content['msg'] = '';
 		$content['result'] = '';
@@ -61,6 +62,23 @@
 		return mysql_affected_rows()." Zeilen erfolgreich gelöscht.";
 	}
 	
+	function TradeCleanup() {
+		global $pre, $content;
+		
+		DBQuery("DELETE FROM {$pre}trade_reqs WHERE soll <= ist", __FILE__, __LINE__);
+		$ret = 'Trades: '.mysql_affected_rows().'<br />';
+		DBQuery("DELETE FROM {$pre}trade_ignores WHERE NOT EXISTS (SELECT rq.id FROM {$pre}trade_reqs AS rq WHERE rq.id = {$pre}trade_ignores.id)", __FILE__, __LINE__);
+		$ret .= 'Ignores: '.mysql_affected_rows();
+		$content['result'] = $ret;
+	}
+	
+	function CacheCleanup() {
+		global $pre, $content;
+		
+		DBQuery("DELETE FROM {$pre}iw_cache WHERE timestamp < DATE_SUB(NOW(), INTERVAL 1 MONTH)", __FILE__, __LINE__);
+		$content['result'] = "Deleted cache entires: ".mysql_affected_rows();
+	}
+	
 	function ServerInfo() {
 		global $content, $db_connection;
 		
@@ -77,7 +95,12 @@
 	}
 	
 	function HardReset() {
-		global $pre, $ID_MEMBER, $user, $content;
+		global $pre, $ID_MEMBER, $user, $content, $scripturl;
+		
+		if(!isset($_REQUEST['sure'])) {
+			$content['result'] = 'Sicher? <a href="'. $scripturl.'/index.php?action=util&amp;sub=HardReset&amp;sure=1">Ja</a>';
+			return;
+		}
 		
 		$truncate = array("building","errors","flotten","flottenerinnerungen","gebs","geoscans","ip_bans","iw_cache","lastest_scans","ressuebersicht","scans","scans_flotten","scans_flotten_schiffe","scans_gebs","schiffe","sitter","sitterlog","speedlog","techtree_useritems","trade_ignores","trade_reqs","universum","uni_userdata");
 		$res = '<table>';

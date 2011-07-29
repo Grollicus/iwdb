@@ -194,9 +194,9 @@ body, td, th, tr {
 .systemmap_stargate a:hover		{ background-color: #000000; color: #FFFFFF; }
 
 .techtree_geb { color: #007700; font-style:italic; }
-.techtree_for { color: #0000FF; font-style:italic; }
+.techtree_for { color: #BB6666; font-style:italic; }
 .techtree_for_done { color: #0000FF; }
-.techtree_geb_done { color: #007700; }
+.techtree_geb_done { color: #6666BB; }
 
 .danger_0 {}
 .danger_1 { background-color:#FFFF00; }

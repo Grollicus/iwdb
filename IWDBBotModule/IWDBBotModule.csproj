@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IWDBTest.cs" />
+    <Compile Include="KabaFilter.cs" />
     <Compile Include="OrderedList.cs" />
     <Compile Include="Parser\GeoScan.cs" />
     <Compile Include="Parser\Hauptseite.cs" />

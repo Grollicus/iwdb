@@ -7,10 +7,13 @@ using System.Xml;
 
 namespace IWDB.Parser {
     abstract class UniXmlParser:ReportParser {
-        public UniXmlParser(NewscanHandler h)
-            : base(h) {}
+		IWDBParser parser;
+        public UniXmlParser(NewscanHandler h, IWDBParser parser)
+            : base(h) {
+				this.parser = parser;
+		}
         public void Parse(List<XmlNode> xmls, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
-            MySqlCommand checkQuery = new MySqlCommand(@"SELECT count(*) FROM " + DBPrefix + "universum WHERE gala=?gal AND sys=?sys AND pla=?pla AND inserttime < ?time", con);
+            MySqlCommand checkQuery = new MySqlCommand(@"SELECT ownername FROM " + DBPrefix + "universum WHERE gala=?gal AND sys=?sys AND pla=?pla AND inserttime < ?time", con);
             checkQuery.Parameters.Add("?gal", MySqlDbType.UInt32);
             checkQuery.Parameters.Add("?sys", MySqlDbType.UInt32);
             checkQuery.Parameters.Add("?pla", MySqlDbType.UInt32);
@@ -62,39 +65,56 @@ namespace IWDB.Parser {
                         allyTagInsert.Parameters["?time"].Value = age;
                         allyTagInsert.ExecuteNonQuery();
                     }
-                    if ((Int64)checkQuery.ExecuteScalar() == 0) {
-                        insertQry.Parameters["?iwid"].Value = plani.iwid;
-                        insertQry.Parameters["?gala"].Value = plani.gala;
-                        insertQry.Parameters["?sys"].Value = plani.sys;
-                        insertQry.Parameters["?pla"].Value = plani.pla;
-                        insertQry.Parameters["?time"].Value = age;
-                        insertQry.Parameters["?ptyp"].Value = plani.planiTyp;
-                        insertQry.Parameters["?otyp"].Value = plani.objektTyp;
-                        insertQry.Parameters["?oname"].Value = plani.ownerName;
-                        insertQry.Parameters["?pname"].Value = plani.planiName;
-                        insertQry.ExecuteNonQuery();
-                        ++insert;
-                    } else {
-                        updateQry.Parameters["?iwid"].Value = plani.iwid;
-                        updateQry.Parameters["?gala"].Value = plani.gala;
-                        updateQry.Parameters["?sys"].Value = plani.sys;
-                        updateQry.Parameters["?pla"].Value = plani.pla;
-                        updateQry.Parameters["?time"].Value = age;
-                        updateQry.Parameters["?ptyp"].Value = plani.planiTyp;
-                        updateQry.Parameters["?otyp"].Value = plani.objektTyp;
-                        updateQry.Parameters["?oname"].Value = plani.ownerName;
-                        updateQry.Parameters["?pname"].Value = plani.planiName;
-                        updateQry.ExecuteNonQuery();
-                        ++update;
-                    }
+					MySqlDataReader checkReader = checkQuery.ExecuteReader();
+					String oldOwner = null;
+					bool checkSuccess;
+					try {
+						checkSuccess = checkReader.Read();
+						if(checkSuccess)
+							oldOwner = checkReader.GetString(0);
+					} finally {
+						checkReader.Close();
+					}
+					if(checkSuccess) {
+						if(plani.objektTyp == "Kampfbasis")
+							parser.NeueKbGesichtet(plani.gala, plani.sys, plani.pla, plani.ownerName, plani.allyTag);
+						insertQry.Parameters["?iwid"].Value = plani.iwid;
+						insertQry.Parameters["?gala"].Value = plani.gala;
+						insertQry.Parameters["?sys"].Value = plani.sys;
+						insertQry.Parameters["?pla"].Value = plani.pla;
+						insertQry.Parameters["?time"].Value = age;
+						insertQry.Parameters["?ptyp"].Value = plani.planiTyp;
+						insertQry.Parameters["?otyp"].Value = plani.objektTyp;
+						insertQry.Parameters["?oname"].Value = plani.ownerName;
+						insertQry.Parameters["?pname"].Value = plani.planiName;
+						insertQry.ExecuteNonQuery();
+						++insert;
+					} else {
+						if(checkReader.GetString(0) != plani.ownerName) {
+							if(plani.objektTyp == "Kampfbasis")
+								parser.NeueKbGesichtet(plani.gala, plani.sys, plani.pla, plani.ownerName, plani.allyTag);
+						}
+						updateQry.Parameters["?iwid"].Value = plani.iwid;
+						updateQry.Parameters["?gala"].Value = plani.gala;
+						updateQry.Parameters["?sys"].Value = plani.sys;
+						updateQry.Parameters["?pla"].Value = plani.pla;
+						updateQry.Parameters["?time"].Value = age;
+						updateQry.Parameters["?ptyp"].Value = plani.planiTyp;
+						updateQry.Parameters["?otyp"].Value = plani.objektTyp;
+						updateQry.Parameters["?oname"].Value = plani.ownerName;
+						updateQry.Parameters["?pname"].Value = plani.planiName;
+						updateQry.ExecuteNonQuery();
+						++update;
+					}
+
                 }
             }
             resp.Respond(insert + " neue Planeten eingelesen und " + update + " aktualisiert!");
         }
     }
     class UniXMLUniversumsParser : UniXmlParser {
-        public UniXMLUniversumsParser(NewscanHandler h)
-            : base(h) {
+        public UniXMLUniversumsParser(NewscanHandler h, IWDBParser parser)
+            : base(h, parser) {
             AddPatern("<\\?xml[^>]+?>\\s+<planeten_data>[\\s\\S]+?</planeten_data>");
         }
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
@@ -110,8 +130,8 @@ namespace IWDB.Parser {
     }
 
     class UniXMLLinkParser:UniXmlParser {
-		public UniXMLLinkParser(NewscanHandler h)
-			: base(h) {
+		public UniXMLLinkParser(NewscanHandler h, IWDBParser parser)
+			: base(h, parser) {
             base.AddPatern(@"http://www.icewars.de/xml/user_univ_scan/[a-f0-9]{32}\.xml", PatternFlags.All);
 		}
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {

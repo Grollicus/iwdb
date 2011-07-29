@@ -8,11 +8,13 @@ using MySql.Data.MySqlClient;
 namespace IWDB {
     
 	public delegate void NeueFlottenGesichtetDelegate(String zielName, int Anzahl, bool angriff);
+	public delegate void NeueKbGesichtet(uint gala, uint sys, uint pla, String ownerName, String ownerAlly);
 	public interface IWDBCore {
 		void CheckLogin(string nick, string username, string host);
 		void CheckLogout(string nick, string username, string host);
         void CheckUsers(string p, List<string> checkingUsers);
         event NeueFlottenGesichtetDelegate OnNeueFlottenGesichtet;
+		event NeueKbGesichtet OnNeueKbGesichtet;
 		void BauleerlaufInfo(out int Anzahl, out List<Pair<int, String>> neuerLeerlauf);
         void SitterauftraegeOffen(out int offeneAuftraege, out int firstJobId, out DateTime naechsterAuftrag);
         void AnfliegendeFlotten(out uint flottenAnz, out uint zielplaniAnz);
@@ -65,6 +67,7 @@ namespace IWDB {
 #region IIRCChanModule Member
 		public bool Disable() {
 			iwdb.OnNeueFlottenGesichtet -= NeueFlottenEntdecktCallback;
+			iwdb.OnNeueKbGesichtet -= NeueKabaEntdecktCallback;
 			chan.OnUserJoin -= OnUserJoin;
 			chan.OnUserLeave -= OnUserLeave;
 			chan.OnChannelJoined -= OnChannelJoined;
@@ -93,6 +96,7 @@ namespace IWDB {
                 return false;
             }
 			iwdb.OnNeueFlottenGesichtet += NeueFlottenEntdecktCallback;
+			iwdb.OnNeueKbGesichtet += NeueKabaEntdecktCallback;
 			//mysql = chan.MysqlConnections.GetConnection(config["mysql"].InnerText);
 			conStr = config["mysql"].InnerText;
 			MySqlConnection con = chan.AllocateConnection(this, conStr);
@@ -295,13 +299,15 @@ namespace IWDB {
             iwdb.AnfliegendeFlotten(out flottenAnz, out zielPlaniAnz);
             if (flottenAnz > 0 || verbose)
                 chan.SendChanMsg(FlottenSpamColor+"Innerhalb der nächsten 5 Minuten kommen " + flottenAnz + " Flotten bei " + zielPlaniAnz + " verschiedenen Zielplanis an!");
-
 		}
 		void NeueFlottenEntdecktCallback(String spieler, int anz, bool angriff) {
 			if(angriff)
 				chan.SendChanMsg(FlottenSpamColor + IrcFormat.Bold + "ANGRIFF " + IrcFormat.Bold + " auf " + spieler + " - " + anz + " neue angreifende Flotten!");
 			else
 				chan.SendChanMsg(FlottenSpamColor + IrcFormat.Bold + "SCAN" + IrcFormat.Bold + " auf " + spieler + " - " + anz + " neue Scans!");
+		}
+		void NeueKabaEntdecktCallback(uint gala, uint sys, uint pla, string ownerName, string ownerAlly) {
+			chan.SendChanMsg(FlottenSpamColor + IrcFormat.Bold + "KABA" + IrcFormat.Bold + " "+gala+":"+sys+":"+pla+" von "+ownerName+(ownerAlly != null ? "["+ownerAlly+"]" : ""));
 		}
 	}
 	public class IWDBChanModuleFactory:IIRCChanModuleFactory {

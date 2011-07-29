@@ -39,7 +39,7 @@ namespace IWDB.Parser {
             parserList.Add(new HauptseiteKolonieinformationParser(this)); //Dieser Parser muss der erste der Hauptseitenparser sein!
             parserList.Add(new HauptseiteAusbaustatusParser(this));
             //parserList.Add(new UniversumsAnsichtParser(this));
-            parserList.Add(new UniXMLUniversumsParser(this));
+            parserList.Add(new UniXMLUniversumsParser(this, this.parser));
             parserList.Add(new ScanLinkParser(this));
             parserList.Add(new Geb‰udeinfoParser(this));
             parserList.Add(new ForschungsinfoParser(this));
@@ -52,7 +52,7 @@ namespace IWDB.Parser {
             parserList.Add(new HauptseiteFeindlicheFlottenParser(this, this.parser));
             parserList.Add(new RessourcenKolo‹bersichtParser(this));
             parserList.Add(new RessourcenKolo‹bersichtTeil2Parser(this));
-            parserList.Add(new UniXMLLinkParser(this));
+            parserList.Add(new UniXMLLinkParser(this, this.parser));
             parserList.Add(new RessTransport(this));
 			parserList.Add(new EigeneUebergabe(this));
 			parserList.Add(new FremdeUebergabe(this));

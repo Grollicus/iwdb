@@ -561,7 +561,7 @@ FROM {$pre}ressuebersicht AS ressuebersicht LEFT JOIN {$pre}universum AS univers
 WHERE uid={$uid}", __FILE__, __LINE__);
 		$content['data'] = array();
 		while($row = mysql_fetch_row($q)) {
-			if($row[1] < 0 || $show_lager) {
+			if($row[1] < 0 || $row[1] != 0 && $show_lager) {
 				$h = (-1)*($row[0]/$row[1]*100);
 				if($show_lager) {
 					$l = ($row[6] - $row[0])/$row[1]*100;

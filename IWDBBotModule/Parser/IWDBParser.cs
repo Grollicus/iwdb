@@ -37,11 +37,12 @@ namespace IWDB.Parser {
         Socket listeningSocket;
         String DBPrefix;
         IWDBParserModule parserMod;
+		KabaFilter kabaFilter;
 
         List<String> usersLoggedIn;
         Dictionary<String, List<string>> checkingUsers;
         public event NeueFlottenGesichtetDelegate OnNeueFlottenGesichtet;
-
+		public event NeueKbGesichtet OnNeueKbGesichtet;
 
         internal IWDBParser(XmlNode config, IWDBParserModule parserMod) {
             if (config["name"] == null)
@@ -58,6 +59,8 @@ namespace IWDB.Parser {
             AddHandler(new NewscanHandler(mysql, DBPrefix, config["mysql"].InnerText, this));
             AddHandler(new BauschleifenHandler());
             AddHandler(new TechTreeDepthHandler(mysql, DBPrefix));
+			kabaFilter = new KabaFilter(DBPrefix, mysql);
+			AddHandler(kabaFilter);
             mysql.Close();
             usersLoggedIn = new List<string>();
 
@@ -304,6 +307,12 @@ AND action IN('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/R
             if (OnNeueFlottenGesichtet != null)
                 OnNeueFlottenGesichtet(ziel, anz, angriff);
         }
+
+		internal void NeueKbGesichtet(uint gala, uint sys, uint pla, String ownerName, String ownerAlly) {
+			if(OnNeueKbGesichtet != null && kabaFilter.ApplyFilter(gala, sys, pla, ownerName, ownerAlly))
+				OnNeueKbGesichtet(gala, sys, pla, ownerName, ownerAlly);
+		}
+
         internal void Disable() {
             mysql = null;
             parserMod.UnregisterListeningSocket(listeningSocket);
