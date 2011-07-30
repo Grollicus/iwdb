@@ -680,7 +680,8 @@ abstract class TechtreeItem {
 	Gebiet\s+(.+?)\n
 	(?:(.*?)\n)?
 	(?:Zuerst\serforscht\svon\s+(.+?)\n)?
-	Kosten\s+("+IWDBRegex.Number+@"\s+Forschungspunkte(?:\n.+?)?)\n
+	Kosten\s+("+IWDBRegex.Number+ @"\s+Forschungspunkte(?:\n.+?)?)\n
+	(?:\s*Aufgrund\svon\sgenerellen\stechnischen\sUnverständnis\sim\sUniversum,\sliegen\sdie\sForschungskosten\sbei\s\d+\s%\.\n)?
 	(?:\s*\(von\s\d+%\sLeuten\serforscht,\s\d+%\sFPKosten\)\n)?
 	(?:\s*Prototyp.+?\n)?
 	\s*Voraussetzungen\sForschungen\s+?((?:\(.*\))*)\n

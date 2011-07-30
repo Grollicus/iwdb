@@ -52,13 +52,10 @@ namespace IWDB {
 		}
 
 		public bool ApplyFilter(uint gala, uint sys, uint pla, String ownerName, String ally) {
-			Log.WriteLine(LogLevel.E_DEBUG, String.Format("ApplyFilter: {0} {1} {2} {3} {4}", gala, sys, pla, ownerName, ally));
 			foreach(Tuple<uint?, uint?, uint?, String, String> el in filters) {
 				if((el.Item1 == null || el.Item2 == gala) && (el.Item2 == null || el.Item2 == sys) && (el.Item3 == null || el.Item3 == pla) && (el.Item4 == null || el.Item4 == ownerName) && (el.Item5 == null || el.Item5 == ally))
-					Log.WriteLine(LogLevel.E_DEBUG, "Accepted Kaba");
 					return true;
 			}
-			Log.WriteLine(LogLevel.E_DEBUG, "Rejected Kaba");
 			return false;
 		}
 
