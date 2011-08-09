@@ -513,10 +513,10 @@ abstract class TechtreeItem {
                 case 2:
                     VV4A = val;
                     break;
-                case 3:
+                case 4:
                     Chemie = val;
                     break;
-                case 4:
+                case 3:
                     Eis = val;
                     break;
                 case 5:
