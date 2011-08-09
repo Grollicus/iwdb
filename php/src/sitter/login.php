@@ -561,10 +561,10 @@ FROM {$pre}ressuebersicht AS ressuebersicht LEFT JOIN {$pre}universum AS univers
 WHERE uid={$uid}", __FILE__, __LINE__);
 		$content['data'] = array();
 		while($row = mysql_fetch_row($q)) {
-			if($row[1] < 0 || $row[1] != 0 && $show_lager) {
-				$h = (-1)*($row[0]/$row[1]*100);
+			if($row[1] < 0 || ($row[1] != 0 && $show_lager)) {
+				$h = abs($row[0]/$row[1]*100);
 				if($show_lager) {
-					$l = ($row[6] - $row[0])/$row[1]*100;
+					$l = abs(($row[6] - $row[0])/$row[1]*100);
 					if($l < $h)
 						$h = $l;
 				}
@@ -576,7 +576,7 @@ WHERE uid={$uid}", __FILE__, __LINE__);
 				'name' => $row[5],
 				'ress' => number_format($row[0], 0, ',', '.'),
 				'prod' => number_format($row[1]/100, 2, ',', '.'),
-				'haelt' => $h >= 1000 ? 'lang' : $h > 0 ? number_format($h, 2, ',', '.').' h' : '',
+				'haelt' => $h >= 1000 ? 'lang' : ($h > 0 ? number_format($h, 2, ',', '.').' h' : ''),
 				'lager' => $show_lager ? number_format($row[6], 0, ',', '.') : '',
 			);
 		}
