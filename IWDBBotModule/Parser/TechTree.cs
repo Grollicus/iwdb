@@ -501,28 +501,54 @@ abstract class TechtreeItem {
 					break;
 			}
 		}
-        public void Set(int num, String value) {
+		public void Set(int num, String value) {
+			float val = float.Parse(value);
+			switch(num) {
+				case 0:
+					Eisen = val;
+					break;
+				case 1:
+					Stahl = val;
+					break;
+				case 2:
+					VV4A = val;
+					break;
+				case 3:
+					Chemie = val;
+					break;
+				case 4:
+					Eis = val;
+					break;
+				case 5:
+					Wasser = val;
+					break;
+				case 6:
+					Energie = val;
+					break;
+			}
+		}
+        public void SetIWID(int num, String value) {
 			float val = float.Parse(value);
             switch (num) {
-                case 0:
+                case 1:
                     Eisen = val;
                     break;
-                case 1:
+                case 2:
                     Stahl = val;
                     break;
-                case 2:
+                case 3:
                     VV4A = val;
                     break;
-                case 4:
+                case 5:
                     Chemie = val;
                     break;
-                case 3:
+                case 4:
                     Eis = val;
                     break;
-                case 5:
+                case 6:
                     Wasser = val;
                     break;
-                case 6:
+                case 7:
                     Energie = val;
                     break;
             }
@@ -530,13 +556,13 @@ abstract class TechtreeItem {
 		public void ParseXml(XmlNode ressourcenXml) {
 			foreach (XmlNode n in ressourcenXml.SelectNodes("ressource")) {
 				int id = int.Parse(n.SelectSingleNode("id").InnerText);
-				Set(id - 1, n.SelectSingleNode("anzahl").InnerText);
+				SetIWID(id, n.SelectSingleNode("anzahl").InnerText);
 			}
 		}
 		public void ParseXmlKb(XmlNode ressourcenXml) {
 			foreach(XmlNode n in ressourcenXml.SelectNodes("resource")) {
 				int id = int.Parse(n.SelectSingleNode("id").Attributes["value"].InnerText);
-				Set(id - 1, n.SelectSingleNode("anzahl").Attributes["value"].InnerText);
+				SetIWID(id, n.SelectSingleNode("anzahl").Attributes["value"].InnerText);
 			}
 		}
 		public float RaidScore { get { return Eisen * 1 + Stahl * 2 + Chemie * 1.5f + Eis * 2 + Wasser * 4 + Energie; } }
