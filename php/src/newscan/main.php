@@ -33,7 +33,11 @@ function ApiNewscans() {
 	$_POST['abs'] = true;
 	
 	ParseScansEx(false, false);
-	echo "ok";
+	
+	echo "ok\n";
+	if(!empty($content['msg']))
+		echo $content['msg']."\n";
+	echo $content['smsg'];
 }
 
 function ParseScansEx($store_in_temp = false, $check_reqid = true) {
