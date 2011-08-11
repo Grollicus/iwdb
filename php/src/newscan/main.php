@@ -52,7 +52,8 @@ function ParseScansEx($store_in_temp = false, $check_reqid = true) {
 			$content['msg'] = "Fehler mit der Request-ID! Wurden diese Scans schon einmal eingetragen?";
 			return;
 		}
-		if(!QueryIWDBUtil('newscan', array($ID_MEMBER, $uid, $_SERVER['HTTP_USER_AGENT'], $scan), $str)) {
+		$str = '';
+		if(!empty($scan) && !QueryIWDBUtil('newscan', array($ID_MEMBER, $uid, $_SERVER['HTTP_USER_AGENT'], $scan), $str)) {
 			$content['scans'] = EscapeO($scan);
 			$content['msg'] = "Verbindung zum Parser fehlgeschlagen!";
 		} else {

@@ -393,7 +393,7 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 			$tmp = DbQueryOne("SELECT value FROM {$pre}temp WHERE ID=".$tmpid, __FILE__, __LINE__);
 			if($tmp !== false) {
 				DBQuery("DELETE FROM {$pre}temp WHERE ID={$tmpid}", __FILE__, __LINE__);
-				$arr = unserialize($tmp);
+				$arr = unserialize(utf8_decode($tmp));
 				if(isset($arr['msg']))
 					if(isset($content['msg']))
 						$content['msg'] .= '<br />'.$arr['msg'];
