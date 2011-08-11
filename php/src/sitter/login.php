@@ -565,7 +565,7 @@ WHERE uid={$uid}", __FILE__, __LINE__);
 				$h = abs($row[0]/$row[1]*100);
 				if($show_lager) {
 					$l = abs(($row[6] - $row[0])/$row[1]*100);
-					if($l < $h)
+					if($row[1]>0 && $l < $h)
 						$h = $l;
 				}
 			} else {
