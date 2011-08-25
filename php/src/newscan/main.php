@@ -25,7 +25,7 @@ function NewscanEx() {
 }
 
 function ApiNewscans() {
-	global $ID_MEMBER, $user;
+	global $ID_MEMBER, $user, $content;
 	
 	if(!isset($_REQUEST['scans']))
 		die("fail.");
@@ -37,7 +37,8 @@ function ApiNewscans() {
 	echo "ok\n";
 	if(!empty($content['msg']))
 		echo $content['msg']."\n";
-	echo $content['smsg'];
+	if(!empty($content['smsg']))
+		echo $content['smsg'];
 }
 
 function ParseScansEx($store_in_temp = false, $check_reqid = true) {
