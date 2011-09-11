@@ -25,7 +25,7 @@ function NewscanEx() {
 }
 
 function ApiNewscans() {
-	global $ID_MEMBER, $user;
+	global $ID_MEMBER, $user, $content;
 	
 	if(!isset($_REQUEST['scans']))
 		die("fail.");
@@ -37,7 +37,8 @@ function ApiNewscans() {
 	echo "ok\n";
 	if(!empty($content['msg']))
 		echo $content['msg']."\n";
-	echo $content['smsg'];
+	if(!empty($content['smsg']))
+		echo $content['smsg'];
 }
 
 function ParseScansEx($store_in_temp = false, $check_reqid = true) {
@@ -56,7 +57,8 @@ function ParseScansEx($store_in_temp = false, $check_reqid = true) {
 			$content['msg'] = "Fehler mit der Request-ID! Wurden diese Scans schon einmal eingetragen?";
 			return;
 		}
-		if(!QueryIWDBUtil('newscan', array($ID_MEMBER, $uid, $_SERVER['HTTP_USER_AGENT'], $scan), $str)) {
+		$str = '';
+		if(!empty($scan) && !QueryIWDBUtil('newscan', array($ID_MEMBER, $uid, $_SERVER['HTTP_USER_AGENT'], $scan), $str)) {
 			$content['scans'] = EscapeO($scan);
 			$content['msg'] = "Verbindung zum Parser fehlgeschlagen!";
 		} else {

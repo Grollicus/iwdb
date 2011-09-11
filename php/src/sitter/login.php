@@ -393,7 +393,7 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 			$tmp = DbQueryOne("SELECT value FROM {$pre}temp WHERE ID=".$tmpid, __FILE__, __LINE__);
 			if($tmp !== false) {
 				DBQuery("DELETE FROM {$pre}temp WHERE ID={$tmpid}", __FILE__, __LINE__);
-				$arr = unserialize($tmp);
+				$arr = unserialize(utf8_decode($tmp));
 				if(isset($arr['msg']))
 					if(isset($content['msg']))
 						$content['msg'] .= '<br />'.$arr['msg'];
@@ -429,8 +429,8 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 		} elseif(isset($_REQUEST['fullDone']) && CheckRequestID()) {
 			$id = intval($_REQUEST['rid']);
 			$now = time();
-			DBQuery("UPDATE {$pre}trade_reqs SET ist=soll WHERE id=".$id, __FILE__, __LINE__);
 			$row = DBQueryOne("SELECT uid,ziel,ress,schiffid,soll-ist FROM {$pre}trade_reqs WHERE id=".$id, __FILE__, __LINE__);
+			DBQuery("UPDATE {$pre}trade_reqs SET ist=soll WHERE id=".$id, __FILE__, __LINE__);
 			DBQuery("INSERT INTO {$pre}trade_history (time, type, sender, receiver, dst, ress, schiffid, resscnt) VALUES ({$now}, 'edit', {$ID_MEMBER}, ".intval($row[0]).", '".EscapeDB($row[1])."', '".EscapeDB($row[2])."', ".intval($row[3]).", ".intval($row[4]).")" , __FILE__, __LINE__);
 		} elseif(isset($_REQUEST['partDone']) && CheckRequestID()) {
 			$id = intval($_REQUEST['rid']);
@@ -562,10 +562,10 @@ WHERE uid={$uid}", __FILE__, __LINE__);
 		$content['data'] = array();
 		while($row = mysql_fetch_row($q)) {
 			if($row[1] < 0 || ($row[1] != 0 && $show_lager)) {
-				$h = abs($row[0]/$row[1]*100);
+				$h = (-1)*$row[0]/$row[1]*100;
 				if($show_lager) {
 					$l = abs(($row[6] - $row[0])/$row[1]*100);
-					if($l < $h)
+					if($row[1]>0 && ($h > 0 && $l < $h || $h < 0 && $l < abs($h)))
 						$h = $l;
 				}
 			} else {
