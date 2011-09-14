@@ -12,8 +12,9 @@
 				$schiff = 0;
 				$res = EscapeDB($res);
 			}
+			$anz = intval(str_replace('k', '000', Param('anz')));
 			DBQuery("INSERT INTO {$pre}trade_reqs (uid, time, priority, ress, ziel, soll, ist, SchiffID, comment) 
-VALUES (".intval(Param('account')).", ".time().", ".intval($_REQUEST['priority']).", '$res', '".EscapeDB(Param('coords'))."', ".intval(Param('anz')).", 0, $schiff, '".EscapeDB(Param('comment'))."')", __FILE__, __LINE__);
+VALUES (".intval(Param('account')).", ".time().", ".intval($_REQUEST['priority']).", '$res', '".EscapeDB(Param('coords'))."', ".$anz.", 0, $schiff, '".EscapeDB(Param('comment'))."')", __FILE__, __LINE__);
 			$now = time();
 			DBQuery("INSERT INTO {$pre}trade_history (time, type, sender, receiver, dst, ress, schiffid, resscnt) VALUES ({$now}, 'new', {$ID_MEMBER}, ".intval(Param('account')).", '".EscapeDB(Param('coords'))."', '$res', {$schiff}, -".intval(Param('anz')).")", __FILE__, __LINE__);
 		} elseif(isset($_REQUEST['update']) && (isset($_REQUEST['id']) && CheckRequestID() || $_REQUEST['todo'] == 'done')) {
@@ -53,10 +54,11 @@ VALUES (".intval(Param('account')).", ".time().", ".intval($_REQUEST['priority']
 					foreach($_REQUEST['anz'] as $id => $anz) {
 						if(!empty($anz)) {
 							$id = intval($id);
-							DBQuery("UPDATE {$pre}trade_reqs SET ist=ist+".intval($anz)." WHERE id=".$id, __FILE__, __LINE__);
+							$anza = intval(str_replace('k', '000', $anz));
+							DBQuery("UPDATE {$pre}trade_reqs SET ist=ist+".$anza." WHERE id=".$id, __FILE__, __LINE__);
 							$ids_done[] = $id;
 							$row = DBQueryOne("SELECT uid,ziel,ress,schiffid FROM {$pre}trade_reqs WHERE id=".$id, __FILE__, __LINE__);
-							DBQuery("INSERT INTO {$pre}trade_history (time, type, sender, receiver, dst, ress, schiffid, resscnt) VALUES ({$now}, 'edit', {$ID_MEMBER}, $row[0], '".EscapeDB($row[1])."', '".EscapeDB($row[2])."', ".intval($row[3]).", ".intval($anz).")", __FILE__, __LINE__);
+							DBQuery("INSERT INTO {$pre}trade_history (time, type, sender, receiver, dst, ress, schiffid, resscnt) VALUES ({$now}, 'edit', {$ID_MEMBER}, $row[0], '".EscapeDB($row[1])."', '".EscapeDB($row[2])."', ".intval($row[3]).", ".$anza.")", __FILE__, __LINE__);
 						}
 					}
 					$ids = '';
@@ -151,7 +153,7 @@ FROM (({$pre}trade_reqs AS trade_reqs INNER JOIN {$pre}igm_data AS igm_data ON t
 		}
 		
 		
-		$q = DBQuery("SELECT hist.time, hist.type, users.visibleName, igm_data.igmname, hist.dst, hist.ress, hist.SchiffID, hist.resscnt FROM ({$pre}trade_history AS hist INNER JOIN {$pre}igm_data AS igm_data ON hist.receiver = igm_data.ID) INNER JOIN {$pre}users AS users ON hist.sender=users.ID ORDER BY hist.time DESC LIMIT 0,30", __FILE__, __LINE__);
+		$q = DBQuery("SELECT hist.time, hist.type, users.visibleName, igm_data.igmname, hist.dst, hist.ress, hist.SchiffID, hist.resscnt FROM ({$pre}trade_history AS hist INNER JOIN {$pre}igm_data AS igm_data ON hist.receiver = igm_data.ID) INNER JOIN {$pre}users AS users ON hist.sender=users.ID ORDER BY hist.time DESC LIMIT 0,80", __FILE__, __LINE__);
 		$content['history'] = array();
 		$historyTypes = array(
 			'new' => 'Neu',

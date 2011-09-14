@@ -435,7 +435,7 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 		} elseif(isset($_REQUEST['partDone']) && CheckRequestID()) {
 			$id = intval($_REQUEST['rid']);
 			$now = time();
-			$anz = intval($_REQUEST['cnt']);
+			$anz = intval(str_replace('k', '000',$_REQUEST['cnt']));
 			DBQuery("UPDATE {$pre}trade_reqs SET ist=ist+{$anz} WHERE id=".$id, __FILE__, __LINE__);
 			$row = DBQueryOne("SELECT uid,ziel,ress,schiffid FROM {$pre}trade_reqs WHERE id=".$id, __FILE__, __LINE__);
 			DBQuery("INSERT INTO {$pre}trade_history (time, type, sender, receiver, dst, ress, schiffid, resscnt) VALUES ({$now}, 'edit', {$ID_MEMBER}, $row[0], '".EscapeDB($row[1])."', '".EscapeDB($row[2])."', ".intval($row[3]).", ".$anz.")", __FILE__, __LINE__);
