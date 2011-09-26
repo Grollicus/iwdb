@@ -6,9 +6,9 @@
 		
 		echo '<table width="99%" cellpadding="0" cellspacing="0" border="0">
 			<tr><td colspan="', $content['uni']['columns'], '">
-				<table width="100%" border="0" style="border: none;" class="subtable"><tr><td align="left" style="width: 90px;">', $content['uni']['hasPrevLink'] ? '<a href="'.$content['uni']['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td>
+				<table width="100%" border="0" style="border: none;"><tr><td align="left" style="width: 90px;border: none 0px;">', $content['uni']['hasPrevLink'] ? '<a href="'.$content['uni']['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td>
 				<th align="center">Universumsansicht</th>
-				<td align="right" style="width: 90px;">', $content['uni']['hasNextLink'] ? '<a href="'.$content['uni']['nextLink'].'">Nächste Seite</a>' : 'Nächste Seite', '</td></tr></table>
+				<td align="right" style="width: 90px;border: none 0px;">', $content['uni']['hasNextLink'] ? '<a href="'.$content['uni']['nextLink'].'">Nächste Seite</a>' : 'Nächste Seite', '</td></tr></table>
 			</td></tr><tr style="white-space:nowrap;">';
 		foreach($content['uni']['titles'] as $title) {
 			if(!$title['hidden'])
@@ -26,9 +26,11 @@
 			foreach($content['uni']['titles'] as $v) {
 				switch($v['id']) {
 					case 'scan_gebs':
-						echo '</tr><tr><td colspan="', $content['uni']['columns'], '" class="', $row['scan_gebs_time'], '">';
-						if(!empty($row['scan_gebs'])) {
-							echo '<table border="0" style="border: none;" class="subtable">';
+						echo '</tr><tr><td colspan="', $content['uni']['columns'], '" class="', $row['scan_gebs_age'], '" style="font-size:smaller;">';
+						if(!$row['scan_gebs_exists']) {
+							echo 'Hab keinen Gebscan :(';
+						} else {
+							echo 'Scan von: ', $row['scan_gebs_time'], '<br /><table border="0" style="border: none;" class="subtable">';
 							foreach($row['scan_gebs'] as $geb) {
 								echo '<tr><td>', $geb['name'], '</td><td align="right">', $geb['anz'], '</td></tr>';
 							}
@@ -37,9 +39,11 @@
 						echo '</td>';
 						break;
 					case 'scan_schiffe':
-						echo '</tr><tr><td colspan="', $content['uni']['columns'], '" class="', $row['scan_schiffe_age'], '">';
-						if(!empty($row['scan_schiffe'])) {
-							echo '<table border="0" style="border: none;" class="subtable">';
+						echo '</tr><tr><td colspan="', $content['uni']['columns'], '" class="', $row['scan_schiffe_age'], '" style="font-size:smaller;">';
+						if(!$row['scan_schiffe_exists']) {
+							echo 'Hab keinen Schiffscan :(';
+						} else {
+							echo 'Scan von: ', $row['scan_schiffe_time'], '<br /><table border="0" style="border: none;" class="subtable">';
 							foreach($row['scan_schiffe'] as $flotte) {
 								echo '<tr><td colspan="2" style="font-weight: bold;">', $flotte['typ'], 'e Flotte von ', $flotte['name'], '</td></tr>';
 								foreach($flotte['schiffe'] as $schiff) {
@@ -84,7 +88,7 @@
 			echo '</tr>';
 		}
 		echo '<tr><td colspan="', $content['uni']['columns'], '">
-				<table width="100%" border="0" style="border: none; margin:0px; padding:0px;" class="subtable"><tr><td width="50%" align="left" style="border: none; margin:0px; padding:0px;">', $content['uni']['hasPrevLink'] ? '<a href="'.$content['uni']['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td>
+				<table width="100%" border="0" style="border: none; margin:0px; padding:0px;"><tr><td width="50%" align="left" style="border: none; margin:0px; padding:0px;">', $content['uni']['hasPrevLink'] ? '<a href="'.$content['uni']['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td>
 				<td align="right" style="border: none; margin:0px; padding:0px;">', $content['uni']['hasNextLink'] ? '<a href="'.$content['uni']['nextLink'].'">Nächste Seite</a>' : 'Nächste Seite', '</td></tr></table>
 			</td></tr>
 			<tr><th colspan="', $content['uni']['columns'], '">Farben geben das Alter der Daten an: ';

@@ -293,7 +293,7 @@ namespace IWDB.Parser {
 			this.DBPrefix = DBPrefix;
 		}
 		public void ToDB(MySqlConnection con) {
-			MySqlCommand cmd = new MySqlCommand("SELECT universum.ID, geoscans.timestamp FROM (" + DBPrefix + @"universum AS universum) LEFT JOIN (" + DBPrefix + @"geoscans AS geoscans)
+			MySqlCommand cmd = new MySqlCommand("SELECT universum.ID, geoscans.timestamp, universum.inserttime FROM (" + DBPrefix + @"universum AS universum) LEFT JOIN (" + DBPrefix + @"geoscans AS geoscans)
 				ON universum.ID = geoscans.ID
 				WHERE sys=?sys AND gala=?gal AND pla=?pla", con);
 			cmd.Parameters.Add("?sys", MySqlDbType.UInt16).Value = sol;
@@ -301,11 +301,13 @@ namespace IWDB.Parser {
 			cmd.Parameters.Add("?pla", MySqlDbType.UInt16).Value = pla;
 			cmd.Prepare();
 			MySqlDataReader r = cmd.ExecuteReader(System.Data.CommandBehavior.SingleRow);
+			uint old_geo_timestamp = 0;
 			uint old_timestamp = 0;
 			int id;
 			if(r.Read()) {
 				id = r.GetInt32(0);
-				old_timestamp = r.IsDBNull(1) ? 0 : r.GetUInt32(1);
+				old_geo_timestamp = r.IsDBNull(1) ? 0 : r.GetUInt32(1);
+				old_timestamp = r.GetUInt32(2);
 				r.Close();
 			} else {
 				r.Close();
@@ -320,13 +322,23 @@ namespace IWDB.Parser {
 				uniInsert.Parameters.Add("?typ", MySqlDbType.String).Value = pla_typ;
 				uniInsert.Parameters.Add("?objtyp", MySqlDbType.String).Value = obj_typ;
 				uniInsert.Parameters.Add("?owner", MySqlDbType.String).Value = owner_name;
-				uniInsert.Parameters.Add("?name", MySqlDbType.String).Value = "-";
+				uniInsert.Parameters.Add("?name", MySqlDbType.String).Value = "?";
 				uniInsert.Prepare();
 				uniInsert.ExecuteNonQuery();
 				id = (int)uniInsert.LastInsertedId;
 			}
-
-            if (old_timestamp < this.timestamp) {
+			if(old_timestamp < this.timestamp) {
+				MySqlCommand uniUpdate = new MySqlCommand(@"UPDATE " + DBPrefix + @"universum SET inserttime=?inserttime, planityp=?typ, objekttyp=?objtyp, ownername=?owner, planiname=?name WHERE ID=?id", con);
+				uniUpdate.Parameters.Add("?inserttime", MySqlDbType.UInt32).Value = timestamp;
+				uniUpdate.Parameters.Add("?typ", MySqlDbType.String).Value = pla_typ;
+				uniUpdate.Parameters.Add("?objtyp", MySqlDbType.String).Value = obj_typ;
+				uniUpdate.Parameters.Add("?owner", MySqlDbType.String).Value = owner_name;
+				uniUpdate.Parameters.Add("?name", MySqlDbType.String).Value = "?";
+				uniUpdate.Parameters.Add("?id", MySqlDbType.UInt16).Value = id;
+				uniUpdate.Prepare();
+				uniUpdate.ExecuteNonQuery();
+			}
+            if (old_geo_timestamp < this.timestamp) {
                 if (owner_name.Length>0) {
                     MySqlCommand allyUpd = new MySqlCommand("INSERT INTO " + DBPrefix + @"uni_userdata (name, allytag, updatetime) VALUES (?name, ?tag, ?time) ON DUPLICATE KEY UPDATE name=IF(updatetime<VALUES(updatetime),VALUES(name),name), allytag=IF(updatetime<VALUES(updatetime),VALUES(allytag),allytag), updatetime=IF(updatetime<VALUES(updatetime),VALUES(updatetime),updatetime)", con);
                     allyUpd.Parameters.Add("?name", MySqlDbType.String).Value = owner_name;

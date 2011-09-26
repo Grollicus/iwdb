@@ -410,13 +410,13 @@
 		}
 	// ]]></script>
 	<div class="content"><h2>Übersicht feindliche Flotten</h2>
-		<table><tr><th>&nbsp;</th><th colspan="3">Spieler</th><th>Ankunft</th></tr>';
+		<table><tr><th colspan="4">Spieler</th><th>Ankunft</th></tr>';
 		foreach($content['users'] as $user) {
 			echo '
-			<tr class="danger_', $user['gefahrenLevel'], '"><td><a href="javascript:toggleUserRows(', $user['uid'], ');">+-</a></td><td colspan="3"><a href="',$user['loginLink'], '">', $user['name'], '</a></td><td>', $user['ersteAnkunft'], '</td></tr>';
+			<tr class="danger_', $user['gefahrenLevel'], '"><td colspan="4"><a href="',$user['loginLink'], '">', $user['name'], '</a></td><td>', $user['ersteAnkunft'], '</td></tr>';
 			foreach($user['planis'] as $plani) {
 				echo '
-			<tr style="display:none;" id="p_', $plani['ID'], '" class="danger_', $plani['gefahrenLevel'], '">
+			<tr id="p_', $plani['ID'], '" class="danger_', $plani['gefahrenLevel'], '">
 				<td>&nbsp;</td>
 				<td>(', $plani['startkoords'],')', $plani['startname'], '<br /><i>[', $plani['startally'], ']', $plani['startowner'], '</i></td>
 				<td>(', $plani['zielkoords'],')', $plani['zielname'], '<br /><i>[', $plani['zielally'], ']', $plani['zielowner'], '</i></td>
