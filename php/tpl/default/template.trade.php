@@ -47,7 +47,7 @@
 		echo '</select></td></tr>
 		<tr><td>Anzahl</td><td><input type="text" name="anz" value="" /></td></tr>
 		<tr><td>Kommentar</td><td><input type="text" name="comment" value="" /></td></tr>
-		<tr><td colspan="2"><input type="submit" name="new" /></td></tr>
+		<tr><td colspan="2"><input type="submit" name="new" value="Neu bestellen" /></td></tr>
 	</table>
 </form><br />
 <table>
