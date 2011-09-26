@@ -119,6 +119,7 @@ body, td, th, tr {
 
 .content .subtable td {
 	border: none 0px;
+	font-size:smaller;
 }
 
 /* Die Überschrift und Tabellenüberschriften im Menü*/

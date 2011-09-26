@@ -972,11 +972,12 @@
 	}
 	function ModScanGebsCb($row, &$data) {
 		if(is_null($row['scan_gebs'])) {
+			$data['scan_gebs_exists'] = false;
 			$data['scan_gebs'] = array();
 			$data['scan_gebs_time'] = 'act_5';
 			return;
 		}
-		
+		$data['scan_gebs_exists'] = true;
 		$arr = explode('/', $row['scan_gebs']);
 		$gebs = array();
 		foreach($arr as $line) {
@@ -984,14 +985,18 @@
 			$gebs[] = array('anz' => intval($a[0]), 'name' => EscapeO($a[1]));
 		}
 		$data['scan_gebs'] = $gebs;
-		$data['scan_gebs_time'] = ActualityColor($row['gebScanTime']);
+		$data['scan_gebs_age'] = ActualityColor($row['gebScanTime']);
+		$data['scan_gebs_time'] = FormatDate($row['gebScanTime']);
 	}
 	function ModScanSchiffeCb($row, &$data) {
-		$data['scan_schiffe_age'] = ActualityColor('schiffScanTime');
+		$data['scan_schiffe_age'] = ActualityColor($row['schiffScanTime']);
+		$data['scan_schiffe_time'] = FormatDate($row['schiffScanTime']);
 		if(empty($row['scan_schiffe'])) {
+			$data['scan_schiffe_exists'] = false;
 			$data['scan_schiffe'] = array();
 			return;
 		}
+		$data['scan_schiffe_exists'] = true;
 		$flotten = explode('|||', $row['scan_schiffe']);
 		$flotten_data = array();
 		foreach($flotten as $fl) {
