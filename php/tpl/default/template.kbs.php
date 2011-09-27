@@ -4,30 +4,30 @@
 function TemplateRaidOverview() {
 	global $content;
 	TemplateHeader('<style type="text/css"><!--
-.kb_standard {
+.kb_standard, .kb_standard td {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 10px;
 	color: #FFFFFF;
 }
-.kb_fett {
+.kb_fett, .kb_fett td {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 10px;
 	font-weight: bold;
 	color: #FFFFFF;
 }
-.kb_tab_trennung_unten {
+.kb_tab_trennung_unten, .kb_tab_trennung_unten td {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 9px;
 	font-style: normal;
 	font-weight: 900;
-	border-bottom-style: solid;
-	border-bottom-width: 1px;
-	border-top-style: none;
-	border-right-style: none;
-	border-left-style: none;
-	border-bottom-color: #666666;
+	border-bottom-style: solid !important;
+	border-bottom-width: 1px !important;
+	border-top-style: none !important;
+	border-right-style: none !important;
+	border-left-style: none !important;
+	border-bottom-color: #666666 !important;
 }
-.kb_tab_rand {
+.kb_tab_rand, .kb_tab_rand td {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 9px;
 	font-style: normal;
@@ -35,7 +35,7 @@ function TemplateRaidOverview() {
 	margin:0px;
 	color: #FFFFFF;
 }
-.kb_right
+.kb_right, .kb_right td
 {
 	text-align:right;
 }
@@ -43,13 +43,21 @@ function TemplateRaidOverview() {
 {
 
 }
-.kb_schiffe_zerstoert
+.kb_schiffe_zerstoert, .kb_schiffe_zerstoert td
 {
 	color:#FF0000;
 }
-.kb_schiffe_ueberlebt
+.kb_schiffe_ueberlebt, .kb_schiffe_ueberlebt td
 {
 	color:#00FF00;
+}
+.kbtd table {
+	border-style: none;
+	font-size:smaller;
+	background-color: transparent;
+}
+.kbtd td, .kbtd tr {
+	border-style: none;
 }
 -->
 </style>');
@@ -95,7 +103,7 @@ function TemplateRaidOverview() {
 			$raid['rWa'], '</td><td>', $raid['rEn'], '</td><td>', $raid['zFe'], '</td><td>',
 			$raid['zSt'], '</td><td>', $raid['zCh'], '</td><td>', $raid['zVv'], '</td><td>',
 			$raid['zEi'], '</td><td>', $raid['zWa'], '</td><td>', $raid['zEn'], '</td></tr>
-			<tr style="display:none;" id="kbr_', $raid['id'], '"><td id="kb_', $raid['id'], '" colspan="18" style="font-size:smaller;"></td></tr>';
+			<tr style="display:none;" id="kbr_', $raid['id'], '"><td id="kb_', $raid['id'], '" colspan="18" class="kbtd"></td></tr>';
 	}
 	
 	echo '</table></div>';
