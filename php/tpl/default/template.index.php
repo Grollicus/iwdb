@@ -123,7 +123,7 @@ if (!function_exists('TemplateHeader'))
 	function TemplateHeader($html_header_add = '')
 	{
 		global $themeurl, $user, $scripturl, $content, $spiel;
-		TemplateHtmlHeader();
+		TemplateHtmlHeader($html_header_add);
 		echo '
 <body class="body"><div class="page">
 	<div class="header">
