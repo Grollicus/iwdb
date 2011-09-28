@@ -93,4 +93,29 @@ function HelpPage() {
 	TemplateInit('main');
 	TemplateBugs();
 }
+function KbFormat() {
+	global $content, $scripturl;
+
+	$content['result'] = '';
+	$content['kbs'] = '';
+	if(isset($_REQUEST['submit'])) {
+		$content['kbs'] = EscapeO(Param('kbs'));
+		$matches = array();
+		preg_match_all('~http://www\.icewars\.de/portal/kb/de/kb\.php\?id=\d+&md_hash=[a-z0-9]{32}~', Param('kbs'), $matches);
+		foreach($matches[0] as $m) {
+			$kb = file_get_contents($m.'&typ=bbcode');
+			if($_REQUEST['target'] == 'forum')
+				$kb = str_replace(array(' colspan=3', ' colspan=4'), array('', ''), $kb);
+			$content['result'] .= EscapeO($kb);
+		}
+	}
+	
+	$content['submitUrl'] = $scripturl.'/index.php?action=kbformat';
+	$content['target'] = array(
+		'forum' => array('desc' => 'Allyforum', 'selected' => isset($_REQUEST['target']) && $_REQUEST['target'] == 'forum'),
+		'iwf' => array('desc' => 'IWF',  'selected' => isset($_REQUEST['target']) && $_REQUEST['target'] == 'iwf'),
+	);
+	TemplateInit('main');
+	TemplateKbFormat();
+}
 ?>
