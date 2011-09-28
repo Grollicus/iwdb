@@ -228,4 +228,18 @@
 		echo '<br /><form method="get" action="', $scripturl, '"><div>Top <input type="hidden" name="action" value="hs" /><input type="text" name="cnt" value="', $content['cnt'], '" size="5" /><input type="submit" value="Anzeigen" /></div></form></div>';
 		TemplateFooter();
 	}
+	function TemplateKbFormat() {
+		global $content;
+		TemplateHeader();
+		TemplateMenu();
+		echo '<div class="content"><h2>KBs f&uuml;rs Forum formatieren</h2>
+	<form method="POST" action="', $content['submitUrl'], '"><textarea name="kbs" cols="80" rows="10"></textarea><br /><select name="target">';
+foreach($content['target'] as $v => $t) {
+	echo '<option ', $t['selected'] ? 'selected="selected"':'','  value="',$v,'">', $t['desc'], '</option>';
+}
+echo '</select><input type="submit" name="submit" value="KBs formatieren!"/></form>
+<textarea readonly="readonly" cols="80" rows="10">',$content['result'],'</textarea>
+</div>';
+		TemplateFooter();
+	}
 ?>

@@ -84,6 +84,7 @@ function Main()
 	'ircmask' => array('core/irc.php', 'IrcMask'),
 	'index' => array('core/main.php', 'Index'),
 	'iwlogin' => array('sitter/login.php', 'MainLogin'),
+	'kbformat' => array('core/main.php', 'KbFormat'),
 	'logout' => array('core/LoginOut.php','Logout'),
 	'mysql' => array('admin/mysql.php', 'MySQLClient'),
 	'newscanex' => array('newscan/main.php', 'NewscanEx'),
