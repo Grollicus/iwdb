@@ -91,7 +91,6 @@ function Main()
 	'ressuserlist' => array('ress/list.php', 'RessUserList'),
 	'settingsex' => array('core/UserSettingsEx.php', 'UserSettingsEx'),
 	'scans_view' => array('scans/view.php', 'ScansView'), //scheint nicht verwendet zu werden
-	'shipdata' => array('admin/shipdata.php', 'EditShipData'),
 	'sitter_flotten' => array('sitter/view.php', 'SitterFeindlFlottenUebersicht'),
 	'sitter_login' => array('sitter/login.php', 'SitterLogin'),
 	'sitter_dologin' => array('sitter/login.php', 'SitterDoLogin'),
@@ -120,6 +119,7 @@ function Main()
 	'util' => array('admin/util.php', 'AdminUtils'),
 	'unknownAction' => array('core/main.php', 'UnknownAction'),
 	'useradmin' => array('admin/Usermanagement.php', 'Useradmin_Main'),
+	'war_kbs' => array('war/kbs.php', 'WarKbs'),
 	
 	//### Comment for automatically adding new _!!Actions!!_ here
 	);

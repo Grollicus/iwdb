@@ -441,10 +441,12 @@ abstract class TechtreeItem {
 		public float Bev;
 		public float FP;
 		public String Sonstiges;
+		public TimeSpan Zeit;
 
 		public ResourceSet() {
 			Eisen = Stahl = Chemie = VV4A = Eis = Wasser = Energie = Credits = Bev = FP = 0;
 			Sonstiges = "";
+			Zeit = TimeSpan.Zero;
 		}
 		public static ResourceSet operator -(ResourceSet rs1, ResourceSet rs2) {
 			ResourceSet ret = new ResourceSet();
@@ -458,7 +460,41 @@ abstract class TechtreeItem {
 			ret.Credits = rs1.Credits-rs2.Credits;
 			ret.Bev = rs1.Bev-rs2.Bev;
 			ret.FP = rs1.FP-rs2.FP;
+			ret.Zeit = rs1.Zeit - rs2.Zeit;
 			return ret;
+		}
+		public static ResourceSet operator +(ResourceSet rs1, ResourceSet rs2) {
+			ResourceSet ret = new ResourceSet();
+			ret.Eisen = rs1.Eisen + rs2.Eisen;
+			ret.Stahl = rs1.Stahl + rs2.Stahl;
+			ret.Chemie = rs1.Chemie + rs2.Chemie;
+			ret.VV4A = rs1.VV4A + rs2.VV4A;
+			ret.Eis = rs1.Eis + rs2.Eis;
+			ret.Wasser = rs1.Wasser + rs2.Wasser;
+			ret.Energie = rs1.Energie + rs2.Energie;
+			ret.Credits = rs1.Credits + rs2.Credits;
+			ret.Bev = rs1.Bev + rs2.Bev;
+			ret.FP = rs1.FP + rs2.FP;
+			ret.Zeit = rs1.Zeit + rs2.Zeit;
+			return ret;
+		}
+		public static ResourceSet operator *(ResourceSet rs1, uint scalar) {
+			ResourceSet ret = new ResourceSet();
+			ret.Eisen = rs1.Eisen * scalar;
+			ret.Stahl = rs1.Stahl * scalar;
+			ret.Chemie = rs1.Chemie * scalar;
+			ret.VV4A = rs1.VV4A * scalar;
+			ret.Eis = rs1.Eis * scalar;
+			ret.Wasser = rs1.Wasser * scalar;
+			ret.Energie = rs1.Energie * scalar;
+			ret.Credits = rs1.Credits * scalar;
+			ret.Bev = rs1.Bev * scalar;
+			ret.FP = rs1.FP * scalar;
+			ret.Zeit = TimeSpan.FromSeconds(rs1.Zeit.TotalSeconds * scalar);
+			return ret;
+		}
+		public static ResourceSet operator *(uint scalar, ResourceSet rs2) {
+			return rs2 * scalar;
 		}
 		public void Set(String name, String value) {
 			switch (name) {
@@ -565,7 +601,7 @@ abstract class TechtreeItem {
 				SetIWID(id, n.SelectSingleNode("anzahl").Attributes["value"].InnerText);
 			}
 		}
-		public float RaidScore { get { return Eisen * 1 + Stahl * 2 + Chemie * 1.5f + Eis * 2 + Wasser * 4 + Energie; } }
+		public float RaidScore { get { return Eisen * 1 + Stahl * 2 + Chemie * 1.5f + VV4A * 4 + Eis * 2 + Wasser * 4 + Energie; } }
 	}
 	class TechtreeItemStufe {
 		public int Stufe;
@@ -756,4 +792,46 @@ abstract class TechtreeItem {
 			this.stufen.Add(stufe.Stufe, stufe);
 		}
 	}
+	class SchiffsKostenXmlParser : ReportParser {
+		public SchiffsKostenXmlParser(NewscanHandler h)
+			: base(h) {
+				AddPatern("http://www.icewars.de/portal/xml/de/schiffkosten.xml", PatternFlags.All);
+		}
+		public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+			String str = IWCache.WebQuery(matches[0].Value);
+			System.Xml.XmlDocument d = new System.Xml.XmlDocument();
+			d.LoadXml(str);
+			foreach(XmlNode sch in d["struktur"].SelectNodes("schiff")) {
+				MySqlCommand insertItem = new MySqlCommand("INSERT IGNORE INTO " + DBPrefix + "techtree_items (name, type) VALUES (?name, 'schiff')", con);
+				insertItem.Parameters.Add("?name", MySqlDbType.String).Value = sch["name"].InnerText;
+				insertItem.ExecuteNonQuery();
+				long itemID = insertItem.LastInsertedId;
+				if(itemID == 0) {
+					MySqlCommand sel = new MySqlCommand("SELECT ID FROM " + DBPrefix + "techtree_items WHERE name=?name AND type='schiff'", con);
+					sel.Parameters.Add("?name", MySqlDbType.String).Value = sch["name"].InnerText;
+					Object obj = sel.ExecuteScalar();
+					itemID = (uint)obj;
+				}
+				ResourceSet kosten = new ResourceSet();
+				kosten.ParseXml(sch["kosten"]);
+				kosten.Zeit = TimeSpan.FromSeconds(int.Parse(sch["dauer"].InnerText));
+				MySqlCommand insertStufe = new MySqlCommand("INSERT INTO " + DBPrefix + @"techtree_stufen (ItemID, Stufe, Dauer, bauE,bauS,bauC,bauV,bauEis,bauW,bauEn,bauCr,bauBev) VALUES (?itemid, 1, ?dauer, ?baue, ?baus, ?bauc, ?bauv, ?baueis, ?bauw, ?bauen, ?baucr, ?baubev)
+ON DUPLICATE KEY UPDATE Dauer=VALUES(Dauer), bauE=VALUES(bauE), bauS=VALUES(bauS), bauC=VALUES(bauC), bauV=VALUES(bauV), bauEis=VALUES(bauEis), bauW=VALUES(bauW), bauEn=VALUES(bauEn), bauCr=VALUES(bauCr), bauBev=VALUES(bauBev)", con);
+				insertStufe.Parameters.Add("?itemid", MySqlDbType.UInt32).Value = itemID;
+				insertStufe.Parameters.Add("?dauer", MySqlDbType.UInt32).Value = kosten.Zeit.TotalSeconds;
+				insertStufe.Parameters.Add("?baue", MySqlDbType.UInt32).Value = kosten.Eisen;
+				insertStufe.Parameters.Add("?baus", MySqlDbType.UInt32).Value = kosten.Stahl;
+				insertStufe.Parameters.Add("?bauc", MySqlDbType.UInt32).Value = kosten.Chemie;
+				insertStufe.Parameters.Add("?bauv", MySqlDbType.UInt32).Value = kosten.VV4A;
+				insertStufe.Parameters.Add("?baueis", MySqlDbType.UInt32).Value = kosten.Eis;
+				insertStufe.Parameters.Add("?bauw", MySqlDbType.UInt32).Value = kosten.Wasser;
+				insertStufe.Parameters.Add("?bauen", MySqlDbType.UInt32).Value = kosten.Energie;
+				insertStufe.Parameters.Add("?baucr", MySqlDbType.UInt32).Value = kosten.Credits;
+				insertStufe.Parameters.Add("?baubev", MySqlDbType.UInt32).Value = kosten.Bev;
+				insertStufe.ExecuteNonQuery();
+			}
+			resp.Respond("Schiffskosten-XML erfolgreich eingelesen!");
+		}
+	}
+
 }

@@ -57,8 +57,8 @@ if(!function_exists('TemplateMenu')) {
 			<tr><td><a class="',$content['action'] == 'sitter_history' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_history">History</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'sitter_flotten' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_flotten">Flottenübersicht</a></td></tr>
 			
-			<!--tr><th>Kampfberichte</th></tr>
-			<tr><td><a class="',$content['action'] == 'kb_wars' ? 'active' : 'item','" href="', $scripturl, '/?action=kb_wars">Kriege bearbeiten</a></td></tr-->
+			<tr><th>Krieg</th></tr>
+			<tr><td><a class="',$content['action'] == 'war_kbs' ? 'active' : 'item','" href="', $scripturl, '/?action=war_kbs">Kampfberichte</a></td></tr>
 			
 			<tr><th>Sonstiges</th></tr>
 			<tr><td><a class="',$content['action'] == 'techtree' ? 'active' : 'item','" href="', $scripturl, '/?action=techtree">Techtree</a></td></tr>
@@ -71,7 +71,6 @@ if(!function_exists('TemplateMenu')) {
 				<tr><td><a class="',$content['action'] == 'mysql' ? 'active' : 'item','" href="', $scripturl, '/?action=mysql">Mysql-Client</a></td></tr>
 				<tr><td><a class="',$content['action'] == 'speedlog' ? 'active' : 'item','" href="', $scripturl, '/?action=speedlog">Speedlog</a></td></tr>
 				<tr><td><a class="',$content['action'] == 'errors' ? 'active' : 'item','" href="', $scripturl, '/?action=errors">Fehlerlog</a></td></tr>				
-				<tr><td><a class="',$content['action'] == 'shipdata' ? 'active' : 'item','" href="', $scripturl, '/?action=shipdata">Schiffsdaten</a></td></tr>
 				<tr><td><a class="',$content['action'] == 'useradmin' ? 'active' : 'item','" href="', $scripturl, '/?action=useradmin">Useradmin</a></td></tr>
 				<tr><td><a class="',$content['action'] == 'texts' ? 'active' : 'item','" href="', $scripturl, '/?action=texts">Texte bearbeiten</a></td></tr>
 				<tr><td><a class="',$content['action'] == 'util' ? 'active' : 'item','" href="', $scripturl, '/?action=util">Utils</a></td></tr>';

@@ -45,6 +45,11 @@ namespace IWDB {
 				return ret;
 			return defaultValue;
 		}
+
+		public static void ForEach<T>(this IEnumerable<T> list, Action<T> f) {
+			foreach(T t in list)
+				f(t);
+		}
     }
 	abstract class IWDBRegex {
 		public const String KolonieName = @"(?:(?:[a-zA-Z0-9_\-\.äöüÄÖÜß*+][a-zA-Z0-9_\-\. äöüÄÖÜß*+]*[a-zA-Z0-9_\-\.äöüÄÖÜß*+])|[a-zA-Z0-9_\-\.äöüÄÖÜß*+])";
@@ -699,13 +704,17 @@ namespace IWDB.Parser {
 			d.LoadXml(str);
 			return d;			
 		}
-		private static String Load(String url, MySqlConnection con, String DBPrefix) {
+		public static String WebQuery(String url) {
 			WebRequest req = WebRequest.Create(url);
 			HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
 			Match m = Regex.Match(resp.ContentType, "charset=([^ ]+)");
 			StreamReader r = new StreamReader(resp.GetResponseStream(), Encoding.GetEncoding(m.Success ? m.Groups[1].Value : "ISO-8859-1"));
 			String data = r.ReadToEnd();
 			r.Close();
+			return data;
+		}
+		private static String Load(String url, MySqlConnection con, String DBPrefix) {
+			String data = WebQuery(url);
 			MySqlCommand cmd = new MySqlCommand("INSERT INTO "+DBPrefix+"iw_cache (url, data) VALUES (?url, ?data)", con);
 			cmd.Parameters.Add("?url", MySqlDbType.VarChar).Value=url;
 			cmd.Parameters.Add("?data", MySqlDbType.Text).Value=data;

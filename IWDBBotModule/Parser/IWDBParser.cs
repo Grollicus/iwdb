@@ -38,6 +38,8 @@ namespace IWDB.Parser {
         String DBPrefix;
         IWDBParserModule parserMod;
 		KabaFilter kabaFilter;
+		WarFilter warFilter;
+		TechTreeKostenCache techKostenCache;
 
         List<String> usersLoggedIn;
         Dictionary<String, List<string>> checkingUsers;
@@ -56,7 +58,10 @@ namespace IWDB.Parser {
             mysql.Open();
 
             handlers = new Dictionary<string, RequestHandler>();
-            AddHandler(new NewscanHandler(mysql, DBPrefix, config["mysql"].InnerText, this));
+			techKostenCache = new TechTreeKostenCache();
+			warFilter = new WarFilter(DBPrefix, mysql, techKostenCache);
+			AddHandler(warFilter);
+            AddHandler(new NewscanHandler(mysql, DBPrefix, config["mysql"].InnerText, this, warFilter, techKostenCache));
             AddHandler(new BauschleifenHandler());
             AddHandler(new TechTreeDepthHandler(mysql, DBPrefix));
 			kabaFilter = new KabaFilter(DBPrefix, mysql);

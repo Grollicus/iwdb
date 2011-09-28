@@ -14,7 +14,8 @@
 			'CacheCleanup' => array('fkt' => 'CacheCleanup', 'desc' => 'Entfernt alte Einträge aus dem IW-Cache'),
 			'KabaFilterUpdate' => array('fkt' => 'KabaFilterUpdate', 'desc' => 'KabaFilter im Bot aktualisieren'),
 			'ServerInfo' => array('fkt' => 'ServerInfo', 'desc' => 'Informationen über den aktuellen Server'),
-			'HardReset' => array('fkt' => 'HardReset', 'desc' => 'Setzt das Tool in den Ausgangszustand zurück! (nur der aktuelle Benutzer und Techtree bleiben übrig)'),
+			'HardReset' => array('fkt' => 'HardReset', 'desc' => 'Setzt das Tool in den Ausgangszustand zurück! (nur der aktuelle Benutzer und der Techtree bleiben übrig)'),
+			'WarRefresh' => array('fkt' => 'WarRefresh', 'desc' => 'Berechnet Kriege neu und aktualisiert den Kriegscache ({$pre}wars)'),
 		);
 		
 		$content['msg'] = '';
@@ -126,6 +127,15 @@
 		$res .= '<tr><td>irc_autologin</td><td>'.mysql_affected_rows().'</td></tr>';
 		$res .= '</table>';
 		$content['result'] =$res;
+	}
+	function WarRefresh() {
+		global $content;
+		if(QueryIWDBUtil("WarFilter", array(), $resp)) {
+			$content['result'] = nl2br($resp);
+			return "Erfolgreich aktualisiert!";
+		} else {
+			return "Fehlgeschlagen!";
+		}
 	}
 	
 ?>

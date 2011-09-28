@@ -16,8 +16,10 @@ namespace IWDB.Parser {
 		public readonly String DBPrefix;
 		internal readonly Dictionary<String, Object> caches;
         SingleNewscanRequestHandler realRequestHandler;
+		WarFilter warFilter;
+		TechTreeKostenCache techKostenCache;
 
-		public NewscanHandler(MySqlConnection con, String DBPrefix, String DBConnection, IWDBParser parser) {
+		public NewscanHandler(MySqlConnection con, String DBPrefix, String DBConnection, IWDBParser parser, WarFilter warFilter, TechTreeKostenCache techKostenCache) {
 			this.parser = parser;
 			this.DBPrefix = DBPrefix;
 			caches = new Dictionary<string, object>();
@@ -26,6 +28,8 @@ namespace IWDB.Parser {
             postRequestHandler = new Dictionary<string, IPostRequestHandler>();
 			RegisterPostRequestHandler(new FlottenCleanupPostRequestHandler(this, con));
             realRequestHandler = new SingleNewscanRequestHandler(this, parsers, postRequestHandler, DBConnection, DBPrefix);
+			this.warFilter = warFilter;
+			this.techKostenCache = techKostenCache;
 		}
 
         public List<ReportParser> CreateParsers(String Comma, String tsdSeperator) {
@@ -57,7 +61,8 @@ namespace IWDB.Parser {
 			parserList.Add(new EigeneUebergabe(this));
 			parserList.Add(new FremdeUebergabe(this));
             parserList.Add(new OperaDummyParser(this));
-			parserList.Add(new KBParser(this));
+			parserList.Add(new KBParser(this, warFilter, techKostenCache));
+			parserList.Add(new SchiffsKostenXmlParser(this));
             return parserList;
         }
         public bool HasParser(String comma, String dot, Type t) {

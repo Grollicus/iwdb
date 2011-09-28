@@ -52,34 +52,6 @@
 		TemplateFooter();
 	}
 
-	function TemplateEditShipData() {
-		global $content, $scripturl;
-		TemplateHeader();
-		TemplateMenu();
-		echo '<div class="content">
-				<h2>Schiffsdaten</h2>
-
-				<form action="', $scripturl, '/index.php?action=shipdata" method="post">
-				<table width="100%">
-					<tr><th colspan="2">schiffsdaten.xml importieren</th></tr>
-', isset($content['msg']) ? '<tr><td colspan="2"><span class="imp">'.$content['msg'].'</span></td></tr>' : '', 
-					'<tr><td style="width: 150px;">URL</td><td><input type="text" name="url" value="', $content['url'], '" size="20" /></td></tr>
-					<tr><td style="width: 150px;">Alte Daten &Uuml;berschreiben</td><td><input type="checkbox" name="override" value="1" ', $content['override'] ? 'checked="checked"' : '' , ' /></td></tr>
-					<tr><td colspan="2"><input type="submit" name="submit" value="Einlesen!" /></td></tr>
-				</table></form><br />
-				<table width="100%">
-					<tr><th>ID</th><th>IWID</th><th>Name</th><th>Fe</th><th>St</th><th>VV4A</th><th>Chem</th>
-					<th>Was</th><th>Eis</th><th>Ene</th><th>Bev</th><th>Creds</th></tr>';
-		foreach($content['shipdata'] as $ship) {
-			echo '<tr><td>', $ship['ID'], '</td><td>', $ship['iwid'], '</td><td>', $ship['fe'], '</td><td>', $ship['st'];
-			echo '</td><td>', $ship['vv'], '</td><td>', $ship['ch'], '</td><td>', $ship['ei'], '</td><td>', $ship['wa'];
-			echo '</td><td>', $ship['en'], '</td><td>', $ship['be'], '</td><td>', $ship['cr'], '</td><td>', $ship['dauer'], '</td></tr>';  
-		}
-		echo '</table>';
-		echo '</div>';
-		TemplateFooter();
-	}
-	
 	function TemplateUseradminList() {
 		global $content;
 		
