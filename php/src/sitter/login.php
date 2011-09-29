@@ -525,6 +525,7 @@ WHERE sitterlog.victimid=".$uid." ORDER BY time DESC LIMIT 0, 6", __FILE__, __LI
 			'vv' => 'VV4A',
 			'ch' => 'Chemie',
 			'ei' => 'Eis',
+			'en' => 'Energie',
 			'wa' => 'Wasser',
 			'bev' => 'Bevölkerung',
 			'cr' => 'Credits',
@@ -555,7 +556,7 @@ WHERE sitterlog.victimid=".$uid." ORDER BY time DESC LIMIT 0, 6", __FILE__, __LI
 			);
 		}
 		
-		$show_lager = in_array($r, array('ch', 'ei', 'wa', 'ch'));
+		$show_lager = in_array($r, array('ch', 'ei', 'wa', 'ch', 'en'));
 		$q = DBQuery("SELECT {$r}, v{$r}, universum.gala, universum.sys, universum.pla, universum.planiname".($show_lager ? ", l{$r}" : '')." 
 FROM {$pre}ressuebersicht AS ressuebersicht LEFT JOIN {$pre}universum AS universum ON ressuebersicht.planid = universum.ID
 WHERE uid={$uid}", __FILE__, __LINE__);
