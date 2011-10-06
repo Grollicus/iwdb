@@ -217,6 +217,7 @@
 			'geo_fe' => array('desc' => 'Eisen', 'selected' => false),
 			'geo_gravi' => array('desc' => 'Gravitation', 'selected' => false),
 			'geo_lb' => array('desc' => 'Lebensbedingungen', 'selected' => false),
+			'geo_ttl' => array('desc' => 'Geoscan-TTL', 'selected' => false),
 			'objecttype' => array('desc' => 'Objekttyp', 'selected' => false),
 			'owner' => array('desc' => 'Spielername', 'selected' => false),
 			'planityp' => array('desc' => 'Planityp', 'selected' => false),
@@ -699,7 +700,7 @@
 				'cols' => array('geoscans.timestamp AS geotime', 'geoscans.reset AS georeset'),
 				'tables' => array(array('uni', 0), array('geoscans', 0)),
 				'cb' => 'ModGeoTTLCb',
-				'titles' => array('geo_ttl' => array('TTL', 'Zeit bis der Plani gesprengt wird in Tagen', 23))
+				'titles' => array('geo_ttl' => array('TTL', 'Zeit bis der Plani gesprengt wird in Tagen', 23, 'geo_ttl'))
 			),
 			'owner' => array(
 				'cols' => array('uni.ownername', 'userdata.allytag'),
@@ -751,6 +752,7 @@
 			'geo_fe' => array('tables' => array('uni', 'geoscans'), 'orderBy' => 'geoscans.eisen'),
 			'geo_gravi' => array('tables' => array('uni', 'geoscans'), 'orderBy' => 'geoscans.gravi'),
 			'geo_lb' => array('tables' => array('uni', 'geoscans'), 'orderBy' => 'geoscans.lbed'),
+			'geo_ttl' => array('tables' => array('uni', 'geoscans'), 'orderBy' => 'geotime'),
 			'objecttype' => array('tables' => array('uni'), 'orderBy' => 'uni.objekttyp'),
 			'owner' => array('tables' => array('uni'), 'orderBy' => 'uni.ownername'),
 			'planityp' => array('tables' => array('uni'), 'orderBy' => 'uni.planityp'),
@@ -761,6 +763,7 @@
 			'-geo_fe' => array('tables' => array('uni', 'geoscans'), 'orderBy' => 'geoscans.eisen DESC'),
 			'-geo_gravi' => array('tables' => array('uni', 'geoscans'), 'orderBy' => 'geoscans.gravi DESC'),
 			'-geo_lb' => array('tables' => array('uni', 'geoscans'), 'orderBy' => 'geoscans.lbed DESC'),
+			'-geo_ttl' => array('tables' => array('uni', 'geoscans'), 'orderBy' => 'geotime DESC'),
 			'-objecttype' => array('tables' => array('uni'), 'orderBy' => 'uni.objekttyp DESC'),
 			'-owner' => array('tables' => array('uni'), 'orderBy' => 'uni.ownername DESC'),
 			'-planityp' => array('tables' => array('uni'), 'orderBy' => 'uni.planityp DESC'),
