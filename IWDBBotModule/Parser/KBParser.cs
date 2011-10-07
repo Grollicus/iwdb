@@ -402,11 +402,13 @@ namespace IWDB.Parser {
 
 		public void HandleRequest(ParserRequestMessage msg) {
 			try {
+				Log.WriteLine(LogLevel.E_NOTICE, "WarRefresh");
 				con.Open();
 				Reload();
 				lock(wars) {
 					msg.AnswerLine(DateTime.Now.ToString() + " " + wars.Count + " Kriege neu geladen & Techtree-Cache geleert!");
 				}
+				Log.WriteLine(LogLevel.E_NOTICE, "WarRefresh:Raid");
 				uint oldWar = 0, oldRaid = 0;
 				List<Kb> kbs = new List<Kb>();
 				MySqlCommand cmd_raid = new MySqlCommand(@"SELECT iwid, hash FROM " + DBPrefix + @"raidberichte", con);
@@ -433,6 +435,9 @@ namespace IWDB.Parser {
 
 				uint newWar = 0, newRaid = 0;
 				foreach(Kb kb in kbs) {
+					if(((newWar + newRaid) % 100) == 0) {
+						Log.WriteLine(LogLevel.E_NOTICE, "WarRefresh: .");
+					}
 					kb.ReadKbFromXml(con, DBPrefix);
 					War war = null;
 					foreach(String tag in kb.AllyTags) {
@@ -480,6 +485,7 @@ namespace IWDB.Parser {
 				//    scansmod += 1;
 				//}
 				//msg.Answer(DateTime.Now.ToString() + " " + scansmod + " Scans (von " + scanscnt + ") geändert!");
+				Log.WriteLine(LogLevel.E_NOTICE, "WarRefresh:Scan");
 				List<Tuple<uint, uint, string>> scans = new List<Tuple<uint, uint, string>>();
 				MySqlCommand cmd_scans = new MySqlCommand(@"SELECT id, iwid, iwhash FROM " + DBPrefix + "scans", con);
 				r = cmd_scans.ExecuteReader();
@@ -502,6 +508,9 @@ namespace IWDB.Parser {
 				cmd_scanDel.Prepare();
 				uint gebscan_cnt = 0, schiffscan_cnt = 0;
 				foreach(Tuple<uint, uint, string> tpl in scans) {
+					if(((gebscan_cnt + schiffscan_cnt) % 100) == 0) {
+						Log.WriteLine(LogLevel.E_NOTICE, "WarRefresh: .");
+					}
 					flotten.Clear();
 					cmd_fl.Parameters["?scanid"].Value = tpl.Item1;
 					cmd_flDel.Parameters["?scanid"].Value = tpl.Item1;
