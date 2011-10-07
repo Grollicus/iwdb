@@ -49,9 +49,10 @@ function LoadUser()
 				visibleName, isAdmin , theme, lastactive, igmuser
 			FROM {$pre}users
 			WHERE ID = {$ID_MEMBER}",__FILE__,__LINE__,true);
-		if($userSettingsArray !== false && dddfd != "script")
-			$user = array_merge($user, $userSettingsArray); 
-			DBQuery("UPDATE {$pre}users set lastactive=".time()." where ID= {$ID_MEMBER}", __FILE__, __LINE__);
+		if($userSettingsArray !== false)
+			$user = array_merge($user, $userSettingsArray);
+			if(dddfd != "script")
+				DBQuery("UPDATE {$pre}users set lastactive=".time()." where ID= {$ID_MEMBER}", __FILE__, __LINE__);
 		} else {
 			$user['isGuest'] = true;
 			$user['theme'] = 'default';

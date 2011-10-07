@@ -67,7 +67,6 @@ function WarKbs() {
 function ScanPrint() {
 	global $pre, $scan, $user, $content;
 	$id = intval(Param('id'));
-	$user['theme'] = 'default';
 	
 	$content['hasGebs'] = false;
 	$content['hasShips'] = false;
