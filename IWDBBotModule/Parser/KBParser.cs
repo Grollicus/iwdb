@@ -405,7 +405,7 @@ namespace IWDB.Parser {
 				con.Open();
 				Reload();
 				lock(wars) {
-					msg.AnswerLine(wars.Count + " Kriege neu geladen & Techtree-Cache geleert!");
+					msg.AnswerLine(DateTime.Now.ToString() + " " + wars.Count + " Kriege neu geladen & Techtree-Cache geleert!");
 				}
 				uint oldWar = 0, oldRaid = 0;
 				List<Kb> kbs = new List<Kb>();
@@ -449,7 +449,98 @@ namespace IWDB.Parser {
 						kb.SaveAsRaid(con, DBPrefix);
 					}
 				}
-				msg.AnswerLine(newWar + " Kriegs- (zuvor " + oldWar + ") und " + newRaid + " Raid-KBs (" + oldRaid + " zuvor) neu berechnet!");
+				msg.AnswerLine(DateTime.Now.ToString() + " "+ newWar + " Kriegs- (zuvor " + oldWar + ") und " + newRaid + " Raid-KBs (" + oldRaid + " zuvor) neu berechnet!");
+
+				kbs.Clear();
+
+				//List<Pair<uint, uint>> updateScans = new List<Pair<uint, uint>>();
+				//MySqlCommand cmd_scans = new MySqlCommand(@"SELECT id, typ, ownerally, warid FROM "+DBPrefix+"scans", con);
+				//r = cmd_scans.ExecuteReader();
+				//uint scanscnt = 0;
+				//try {
+				//    while(r.Read()) {
+				//        War w = getWar(r.GetString(2), r.GetUInt32(1));
+				//        uint warid = w != null ? w.id : 0;
+				//        if(warid != r.GetUInt32(3))
+				//            updateScans.Add(new Pair<uint, uint>(r.GetUInt32(0), warid));
+				//        scanscnt++;
+				//    }
+				//} finally {
+				//    r.Close();
+				//}
+				//MySqlCommand cmd_scansUpd = new MySqlCommand("UPDATE "+DBPrefix+@"scans SET warid=?warid WHERE id=?id", con);
+				//cmd_scansUpd.Parameters.Add("?id", MySqlDbType.UInt32);
+				//cmd_scansUpd.Parameters.Add("?warid", MySqlDbType.UInt32);
+				//cmd_scansUpd.Prepare();
+				//uint scansmod = 0;
+				//foreach(Pair<uint, uint> p in updateScans) {
+				//    cmd_scansUpd.Parameters["?id"].Value = p.Item1;
+				//    cmd_scansUpd.Parameters["?warid"].Value = p.Item2;
+				//    cmd_scansUpd.ExecuteNonQuery();
+				//    scansmod += 1;
+				//}
+				//msg.Answer(DateTime.Now.ToString() + " " + scansmod + " Scans (von " + scanscnt + ") geändert!");
+				List<Tuple<uint, uint, string>> scans = new List<Tuple<uint, uint, string>>();
+				MySqlCommand cmd_scans = new MySqlCommand(@"SELECT id, iwid, iwhash FROM " + DBPrefix + "scans", con);
+				r = cmd_scans.ExecuteReader();
+				try {
+					while(r.Read()) {
+						scans.Add(new Tuple<uint, uint, string>(r.GetUInt32(0), r.GetUInt32(1), r.GetString(2)));
+					}
+				} finally {
+					r.Close();
+				}
+				StringBuilder flotten = new StringBuilder();
+				MySqlCommand cmd_fl = new MySqlCommand("SELECT id FROM " + DBPrefix + "scans_flotten WHERE scanid=?scanid", con);
+				cmd_fl.Parameters.Add("?scanid", MySqlDbType.UInt32);
+				cmd_fl.Prepare();
+				MySqlCommand cmd_flDel = new MySqlCommand("DELETE FROM " + DBPrefix + "scans_flotten WHERE scanid=?scanid", con);
+				cmd_flDel.Parameters.Add("?scanid", MySqlDbType.UInt32);
+				cmd_flDel.Prepare();
+				MySqlCommand cmd_scanDel = new MySqlCommand("DELETE FROM " + DBPrefix + "scans WHERE id=?scanid", con);
+				cmd_scanDel.Parameters.Add("?scanid", MySqlDbType.UInt32);
+				cmd_scanDel.Prepare();
+				uint gebscan_cnt = 0, schiffscan_cnt = 0;
+				foreach(Tuple<uint, uint, string> tpl in scans) {
+					flotten.Clear();
+					cmd_fl.Parameters["?scanid"].Value = tpl.Item1;
+					cmd_flDel.Parameters["?scanid"].Value = tpl.Item1;
+					cmd_scanDel.Parameters["?scanid"].Value = tpl.Item1;
+					r = cmd_fl.ExecuteReader();
+					try {
+						while(r.Read()) {
+							flotten.Append(r.GetUInt32(0));
+							flotten.Append(", ");
+						}
+					} finally {
+						r.Close();
+					}
+					if(flotten.Length > 0) {
+						flotten.Length -= 2;
+						MySqlCommand cmd_shipDel = new MySqlCommand("DELETE FROM " + DBPrefix + "scans_flotten_schiffe WHERE flid IN ("+flotten.ToString()+")", con);
+						cmd_shipDel.ExecuteNonQuery();
+					}
+					cmd_flDel.ExecuteNonQuery();
+					cmd_scanDel.ExecuteNonQuery();
+					String url = String.Format("http://www.icewars.de/portal/kb/de/sb.php?id={0}&md_hash={1}&typ=xml", tpl.Item2, tpl.Item3);
+					XmlNode xml = IWCache.Query(url, con, DBPrefix);
+					switch(xml.SelectSingleNode("scann/scann_typ/id").InnerText) {
+						case "2": { //Sondierung (Gebäude/Ress)
+								GebScan s = new GebScan(tpl.Item2, tpl.Item3);
+								s.LoadXml(xml, con, DBPrefix, this);
+								s.ToDB(con, DBPrefix);
+								gebscan_cnt++;
+							}
+							break;
+						case "3": { //Sondierung (Schiffe/Def/Ress)
+								SchiffScan s = new SchiffScan(tpl.Item2, tpl.Item3);
+								s.LoadXml(xml, con, DBPrefix, this);
+								s.ToDB(con, DBPrefix);
+								schiffscan_cnt++;
+							} break;
+					}
+				}
+				msg.Answer(DateTime.Now.ToString() + " " + gebscan_cnt + " Gebscans und " + schiffscan_cnt + " Schiffscans neu eingelesen!");
 			} finally {
 				try {
 					msg.Handled();

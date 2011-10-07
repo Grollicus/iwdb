@@ -72,7 +72,7 @@ function TemplateRaidOverview() {
 			}
 			already_loaded[id] = true;
 			var req = getXMLRequester();
-			var url = scriptinterface+"?a=raidkbpassthrough&sid="+sid+"&id="+id+"&hash="+hash;
+			var url = scriptinterface+"?a=kbpassthrough&sid="+sid+"&id="+id+"&hash="+hash;
 			req.open(\'GET\', url, true);
 			req.onreadystatechange = function(){loadKbcallback(req, id);};
 			req.send(null);

@@ -67,7 +67,7 @@
 -->
 </style>');
 		TemplateMenu();
-		echo '<div class="content"><h2>Kriegsübersicht</h2>
+		echo '<div class="content">
 	<script type="text/javascript"><!-- // --><![CDATA[
 		var already_loaded = new Object();
 		function loadKB(id, hash) {
@@ -77,10 +77,11 @@
 			}
 			already_loaded[id] = true;
 			var req = getXMLRequester();
-			var url = scriptinterface+"?a=raidkbpassthrough&sid="+sid+"&id="+id+"&hash="+hash;
+			var url = scriptinterface+"?a=kbpassthrough&sid="+sid+"&id="+id+"&hash="+hash;
 			req.open(\'GET\', url, true);
 			req.onreadystatechange = function(){loadKbcallback(req, id);};
 			req.send(null);
+			viewLoadingState(true);
 			return false;
 		}
 		function loadKbcallback(req, id) {
@@ -92,12 +93,45 @@
 				} else {
 					alert("Request-Fehler: "+req.status);
 				}
+				viewLoadingState(false);
+			}
+		}
+		
+		var already_loaded_sb = new Object();
+		function loadSB(id) {
+			if(already_loaded_sb[id]) {
+				toggleTableRow(getElById(\'sbr_\'+id));
+				return false;
+			}
+			already_loaded_sb[id] = true;
+			var req = getXMLRequester();
+			var url = scriptinterface+"?a=scanprint&sid="+sid+"&id="+id;
+			req.open(\'GET\', url, true);
+			req.onreadystatechange = function(){loadSbcallback(req, id);};
+			req.send(null);
+			viewLoadingState(true);
+			return false;
+		}
+		function loadSbcallback(req, id) {
+			if(req.readyState == 4) {
+				if(req.status == 200) {
+					var el = getElById(\'sbr_\'+id);
+					el.innerHTML = req.responseText;
+					toggleTableRow(getElById(\'sbr_\'+id));
+				} else {
+					alert("Request-Fehler: "+req.status);
+				}
+				viewLoadingState(false);
 			}
 		}
 	// ]]></script>';
 		
+		if(!$content['hasWars']) {
+			echo 'Irgendwas läuft da schief, ich hab gar keinen Krieg!';
+		}
+		
 		foreach($content['wars'] as $war) {
-			echo '<table><tr><th colspan="14" style="font-size:larger;">', $war['name'], '</th></tr>
+			echo '<h2>', $war['name'], '</h2><table><tr><th colspan="14" style="font-size:larger;">Kampfberichte</th></tr>
 				<tr><th>Zeit</th><th colspan="2">Angreifer</th><th>Start</th><th colspan="2">Verteidiger</th><th>Ziel</th><th>Angriff</th><th>Verlust</th><th>Verteidigung</th><th>Verlust</th><th>Raid</th><th>gebombt</th></tr>';
 			foreach($war['kbs'] as $kb) {
 				echo '<tr',$kb['isFake'] ? ' class="fake"' : '','><td><a href="', $kb['url'], '" onclick="return loadKB(\'', $kb['id'],'\', \'', $kb['hash'], '\');"> ', $kb['date'], '</a></td><td>',
@@ -106,10 +140,51 @@
 					$kb['raidWert'], '</td><td>', $kb['bombWert'], '</td></tr>
 					<tr style="display:none;" id="kbr_', $kb['id'], '"><td id="kb_', $kb['id'], '" colspan="18" class="kbtd"></td></tr>';
 			}
+			echo '</table><br /><br /><table><tr><th colspan="14" style="font-size:larger;">Scans</th></tr>
+				<tr><th>Zeit</th><th>Typ</th><th>Koords</th><th colspan="2">Besitzer</th><th>Objekttyp</th><th>Planityp</th></tr>';
+			foreach($war['scans'] as $scan) {
+				echo '<tr><td><a href="', $scan['url'], '" onclick="return loadSB(\'', $scan['id'],'\');"> ', $scan['date'], '</a></td><td>',
+					$scan['typ'] ,'</td><td>', $scan['coords'], '</td><td>', $scan['ownerName'], '</td><td>', $scan['ownerAlly'], '</td><td>', $scan['objekttyp'], '</td>
+					<td>', $scan['planityp'], '</td></tr><tr style="display:none;" id="sbr_', $scan['id'], '"><td id="sb_', $scan['id'], '" colspan="7"></td></tr>';
+			}
 			echo '</table><br /><br />';
 		}
 		
+
+		
 		echo '</div>';
 		TemplateFooter();
+	}
+	
+	function TemplateScanPrint() {
+		global $content;
+		
+		echo '<td colspan="4">';
+		if($content['hasShips']) {
+			echo '<table class="subtable" style="border:none;">';
+			foreach($content['scan']['flotten'] as $fl) {
+				echo '<tr><td colspan="2"><b>', $fl['typ'] == 'planetar' ? 'Planetare Flotte' : ('Stationierte Flotte von '.$fl['owner']), '</b></td></tr>';
+				foreach($fl['ships'] as $s)
+					echo '<tr><td>', $s['name'], '</td><td>', $s['cnt'], '</td></tr>';
+			}
+			echo '</table>';
+		}
+		if($content['hasGebs']) {
+			echo '<table class="subtable" style="border:none;" width="100%">';
+			foreach($content['scan']['gebs'] as $geb) {
+				echo '<tr><td>', $geb['name'], '</td><td>', $geb['cnt'], '</td></tr>';
+			}
+			echo '</table>';
+		}
+		echo '</td><td colspan="3"><table style="border:none;" class="subtable"  width="100%" class="kbtd">
+			<tr><td>Eisen</td><td>', $content['scan']['fe'], '</td></tr>
+			<tr><td>Stahl</td><td>', $content['scan']['st'], '</td></tr>
+			<tr><td>VV4A</td><td>', $content['scan']['vv'], '</td></tr>
+			<tr><td>Chemie</td><td>', $content['scan']['ch'], '</td></tr>
+			<tr><td>Eis</td><td>', $content['scan']['ei'], '</td></tr>
+			<tr><td>Wasser</td><td>', $content['scan']['wa'], '</td></tr>
+			<tr><td>Energie</td><td>', $content['scan']['en'], '</td></tr>
+		</table></td>';
+		
 	}
 ?>

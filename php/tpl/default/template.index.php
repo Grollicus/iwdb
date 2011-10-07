@@ -47,9 +47,11 @@ if(!function_exists('TemplateMenu')) {
 			<!--tr><td><a class="',$content['action'] == 'uni_whosat' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_whosat">Wer ist in...</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'uni_allyat' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_allyat">Wo ist Ally xyz..?</a></td></tr-->
 			<tr><td><a class="',$content['action'] == 'uni_allyoverview' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_allyoverview">Ally-Gala-&Uuml;bersicht</a></td></tr>
-			<tr><th>Handel</th></tr>
-			<tr><td><a class="',$content['action'] == 'trade_list' ? 'active' : 'item','" href="', $scripturl, '/?action=trade_list">Übersicht</a></td></tr>
+			<tr><th>Ress</th></tr>
+			<tr><td><a class="',$content['action'] == 'trade_list' ? 'active' : 'item','" href="', $scripturl, '/?action=trade_list">Handel</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'raids' ? 'active' : 'item','" href="', $scripturl, '/?action=raids">Raids</a></td></tr>
+			<tr><td><a class="',$content['action'] == 'ressuserlist' ? 'active' : 'item','" href="', $scripturl, '/?action=ressuserlist">AccountRessProd</a></td></tr>
+			<tr><td><a class="',$content['action'] == 'transporte' ? 'active' : 'item','" href="', $scripturl, '/?action=transporte">AccountRessBilanz</a></td></tr>
 			<tr><th>Sitterzeugs</th></tr>
 			<tr><td><a class="',$content['action'] == 'sitter_view' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_view">Sitterauftr&auml;ge <span id="sitter_job_cnt">', $content['sitter_job_cnt'] > 0 ? ' ('.$content['sitter_job_cnt'].')' : '', '</span></a></td></tr>
 			<tr><td><a class="',$content['action'] == 'sitter_list' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_list">Sitterlogins</a></td></tr>
@@ -62,8 +64,6 @@ if(!function_exists('TemplateMenu')) {
 			
 			<tr><th>Sonstiges</th></tr>
 			<tr><td><a class="',$content['action'] == 'techtree' ? 'active' : 'item','" href="', $scripturl, '/?action=techtree">Techtree</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'ressuserlist' ? 'active' : 'item','" href="', $scripturl, '/?action=ressuserlist">AccountRessProd</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'transporte' ? 'active' : 'item','" href="', $scripturl, '/?action=transporte">AccountRessBilanz</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'settingsex' ? 'active' : 'item','" href="', $scripturl, '/?action=settingsex">Einstellungen</a></td></tr>';
 		if($user['isAdmin'])
 		echo '
@@ -140,6 +140,7 @@ if (!function_exists('TemplateHeader'))
 				<a href="', $scripturl, '/index.php?action=sitter_login&amp;from=', $content['action'], '&amp;id=next" title="Sitterlogin zum nächsten Account">[Sitten]</a>&nbsp;&nbsp;
 				<b>User Online:</b> ', implode(', ', $content['users_online']), '
 				</td><td class="categoryheader" style="text-align: right;">
+				<a href="', $scripturl, '/index.php?action=kbformat">[KBFormat]</a>
 				<a href="', $scripturl, '/index.php?action=help_page">[FAQ]</a>
 			</td></tr>
 		</table>

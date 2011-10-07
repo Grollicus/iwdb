@@ -57,7 +57,8 @@ $uni_presets= array(
 	'Spieler' => 'gala_min=&gala_max=&sys_min=&sys_max=&pla_min=&pla_max=&spieler=&tag=&objekttyp[]=Kolonie&objekttyp[]=Sammelbasis&objekttyp[]=Kampfbasis&objekttyp[]=Artefaktbasis&planiname=&geo_ch_min=&geo_ch_max=&geo_fe_min=&geo_fe_max=&geo_ei_min=&geo_ei_max=&geo_gravi_min=&geo_gravi_max=&geo_lb_min=&geo_lb_max=&geo_fmod_min=&geo_fmod_max=&geo_gebd_min=&geo_gebd_max=&geo_gebk_min=&geo_gebk_max=&geo_schd_min=&geo_schd_max=&geo_schk_min=&geo_schk_max=&scan_geb=&spalten[]=coords&spalten[]=owner&spalten[]=types&spalten[]=planiname&spalten[]=important_specials&sortby[]=coords&orders[]=0',
 );
 
-// Bezeichne Angriffe als Fake wenn angreifer-Wert < $fake_att 
-$fake_att = 200000; 
+// Bezeichne Angriffe als Fake wenn angreifer-Wert < $fake_att und verteidiger-Wert < $fake_def 
+$fake_att = 200000;
+$fake_def = 1000000;
 
 ?>

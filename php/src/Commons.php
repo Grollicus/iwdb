@@ -443,5 +443,16 @@ function LogAction($victimID, $action, $text) {
 	DBQuery("INSERT INTO {$pre}sitterlog (userid, victimid, type, time, text) VALUES ({$ID_MEMBER}, {$victimID}, '{$action}', ".time().", '{$text}')", __FILE__, __LINE__);
 }
 
+function CacheQuery($url){
+	global $pre;
+	
+	$ret = DBQueryOne("SELECT data FROM {$pre}iw_cache WHERE url='".EscapeDB($url)."'", __FILE__, __LINE__);
+	if($ret === false) {
+		$ret = file_get_contents($url);
+		DBQuery("INSERT INTO {$pre}iw_cache (url, data) VALUES ('".EscapeDB($url)."', '".EscapeDB($ret)."')", __FILE__, __LINE__);
+		$ret = utf8_encode($ret);
+	}
+	return $ret;
+}
 
 ?>

@@ -49,7 +49,7 @@ function LoadUser()
 				visibleName, isAdmin , theme, lastactive, igmuser
 			FROM {$pre}users
 			WHERE ID = {$ID_MEMBER}",__FILE__,__LINE__,true);
-		if($userSettingsArray !== false)
+		if($userSettingsArray !== false && dddfd != "script")
 			$user = array_merge($user, $userSettingsArray); 
 			DBQuery("UPDATE {$pre}users set lastactive=".time()." where ID= {$ID_MEMBER}", __FILE__, __LINE__);
 		} else {

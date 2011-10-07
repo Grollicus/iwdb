@@ -44,7 +44,7 @@ namespace IWDB.Parser {
             parserList.Add(new HauptseiteAusbaustatusParser(this));
             //parserList.Add(new UniversumsAnsichtParser(this));
             parserList.Add(new UniXMLUniversumsParser(this, this.parser));
-            parserList.Add(new ScanLinkParser(this));
+            parserList.Add(new ScanLinkParser(this, warFilter));
             parserList.Add(new GebäudeinfoParser(this));
             parserList.Add(new ForschungsinfoParser(this));
             parserList.Add(new SchiffsinfoParser(this));

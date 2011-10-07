@@ -40,8 +40,7 @@ function RaidOverview() {
 	TemplateRaidOverview();
 }
 
-function RaidKbPassthrough() {
-	global $pre;
+function KbPassthrough() {
 	$id = intval(Param('id'));
 	$hash = Param('hash');
 	if(strlen($hash) != 32)
@@ -51,12 +50,7 @@ function RaidKbPassthrough() {
 		if(!in_array($hash[$i], $allowed_chars))
 			die('fail');
 	$url = "http://www.icewars.de/portal/kb/de/kb.php?id={$id}&md_hash={$hash}";
-	$kbhtml = DBQueryOne("SELECT data FROM {$pre}iw_cache WHERE url='".EscapeDB($url)."'", __FILE__, __LINE__);
-	if($kbhtml === false) {
-		$kbhtml = file_get_contents($url);
-		DBQuery("INSERT INTO {$pre}iw_cache (url, data) VALUES ('".EscapeDB($url)."', '".EscapeDB($kbhtml)."')", __FILE__, __LINE__);
-		$kbhtml = utf8_encode($kbhtml);
-	}
+	$kbhtml = CacheQuery($url);
 	$begin = strpos($kbhtml, '<body bgcolor="#000000">') + strlen('<body bgcolor="#000000">');
 	$end = strpos($kbhtml, '</body>')-strlen('  <p>&nbsp;</p>');
 	$kbhtml = substr($kbhtml, $begin, $end-$begin);

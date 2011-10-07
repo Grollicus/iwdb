@@ -507,9 +507,9 @@ class ParserRequestMessagePart {
 			String req = msg[2].AsString;
 			List<uint> entries = new List<uint>();
 
-			Match planetenBauschleife = Regex.Match(req, @"aktuell im Bau auf diesem Planeten((?:\s+.*?bis\s+" + IWZeit + @"\n\d+:\d+:\d+)+)");
+			Match planetenBauschleife = Regex.Match(req, @"aktuell im Bau auf diesem Planeten((?:\s+.*?bis\s+" + IWZeit + @"\n(?:1\sTag\s)?(?:\d+\sTage\s)?\d+:\d+:\d+)+)");
 			if (planetenBauschleife.Success) {
-				MatchCollection matches = Regex.Matches(planetenBauschleife.Groups[1].Value, @"\s+.*?bis\s+(" + IWZeit + @")\n\d+:\d+:\d+");
+				MatchCollection matches = Regex.Matches(planetenBauschleife.Groups[1].Value, @"\s+.*?bis\s+(" + IWZeit + @")\n(?:1\sTag\s)?(?:\d+\sTage\s)?\d+:\d+:\d+");
 				foreach (Match m in matches) {
 					entries.Add(IWDBUtils.parseIWTime(m.Groups[1].Value));
 				}
