@@ -3,7 +3,7 @@ if (!defined("dddfd"))
 	die("Hacking attempt");
 
 function Index() {
-	global $content, $pre, $user, $sourcedir, $scripturl;
+	global $content, $pre, $user, $sourcedir, $scripturl, $ID_MEMBER, $warmode;
 	
 	
 	$content['visibleName'] = $user['visibleName'];
@@ -46,6 +46,28 @@ function Index() {
 			'link' => '',
 		);
 	}
+	if($warmode) {
+		$content['problems'][] = array(
+			'class' => 'imp',
+			'text' => 'Krieg!',
+			'link' => '',
+		);
+		$content['problems'][] = array(
+			'class' => 'simp',
+			'text' => 'Es gibt extra viel Sitterzeit!',
+			'link' => '',
+		);
+		$now = time();
+		$schedule_slot = $now - ($now % 1800);
+		if(0<DBQueryOne("SELECT count(*) FROM {$pre}war_schedule WHERE time={$schedule_slot} AND userid={$ID_MEMBER}", __FILE__, __LINE__)) {
+			$content['problems'][] = array(
+				'class' => 'simp',
+				'text' => 'Du bist aktuell als Sitter eingetragen!',
+				'link' => '',
+			);
+		}
+	}
+	
 	TemplateInit('main');
 	TemplateIndex();
 }

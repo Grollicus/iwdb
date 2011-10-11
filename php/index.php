@@ -120,7 +120,8 @@ function Main()
 	'util' => array('admin/util.php', 'AdminUtils'),
 	'unknownAction' => array('core/main.php', 'UnknownAction'),
 	'useradmin' => array('admin/Usermanagement.php', 'Useradmin_Main'),
-	'war_kbs' => array('war/kbs.php', 'WarKbs'),
+	'war_data' => array('war/kbs.php', 'WarKbs'),
+	'war_schedule' => array('war/schedule.php', 'WarSchedule'),
 	
 	//### Comment for automatically adding new _!!Actions!!_ here
 	);

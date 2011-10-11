@@ -3,21 +3,98 @@ if (!defined("dddfd"))
 	die("Hacking attempt");
 	
 function WarKbs() {
-	global $content, $pre, $fake_att, $fake_def;
+	global $content, $pre, $fake_att, $fake_def, $scripturl;
 	
 	$limit = isset($_REQUEST['limit']) ? intval($_REQUEST['limit']) : 0;
+
+	$filter_kbs = "";
+	$filter_link = "";
+	$content['filter']['kb_att'] = '';
+	if(!empty($_REQUEST['kb_att'])) {
+		$content['filter']['kb_att'] = EscapeO(Param('kb_att'));
+		$filter_link .= '&amp;kb_att='.EscapeO(Param('kb_att'));
+		$filter_kbs .= "AND att LIKE '%".EscapeDB(Param('kb_att'))."%' ";
+	}
+	$content['filter']['kb_att_ally'] = '';
+	if(!empty($_REQUEST['kb_att_ally'])) {
+		$content['filter']['kb_att_ally'] = EscapeO(Param('kb_att_ally'));
+		$filter_link .= '&amp;kb_att_ally='.EscapeO(Param('kb_att_ally'));
+		$filter_kbs .= "AND attally LIKE '%".EscapeDB(Param('kb_att_ally'))."%' ";
+	}
+	$content['filter']['kb_def'] = '';
+	if(!empty($_REQUEST['kb_def'])) {
+		$content['filter']['kb_def'] = EscapeO(Param('kb_def'));
+		$filter_link .= '&amp;kb_def='.EscapeO(Param('kb_def'));
+		$filter_kbs .= "AND def LIKE '%".EscapeDB(Param('kb_def'))."%' ";
+	}
+	$content['filter']['kb_def_ally'] = '';
+	if(!empty($_REQUEST['kb_def_ally'])) {
+		$content['filter']['kb_def_ally'] = EscapeO(Param('kb_def_ally'));
+		$filter_link .= '&amp;kb_def_ally='.EscapeO(Param('kb_def_ally'));
+		$filter_kbs .= "AND defally LIKE '%".EscapeDB(Param('kb_def_ally'))."%' ";
+	}
+	$content['filter']['kb_start'] = '';
+	if(!empty($_REQUEST['kb_start'])) {
+		$content['filter']['kb_start'] = EscapeO(Param('kb_start'));
+		$filter_link .= '&amp;kb_start='.EscapeO(Param('kb_start'));
+		$filter_kbs .= "AND start LIKE '".EscapeDB(Param('kb_start'))."%' ";
+	}
+	$content['filter']['kb_dst'] = '';
+	if(!empty($_REQUEST['kb_dst'])) {
+		$content['filter']['kb_dst'] = EscapeO(Param('kb_dst'));
+		$filter_link .= '&amp;kb_dst='.EscapeO(Param('kb_dst'));
+		$filter_kbs .= "AND dst LIKE '".EscapeDB(Param('kb_dst'))."%' ";
+	}
+	
+	$filter_scans = "";
+	$content['filter']['scan_type'] = array(
+		'*' => array('name' => '*', 'selected' => !isset($_REQUEST['scan_type']) || ($_REQUEST['scan_type'] != 'geb' && $_REQUEST['scan_type'] != 'schiff')),
+		'geb' => array('name' => 'geb', 'selected' => (isset($_REQUEST['scan_type']) && $_REQUEST['scan_type'] == 'geb')),
+		'schiff' => array('name' => 'schiff', 'selected' => (isset($_REQUEST['scan_type']) && $_REQUEST['scan_type'] == 'schiff')),
+	);
+	if(isset($_REQUEST['scan_type'])) {
+		switch($_REQUEST['scan_type']) {
+			case 'schiff':
+				$filter_scans .= "AND typ='schiff' ";
+				$filter_link .= '&amp;scan_type=schiff';
+				break;
+			case 'geb':
+				$filter_scans .= "AND typ='geb' ";
+				$filter_link .= '&amp;scan_type=geb';
+				break;
+		}
+	}
+	$content['filter']['scan_coords'] = '';
+	if(!empty($_REQUEST['scan_coords'])) {
+		$content['filter']['scan_coords'] = EscapeO(Param('scan_coords'));
+		$filter_link .= '&amp;scan_coords='.EscapeO(Param('scan_coords'));
+		$c = explode(':', Param('scan_coords'));
+		if(count($c) > 0)
+			$filter_scans .= 'AND gala='.intval($c[0]).' ';
+		if(count($c) > 1)
+			$filter_scans .= 'AND sys='.intval($c[1]).' ';
+		if(count($c) > 2)
+			$filter_scans .= 'AND pla='.intval($c[2]).' ';
+	}
+	$content['filter']['scan_owner'] = '';
+	if(!empty($_REQUEST['scan_owner'])) {
+		$content['filter']['scan_owner'] = EscapeO(Param('scan_owner'));
+		$filter_link .= '&amp;scan_owner='.EscapeO(Param('scan_owner'));
+		$filter_scans .= "AND ownername LIKE '%".EscapeDB(Param('scan_owner'))."%'";
+	}
 	
 	$now = time();
 	$content['wars'] = array();
-	$q_wars = DBQuery("SELECT GROUP_CONCAT(id SEPARATOR ','), name FROM {$pre}wars WHERE {$now} BETWEEN begin AND end GROUP BY name", __FILE__, __LINE__);
+	$showall = isset($_REQUEST['showall']) && $_REQUEST['showall'] == '1';
+	$q_wars = DBQuery("SELECT GROUP_CONCAT(id SEPARATOR ','), name FROM {$pre}wars ".($showall ? '' : "WHERE {$now} BETWEEN begin AND end")." GROUP BY name", __FILE__, __LINE__);
 	
 	while($row_wars = mysql_fetch_row($q_wars)) {
 		$wardata = array(
 			'name' => EscapeOU($row_wars[1]),
 			'kbs' => array(),
 		);
-		$wardata['kbs'] = array();
-		$q = DBQuery("SELECT iwid, hash, timestamp, att, attally, def, defally, attvalue, attloss, defvalue, defloss, raidvalue, bombvalue, start, dst FROM {$pre}war_kbs WHERE warid IN (".$row_wars[0].") ORDER BY timestamp DESC LIMIT ".($limit*50).",".(($limit+1)*50), __FILE__, __LINE__);
+		
+		$q = DBQuery("SELECT iwid, hash, timestamp, att, attally, def, defally, attvalue, attloss, defvalue, defloss, raidvalue, bombvalue, start, dst FROM {$pre}war_kbs WHERE warid IN (".$row_wars[0].") {$filter_kbs} ORDER BY timestamp DESC LIMIT ".($limit*50).",".(($limit+1)*50), __FILE__, __LINE__);
 		while($row = mysql_fetch_row($q)) {
 			$wardata['kbs'][] = array(
 				'id' => $row[0],
@@ -41,7 +118,7 @@ function WarKbs() {
 		}
 		
 		$wardata['scans'] = array();
-		$q = DBQuery("SELECT id, iwid, iwhash, time, gala, sys, pla, typ, planityp, objekttyp, ownername, ownerally, fe+2*st+4*vv+1.5*ch+2*ei+4*wa+en FROM {$pre}scans WHERE warid IN (".$row_wars[0].") ORDER BY time DESC LIMIT ".($limit*100).",".(($limit+1)*100), __FILE__, __LINE__);
+		$q = DBQuery("SELECT id, iwid, iwhash, time, gala, sys, pla, typ, planityp, objekttyp, ownername, ownerally, ressScore, score FROM {$pre}scans WHERE warid IN (".$row_wars[0].") {$filter_scans} ORDER BY time DESC LIMIT ".($limit*100).",".(($limit+1)*100), __FILE__, __LINE__);
 		while($row = mysql_fetch_row($q)) {
 			$wardata['scans'][] = array(
 				'id' => $row[0],
@@ -54,11 +131,18 @@ function WarKbs() {
 				'ownerName' => EscapeOU($row[10]),
 				'ownerAlly' => EscapeOU($row[11]),
 				'ress' => number_format($row[12], 0, ',', '.'),
+				'score' => number_format($row[13], 0, ',', '.'),
 			);
 		}
 		$content['wars'][] = $wardata;
 	}
 	$content['hasWars'] = !empty($content['wars']);
+	$content['hasPrev'] = $limit > 0;
+	$content['prevLink'] = $scripturl.'/index.php?action=war_data&amp;limit='.($limit-1).($showall ? '&amp;showall=1' : '').$filter_link;
+	$content['nextLink'] = $scripturl.'/index.php?action=war_data&amp;limit='.($limit+1).($showall ? '&amp;showall=1' : '').$filter_link;
+	$content['showAllLink'] = $scripturl.'/index.php?action=war_data&amp;limit='.($limit).'&amp;showall=1.$filter_link';
+
+	$content['submitUrl'] = $scripturl.'/index.php?action=war_data'.($showall ? '&amp;showall=1' : '');
 	
 	TemplateInit('wars');
 	TemplateWarKbs();

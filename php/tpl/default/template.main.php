@@ -15,7 +15,7 @@
 			if(!empty($problem['link']))
 				echo '<br /><a href="', $problem['link'], '"><span style="font-size: large;" class="', $problem['class'], '">', $problem['text'], '</span></a>';
 			else
-				echo '<br /><span class="', $problem['class'], '">', $problem['text'], '</span>';
+				echo '<br /><span style="font-size: large;" class="', $problem['class'], '">', $problem['text'], '</span>';
 		}
 		echo GetText2('welcomepage');
 		echo '</div>';

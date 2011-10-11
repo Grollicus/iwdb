@@ -131,28 +131,50 @@
 		}
 		
 		foreach($content['wars'] as $war) {
-			echo '<h2>', $war['name'], '</h2><table><tr><th colspan="14" style="font-size:larger;">Kampfberichte</th></tr>
+			echo '<h2>', $war['name'], '</h2><form method="post" action="',$content['submitUrl'],'"><table><tr><td colspan="13" style="border:none;"><table style="border:none;" width="100%"><tr><td style="border:none;width:110px;">', $content['hasPrev'] ? '<a href="'.$content['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td><th style="font-size:larger;text-align:center;">Kampfberichte</th><td style="border:none;width:110px;text-align:right;"><a href="',$content['nextLink'],'">Nächste Seite</a></td></tr></table></td></tr>
 				<tr><th>Zeit</th><th colspan="2">Angreifer</th><th>Start</th><th colspan="2">Verteidiger</th><th>Ziel</th><th>Angriff</th><th>Verlust</th><th>Verteidigung</th><th>Verlust</th><th>Raid</th><th>gebombt</th></tr>';
 			foreach($war['kbs'] as $kb) {
 				echo '<tr',$kb['isFake'] ? ' class="fake"' : '','><td><a href="', $kb['url'], '" onclick="return loadKB(\'', $kb['id'],'\', \'', $kb['hash'], '\');"> ', $kb['date'], '</a></td><td>',
 					$kb['angreiferName'], '</td><td>', $kb['angreiferAlly'], '</td><td>', $kb['startKoords'], '</td><td>', $kb['verteidigerName'], '</td><td>', $kb['verteidigerAlly'], '</td><td>',
 					$kb['zielKoords'], '</td><td>', $kb['angreiferWert'], '</td><td>', $kb['angreiferVerlust'], '</td><td>', $kb['verteidigerWert'], '</td><td>', $kb['verteidigerVerlust'], '</td><td>',
 					$kb['raidWert'], '</td><td>', $kb['bombWert'], '</td></tr>
-					<tr style="display:none;" id="kbr_', $kb['id'], '"><td id="kb_', $kb['id'], '" colspan="18" class="kbtd"></td></tr>';
+					<tr style="display:none;" id="kbr_', $kb['id'], '"><td id="kb_', $kb['id'], '" colspan="13" class="kbtd"></td></tr>';
 			}
-			echo '</table><br /><br /><table><tr><th colspan="14" style="font-size:larger;">Scans</th></tr>
-				<tr><th>Zeit</th><th>Typ</th><th>Koords</th><th colspan="2">Besitzer</th><th>Objekttyp</th><th>Planityp</th></tr>';
+			echo '<tr>
+					<th>Filter</th>
+					<td><input type="text" name="kb_att" value="',$content['filter']['kb_att'],'" /></td>
+					<td><input type="text" name="kb_att_ally" value="',$content['filter']['kb_att_ally'],'" size="5" /></td>
+					<td><input type="text" name="kb_start" value="',$content['filter']['kb_start'],'" size="9" /></td>
+					<td><input type="text" name="kb_def" value="',$content['filter']['kb_def'],'" /></td>
+					<td><input type="text" name="kb_def_ally" value="',$content['filter']['kb_def_ally'],'" size="5" /></td>
+					<td><input type="text" name="kb_dst" value="',$content['filter']['kb_dst'],'" size="9" /></td>
+					<td colspan="6"><input type="submit" value="Filtern!" /></td>
+				</tr>
+			</table></form><br /><br /><form method="post" action="',$content['submitUrl'],'"><table><tr><td colspan="9" style="border:none;"><table style="border:none;" width="100%"><tr><td style="border:none;width:110px;">', $content['hasPrev'] ? '<a href="'.$content['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td><th style="font-size:larger;text-align:center;">Scans</th><td style="border:none;width:110px;text-align:right;"><a href="',$content['nextLink'],'">Nächste Seite</a></td></tr></table></td></tr>
+				<tr><th>Zeit</th><th>Typ</th><th>Koords</th><th colspan="2">Besitzer</th><th>Objekttyp</th><th>Planityp</th><th>Ress</th><th>Score</th></tr>';
 			foreach($war['scans'] as $scan) {
 				echo '<tr><td><a href="', $scan['url'], '" onclick="return loadSB(\'', $scan['id'],'\');"> ', $scan['date'], '</a></td><td>',
 					$scan['typ'] ,'</td><td>', $scan['coords'], '</td><td>', $scan['ownerName'], '</td><td>', $scan['ownerAlly'], '</td><td>', $scan['objekttyp'], '</td>
-					<td>', $scan['planityp'], '</td></tr><tr style="display:none;" id="sbr_', $scan['id'], '"><td id="sb_', $scan['id'], '" colspan="7"></td></tr>';
+					<td>', $scan['planityp'], '</td><td>', $scan['ress'], '</td><td>', $scan['score'], '</td>
+					</tr><tr style="display:none;" id="sbr_', $scan['id'], '"><td id="sb_', $scan['id'], '" colspan="9"></td></tr>';
 			}
-			echo '</table><br /><br />';
+			echo '<tr>
+				<th>Filter</th>
+					<td><select name="scan_type">';
+			foreach($content['filter']['scan_type'] as $val => $o) {
+				echo '<option value="', $val, '" ',$o['selected'] ? 'selected="selected"' : '','>', $o['name'], '</option>';
+			}
+				echo '</select></td>
+					<td><input type="text" size="9" name="scan_coords" value="',$content['filter']['scan_coords'],'" /></td>
+					<td><input type="text" name="scan_owner" value="',$content['filter']['scan_owner'],'" /></td>
+					<td colspan="5"><input type="submit" value="Filtern" /></td>
+				</tr>
+			</table></form><br /><br />';
 		}
 		
 
 		
-		echo '</div>';
+		echo '<a href="',$content['showAllLink'],'">Alle (also auch alte) Kriege anzeigen</a></div>';
 		TemplateFooter();
 	}
 	
@@ -186,5 +208,51 @@
 			<tr><td>Energie</td><td>', $content['scan']['en'], '</td></tr>
 		</table></td>';
 		
+	}
+	
+	function TemplateWarSchedule() {
+		global $content;
+		TemplateHeader();
+		TemplateMenu();
+		
+		if($content['disabled']) {
+			echo '<div class="content">Is kein Krieg!</div>';
+			TemplateFooter();
+			return;
+		}
+		
+		echo '<div class="content"><script type="text/javascript"><!-- // --><![CDATA[
+	function WarScheduleReg(time) {
+		AjaxRequest("war_schedule_cb", "m=reg&t="+time+"&el="+time);
+		return false;
+	}
+	function WarScheduleUnReg(id) {
+		AjaxRequest("war_schedule_cb", "m=unreg&id="+id+"&el="+id);
+		return false;
+	}
+	
+		// ]]></script>
+		<h2>Sittereinteilung</h2>';
+
+		foreach($content['schedule'] as $day) {
+			echo '<table ', $day['last'] ? '' : 'style="float:left;margin-right:5px;"', '><tr><th colspan="2">', $day['date'], '</th></tr>';
+			foreach($day['times'] as $time) {
+				echo '<tr><td style="height:24px;">', $time['time'], '</td><td>';
+				foreach($time['usedSlots'] as $slot) {
+					if($slot['isMe'] && $time['active']) {
+						echo '<span id="sched_',$slot['id'],'"><button onclick="WarScheduleUnReg(\'',$slot['id'],'\');"><b>Abmelden</b></button></span>';
+					} else {
+						echo $slot['name'], '&nbsp;';
+					}
+				}
+				if($time['showReg'] && $time['active'])
+					echo '<span id="sched_',$time['regId'],'"><button onclick="WarScheduleReg(\'',$time['regId'],'\');">Mach ich!</button></span>';
+				echo '</td></tr>';
+			}
+			echo '</table>';
+		}
+		echo '</div>';
+		
+		TemplateFooter();
 	}
 ?>

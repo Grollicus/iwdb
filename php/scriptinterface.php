@@ -86,7 +86,8 @@ function Main()
 		'sitter_planis' => array('sitter/edit.php', 'SitterScriptListPlanis'),
 		'sitter_stufen' => array('sitter/edit.php', 'SitterScriptListStufen'),
 		'techtree' => array('techtree/script.php', 'TechtreeScriptQuery'),
-		'uni_details' => array('uni/view.php', 'UniDetails'), 
+		'uni_details' => array('uni/view.php', 'UniDetails'),
+		'war_schedule_cb' => array('war/schedule.php', 'WarScheduleAjax'),
 	);
 	
 	//defaultaction - if none exists or we dont know this action..

@@ -4,7 +4,7 @@
 		die("Hacking attempt");
 
 	function SitterDoLogin() {
-		global $spiel, $user, $ID_MEMBER, $pre;
+		global $spiel, $user, $ID_MEMBER, $pre, $warmode;
 		
 		$sitter= isset($_REQUEST['sitter']);
 		$id = intval($_REQUEST['ID']);
@@ -17,9 +17,17 @@
 			die("noe.");
 		
 		$now = time();
+		$login_factor = 1;
+		if($warmode) {
+			$login_factor = 5;
+			$schedule_slot = $now - ($now % 1800);
+			if(0<DBQueryOne("SELECT count(*) FROM {$pre}war_schedule WHERE time={$schedule_slot} AND userid={$ID_MEMBER}", __FILE__, __LINE__))
+				$login_factor = 20;
+		}
+		
 		$last = DBQueryOne("SELECT lastLogin FROM {$pre}igm_data WHERE ID={$id}", __FILE__, __LINE__);
 		DBQuery("UPDATE {$pre}igm_data SET lastLogin={$now} WHERE ID={$id}", __FILE__, __LINE__);
-		DBQuery("UPDATE {$pre}users SET sittertime=sittertime+".($now-$last)." WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
+		DBQuery("UPDATE {$pre}users SET sittertime=sittertime+".(($now-$last)*$login_factor)." WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
 		
 		if($spiel == 'iw')  {
 			$loginurl = 'http://www.icewars.de/index.php?action=login&submit=1';

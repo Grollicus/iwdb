@@ -209,8 +209,13 @@ function AjaxCallback(req) {
 			for(var i = 0; i < setValues.length; ++i) {
 				var setValue = setValues[i];
 				var el = getElById(setValue.attributes.getNamedItem("elementId").value);
-				var val = setValue.textContent;
-				el.innerHTML = val;
+				el.innerHTML = setValue.textContent;
+			}
+			var setIDs = resp.getElementsByTagName('setID');
+			for(var i = 0; i < setIDs.length; ++i) {
+				var setID = setIDs[i];
+				var el = getElById(setID.attributes.getNamedItem("elementId").value);
+				el.id = setID.attributes.getNamedItem("newId").value;
 			}
 		}
 		viewLoadingState(--AjaxRequests > 0);

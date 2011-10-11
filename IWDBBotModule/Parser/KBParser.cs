@@ -362,18 +362,18 @@ namespace IWDB.Parser {
 		List<War> wars = new List<War>();
 		String DBPrefix;
 		MySqlConnection con;
-		TechTreeKostenCache techKostenCache;
+		public TechTreeKostenCache TechKostenCache;
 		public WarFilter(String DBPrefix, MySqlConnection con, TechTreeKostenCache tkc) {
 			this.DBPrefix = DBPrefix;
 			this.con = con;
-			this.techKostenCache = tkc;
+			this.TechKostenCache = tkc;
 			Reload();
 		}
 
 		protected void Reload() {
 			lock(wars) {
 				wars.Clear();
-				techKostenCache.Clear();
+				TechKostenCache.Clear();
 				MySqlCommand cmd = new MySqlCommand("SELECT id, name, allytag, begin, end FROM " + DBPrefix + "wars", con);
 				MySqlDataReader r = cmd.ExecuteReader();
 				try {
@@ -448,7 +448,7 @@ namespace IWDB.Parser {
 					kb.RemoveFromDB(con, DBPrefix);
 					if(war != null) {
 						newWar++;
-						kb.SaveAsWarKb(war.id, con, DBPrefix, techKostenCache);
+						kb.SaveAsWarKb(war.id, con, DBPrefix, TechKostenCache);
 					} else {
 						newRaid++;
 						kb.SaveAsRaid(con, DBPrefix);
@@ -458,33 +458,6 @@ namespace IWDB.Parser {
 
 				kbs.Clear();
 
-				//List<Pair<uint, uint>> updateScans = new List<Pair<uint, uint>>();
-				//MySqlCommand cmd_scans = new MySqlCommand(@"SELECT id, typ, ownerally, warid FROM "+DBPrefix+"scans", con);
-				//r = cmd_scans.ExecuteReader();
-				//uint scanscnt = 0;
-				//try {
-				//    while(r.Read()) {
-				//        War w = getWar(r.GetString(2), r.GetUInt32(1));
-				//        uint warid = w != null ? w.id : 0;
-				//        if(warid != r.GetUInt32(3))
-				//            updateScans.Add(new Pair<uint, uint>(r.GetUInt32(0), warid));
-				//        scanscnt++;
-				//    }
-				//} finally {
-				//    r.Close();
-				//}
-				//MySqlCommand cmd_scansUpd = new MySqlCommand("UPDATE "+DBPrefix+@"scans SET warid=?warid WHERE id=?id", con);
-				//cmd_scansUpd.Parameters.Add("?id", MySqlDbType.UInt32);
-				//cmd_scansUpd.Parameters.Add("?warid", MySqlDbType.UInt32);
-				//cmd_scansUpd.Prepare();
-				//uint scansmod = 0;
-				//foreach(Pair<uint, uint> p in updateScans) {
-				//    cmd_scansUpd.Parameters["?id"].Value = p.Item1;
-				//    cmd_scansUpd.Parameters["?warid"].Value = p.Item2;
-				//    cmd_scansUpd.ExecuteNonQuery();
-				//    scansmod += 1;
-				//}
-				//msg.Answer(DateTime.Now.ToString() + " " + scansmod + " Scans (von " + scanscnt + ") geändert!");
 				Log.WriteLine(LogLevel.E_NOTICE, "WarRefresh:Scan");
 				List<Tuple<uint, uint, string>> scans = new List<Tuple<uint, uint, string>>();
 				MySqlCommand cmd_scans = new MySqlCommand(@"SELECT id, iwid, iwhash FROM " + DBPrefix + "scans", con);
@@ -537,14 +510,14 @@ namespace IWDB.Parser {
 						case "2": { //Sondierung (Gebäude/Ress)
 								GebScan s = new GebScan(tpl.Item2, tpl.Item3);
 								s.LoadXml(xml, con, DBPrefix, this);
-								s.ToDB(con, DBPrefix);
+								s.ToDB(con, DBPrefix, TechKostenCache);
 								gebscan_cnt++;
 							}
 							break;
 						case "3": { //Sondierung (Schiffe/Def/Ress)
 								SchiffScan s = new SchiffScan(tpl.Item2, tpl.Item3);
 								s.LoadXml(xml, con, DBPrefix, this);
-								s.ToDB(con, DBPrefix);
+								s.ToDB(con, DBPrefix, TechKostenCache);
 								schiffscan_cnt++;
 							} break;
 					}
