@@ -977,7 +977,7 @@
 		if(is_null($row['scan_gebs'])) {
 			$data['scan_gebs_exists'] = false;
 			$data['scan_gebs'] = array();
-			$data['scan_gebs_time'] = 'act_5';
+			$data['scan_gebs_age'] = 'act_5';
 			return;
 		}
 		$data['scan_gebs_exists'] = true;
@@ -985,7 +985,7 @@
 		$gebs = array();
 		foreach($arr as $line) {
 			$a = explode('|', $line);
-			$gebs[] = array('anz' => intval($a[0]), 'name' => EscapeO($a[1]));
+			$gebs[] = array('anz' => intval($a[0]), 'name' => EscapeOU($a[1]));
 		}
 		$data['scan_gebs'] = $gebs;
 		$data['scan_gebs_age'] = ActualityColor($row['gebScanTime']);
@@ -1005,7 +1005,7 @@
 		foreach($flotten as $fl) {
 			$fl_data = explode('||', $fl);
 			$flotte = array(
-				'name' => EscapeO($fl_data[0]),
+				'name' => EscapeOU($fl_data[0]),
 				'typ' => ucfirst($fl_data[1]),
 			);
 			$schiffe = explode('|', $fl_data[2]);
