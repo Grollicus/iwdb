@@ -73,6 +73,7 @@ namespace IWDB.Parser {
 Kosten\s+([\s\S]*?)\n
 Dauer\s+(" + IWZeitspanne + @")\n
 Voraussetzungen\sForschungen\s+((?:\(.+\))*)\n
+(?:aufrüstbar\szu.*\n)?
 benötigt\sWerften\s+([\s\S]+?)\n
 mögliche\sAktionen([\s\S]+?)\n
 Daten\n
