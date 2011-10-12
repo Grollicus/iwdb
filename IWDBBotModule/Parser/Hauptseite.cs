@@ -160,60 +160,70 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 			deleteQry.Parameters.Add("?id", MySqlDbType.UInt32);
 			deleteQry.Prepare();
 
-			foreach (Match outerMatch in matches) {
+			foreach(Match outerMatch in matches) {
 				MatchCollection innerMatches = Regex.Matches(outerMatch.Groups[0].Value, "(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\s+(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\n
 (" + SpielerName + @")\s+(" + PräziseIWZeit + @"|" + AbladeAktionen + @")[\s\-]+
 (?:[\d:]+|angekommen)\s+(" + Aktionen + @")", RegexOptions.IgnorePatternWhitespace);
-				if (innerMatches.Count > 0) {
-					OrderedList<FlottenCacheFlotte> flotten = new OrderedList<FlottenCacheFlotte>(new FlottenComparer());
-					uidQuery.Parameters["?gala"].Value = int.Parse(innerMatches[0].Groups[2].Value);
-					uidQuery.Parameters["?sys"].Value = int.Parse(innerMatches[0].Groups[3].Value);
-					uidQuery.Parameters["?pla"].Value = int.Parse(innerMatches[0].Groups[4].Value);
-					object res = uidQuery.ExecuteScalar();
-					if (res == null || Convert.IsDBNull(res)) {
-						resp.RespondError("Unbekannter Zielplani: " + innerMatches[0].Groups[2].Value + ":" + innerMatches[0].Groups[3].Value + ":" + innerMatches[0].Groups[4].Value + " - Unidaten oder Spielerdaten nicht aktuell? Die gesamten Flottendaten wurden übersprungen!\n");
-						continue;
-					}
-					uint uid = (uint)res;
-					foreach (Match m in innerMatches) {
-						uint zielID = idFetcherZielID.GetID(uint.Parse(m.Groups[2].Value), uint.Parse(m.Groups[3].Value), uint.Parse(m.Groups[4].Value), m.Groups[1].Value);
-						uint startID = idFetcherStartID.GetID(uint.Parse(m.Groups[6].Value), uint.Parse(m.Groups[7].Value), uint.Parse(m.Groups[8].Value), m.Groups[5].Value, m.Groups[9].Value);
-						FlottenCacheFlotte flotte = new FlottenCacheFlotte(0, startID, zielID, IWDBUtils.parsePreciseIWTime(m.Groups[10].Value), 0, m.Groups[11].Value);
-						flotten.Add(flotte);
-					}
-					OrderedList<FlottenCacheFlotte> cachedFlotten;
-					if (!flottenCache.TryGetValue(uid, out cachedFlotten)) {
-						cachedFlotten = new OrderedList<FlottenCacheFlotte>(new FlottenComparer());
-					}
-					List<OrderedListDifference<FlottenCacheFlotte>> diffs = cachedFlotten.Differences(flotten);
-					int neu = 0;
-					String ziel = "";
-					foreach (OrderedListDifference<FlottenCacheFlotte> diff in diffs) {
-						if (diff.Item.Action == "Angriff")
-							continue;
-						if (diff.Difference == OrderedListDifferenceType.MissingInCompared) {
-							deleteQry.Parameters["?id"].Value = diff.Item.id;
-							deleteQry.ExecuteNonQuery();
-						} else {
-							insertQry.Parameters["?start"].Value = diff.Item.startid;
-							insertQry.Parameters["?ziel"].Value = diff.Item.zielid;
-							insertQry.Parameters["?action"].Value = diff.Item.Action;
-							insertQry.Parameters["?ankunft"].Value = diff.Item.ankunft;
-							insertQry.ExecuteNonQuery();
-							if(neu == 0) {
-								MySqlCommand zielQry = new MySqlCommand("SELECT ownername FROM " + DBPrefix + "universum WHERE id=?id", con);
-								zielQry.Parameters.Add("?id", MySqlDbType.UInt32).Value = diff.Item.zielid;
-								ziel = zielQry.ExecuteScalar() as String;
-							}
-							if(diff.Item.Action == "Sondierung (Gebäude/Ress)" || diff.Item.Action == "Sondierung (Geologie)" ||diff.Item.Action == "Sondierung (Schiffe/Def/Ress)")
-								++neu;
-						}
-					}
-					if(neu > 0)
-						parser.NeueFlottenGesichtet(ziel, neu, false);
-					cachedFlotten.RemoveMatching(delegate(FlottenCacheFlotte f) { return f.Action != "Angriff"; });
-					resp.Respond("Fremde Flotten eingelesen!\n");
+				if(innerMatches.Count == 0) {
+					resp.RespondError("Hab hier fremde Flotten ohne Flotten! Evtl läuft da was schief.. bitte mal melden!");
+					continue;
 				}
+				uint uid = 0;
+				for(int i = 0; i < innerMatches.Count; ++i) {
+					uidQuery.Parameters["?gala"].Value = int.Parse(innerMatches[i].Groups[2].Value);
+					uidQuery.Parameters["?sys"].Value = int.Parse(innerMatches[i].Groups[3].Value);
+					uidQuery.Parameters["?pla"].Value = int.Parse(innerMatches[i].Groups[4].Value);
+					object res = uidQuery.ExecuteScalar();
+					if(res != null && !Convert.IsDBNull(res)) {
+						uid = (uint)res;
+						break;
+					}
+				}
+				if(uid == 0) {
+					resp.RespondError("Mir ist kein einziger der von fremden Flotten angeflogenen Zielplanis (" + innerMatches[0].Groups[2].Value + ":" + innerMatches[0].Groups[3].Value + ":" + innerMatches[0].Groups[4].Value + ") bekannt: Die gesamten fremden Flotten wurden übersprungen!\n");
+					continue;
+				}
+
+				OrderedList<FlottenCacheFlotte> flotten = new OrderedList<FlottenCacheFlotte>(new FlottenComparer());
+
+				foreach(Match m in innerMatches) {
+					uint zielID = idFetcherZielID.GetID(uint.Parse(m.Groups[2].Value), uint.Parse(m.Groups[3].Value), uint.Parse(m.Groups[4].Value), m.Groups[1].Value);
+					uint startID = idFetcherStartID.GetID(uint.Parse(m.Groups[6].Value), uint.Parse(m.Groups[7].Value), uint.Parse(m.Groups[8].Value), m.Groups[5].Value, m.Groups[9].Value);
+					FlottenCacheFlotte flotte = new FlottenCacheFlotte(0, startID, zielID, IWDBUtils.parsePreciseIWTime(m.Groups[10].Value), 0, m.Groups[11].Value);
+					flotten.Add(flotte);
+				}
+				OrderedList<FlottenCacheFlotte> cachedFlotten;
+				if(!flottenCache.TryGetValue(uid, out cachedFlotten)) {
+					cachedFlotten = new OrderedList<FlottenCacheFlotte>(new FlottenComparer());
+				}
+				List<OrderedListDifference<FlottenCacheFlotte>> diffs = cachedFlotten.Differences(flotten);
+				int neu = 0;
+				String ziel = "";
+				foreach(OrderedListDifference<FlottenCacheFlotte> diff in diffs) {
+					if(diff.Item.Action == "Angriff")
+						continue;
+					if(diff.Difference == OrderedListDifferenceType.MissingInCompared) {
+						deleteQry.Parameters["?id"].Value = diff.Item.id;
+						deleteQry.ExecuteNonQuery();
+					} else {
+						insertQry.Parameters["?start"].Value = diff.Item.startid;
+						insertQry.Parameters["?ziel"].Value = diff.Item.zielid;
+						insertQry.Parameters["?action"].Value = diff.Item.Action;
+						insertQry.Parameters["?ankunft"].Value = diff.Item.ankunft;
+						insertQry.ExecuteNonQuery();
+						if(neu == 0) {
+							MySqlCommand zielQry = new MySqlCommand("SELECT ownername FROM " + DBPrefix + "universum WHERE id=?id", con);
+							zielQry.Parameters.Add("?id", MySqlDbType.UInt32).Value = diff.Item.zielid;
+							ziel = zielQry.ExecuteScalar() as String;
+						}
+						if(diff.Item.Action == "Sondierung (Gebäude/Ress)" || diff.Item.Action == "Sondierung (Geologie)" || diff.Item.Action == "Sondierung (Schiffe/Def/Ress)")
+							++neu;
+					}
+				}
+				if(neu > 0)
+					parser.NeueFlottenGesichtet(ziel, neu, false);
+				cachedFlotten.RemoveMatching(delegate(FlottenCacheFlotte f) { return f.Action != "Angriff"; });
+				resp.Respond("Fremde Flotten eingelesen!\n");
 			}
 		}
 	}
@@ -251,59 +261,68 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 			deleteQry.Parameters.Add("?id", MySqlDbType.UInt32);
 			deleteQry.Prepare();
 
-			foreach (Match outerMatch in matches) {
+			foreach(Match outerMatch in matches) {
 				MatchCollection innerMatches = Regex.Matches(outerMatch.Groups[0].Value, "(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\s+(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\n
 (" + SpielerName + @")\s+(" + PräziseIWZeit + @")[\s\-]+.*?\s+Angriff", RegexOptions.IgnorePatternWhitespace);
-				if (innerMatches.Count > 0) {
-					OrderedList<FlottenCacheFlotte> flotten = new OrderedList<FlottenCacheFlotte>(new FlottenComparer());
-					uidQuery.Parameters["?gala"].Value = int.Parse(innerMatches[0].Groups[2].Value);
-					uidQuery.Parameters["?sys"].Value = int.Parse(innerMatches[0].Groups[3].Value);
-					uidQuery.Parameters["?pla"].Value = int.Parse(innerMatches[0].Groups[4].Value);
-					object res = uidQuery.ExecuteScalar();
-					if (res == null || Convert.IsDBNull(res)) {
-						resp.RespondError("Unbekannter Zielplani: " + innerMatches[0].Groups[2].Value + ":" + innerMatches[0].Groups[3].Value + ":" + innerMatches[0].Groups[4].Value + " - Unidaten oder Spielerdaten nicht aktuell? Die gesamten Flottendaten wurden übersprungen!\n");
-						continue;
-					}
-					uint uid = (uint)res;
-					foreach (Match m in innerMatches) {
-						uint zielID = idFetcherZielID.GetID(uint.Parse(m.Groups[2].Value), uint.Parse(m.Groups[3].Value), uint.Parse(m.Groups[4].Value), m.Groups[1].Value);
-						uint startID = idFetcherStartID.GetID(uint.Parse(m.Groups[6].Value), uint.Parse(m.Groups[7].Value), uint.Parse(m.Groups[8].Value), m.Groups[5].Value, m.Groups[9].Value);
-						uint time = IWDBUtils.parsePreciseIWTime(m.Groups[10].Value);
-						FlottenCacheFlotte flotte = new FlottenCacheFlotte(0, startID, zielID, time, 0, "Angriff");
-						flotten.Add(flotte);
-					}
-					OrderedList<FlottenCacheFlotte> cachedFlotten;
-					if (!flottenCache.TryGetValue(uid, out cachedFlotten)) {
-						cachedFlotten = new OrderedList<FlottenCacheFlotte>(new FlottenComparer());
-					}
-					List<OrderedListDifference<FlottenCacheFlotte>> diffs = cachedFlotten.Differences(flotten);
-					int neu = 0;
-					String ziel = "";
-					foreach (OrderedListDifference<FlottenCacheFlotte> diff in diffs) {
-						if(diff.Item.Action != "Angriff")
-							continue;
-						if (diff.Difference == OrderedListDifferenceType.MissingInCompared) {
-							deleteQry.Parameters["?id"].Value = diff.Item.id;
-							deleteQry.ExecuteNonQuery();
-						} else {
-							insertQry.Parameters["?start"].Value = diff.Item.startid;
-							insertQry.Parameters["?ziel"].Value = diff.Item.zielid;
-							insertQry.Parameters["?action"].Value = "Angriff";
-							insertQry.Parameters["?ankunft"].Value = diff.Item.ankunft;
-							insertQry.ExecuteNonQuery();
-							if (neu == 0) {
-								MySqlCommand zielQry = new MySqlCommand("SELECT ownername FROM " + DBPrefix + "universum WHERE id=?id", con);
-								zielQry.Parameters.Add("?id", MySqlDbType.UInt32).Value = diff.Item.zielid;
-								ziel = zielQry.ExecuteScalar() as String;
-							}
-							++neu;
-						}
-					}
-					if (neu > 0)
-						parser.NeueFlottenGesichtet(ziel, neu, true);
-					cachedFlotten.RemoveMatching(delegate(FlottenCacheFlotte f) { return f.Action == "Angriff"; });
-					resp.Respond("Feindliche Flotten eingelesen!\n");
+				if(innerMatches.Count == 0) {
+					resp.RespondError("Hab hier feindliche Flotten ohne Flotten! Evtl läuft da was schief.. bitte mal melden!");
+					continue;
 				}
+				OrderedList<FlottenCacheFlotte> flotten = new OrderedList<FlottenCacheFlotte>(new FlottenComparer());
+				uint uid = 0;
+				for(int i = 0; i < innerMatches.Count; ++i) {
+					uidQuery.Parameters["?gala"].Value = int.Parse(innerMatches[i].Groups[2].Value);
+					uidQuery.Parameters["?sys"].Value = int.Parse(innerMatches[i].Groups[3].Value);
+					uidQuery.Parameters["?pla"].Value = int.Parse(innerMatches[i].Groups[4].Value);
+					object res = uidQuery.ExecuteScalar();
+					if(res != null && !Convert.IsDBNull(res)) {
+						uid = (uint)res;
+						break;
+					}
+				}
+				if(uid == 0) {
+					resp.RespondError("Mir ist kein einziger der von feindlichen Flotten angeflogenen Zielplanis (" + innerMatches[0].Groups[2].Value + ":" + innerMatches[0].Groups[3].Value + ":" + innerMatches[0].Groups[4].Value + ") bekannt: Die gesamten feindlichen Flotten wurden übersprungen!\n");
+					continue;
+				}
+
+				foreach(Match m in innerMatches) {
+					uint zielID = idFetcherZielID.GetID(uint.Parse(m.Groups[2].Value), uint.Parse(m.Groups[3].Value), uint.Parse(m.Groups[4].Value), m.Groups[1].Value);
+					uint startID = idFetcherStartID.GetID(uint.Parse(m.Groups[6].Value), uint.Parse(m.Groups[7].Value), uint.Parse(m.Groups[8].Value), m.Groups[5].Value, m.Groups[9].Value);
+					uint time = IWDBUtils.parsePreciseIWTime(m.Groups[10].Value);
+					FlottenCacheFlotte flotte = new FlottenCacheFlotte(0, startID, zielID, time, 0, "Angriff");
+					flotten.Add(flotte);
+				}
+				OrderedList<FlottenCacheFlotte> cachedFlotten;
+				if(!flottenCache.TryGetValue(uid, out cachedFlotten)) {
+					cachedFlotten = new OrderedList<FlottenCacheFlotte>(new FlottenComparer());
+				}
+				List<OrderedListDifference<FlottenCacheFlotte>> diffs = cachedFlotten.Differences(flotten);
+				int neu = 0;
+				String ziel = "";
+				foreach(OrderedListDifference<FlottenCacheFlotte> diff in diffs) {
+					if(diff.Item.Action != "Angriff")
+						continue;
+					if(diff.Difference == OrderedListDifferenceType.MissingInCompared) {
+						deleteQry.Parameters["?id"].Value = diff.Item.id;
+						deleteQry.ExecuteNonQuery();
+					} else {
+						insertQry.Parameters["?start"].Value = diff.Item.startid;
+						insertQry.Parameters["?ziel"].Value = diff.Item.zielid;
+						insertQry.Parameters["?action"].Value = "Angriff";
+						insertQry.Parameters["?ankunft"].Value = diff.Item.ankunft;
+						insertQry.ExecuteNonQuery();
+						if(neu == 0) {
+							MySqlCommand zielQry = new MySqlCommand("SELECT ownername FROM " + DBPrefix + "universum WHERE id=?id", con);
+							zielQry.Parameters.Add("?id", MySqlDbType.UInt32).Value = diff.Item.zielid;
+							ziel = zielQry.ExecuteScalar() as String;
+						}
+						++neu;
+					}
+				}
+				if(neu > 0)
+					parser.NeueFlottenGesichtet(ziel, neu, true);
+				cachedFlotten.RemoveMatching(delegate(FlottenCacheFlotte f) { return f.Action == "Angriff"; });
+				resp.Respond("Feindliche Flotten eingelesen!\n");
 			}
 		}
 	}

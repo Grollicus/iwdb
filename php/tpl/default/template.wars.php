@@ -127,7 +127,7 @@
 	// ]]></script>';
 		
 		if(!$content['hasWars']) {
-			echo 'Irgendwas läuft da schief, ich hab gar keinen Krieg!';
+			echo 'Irgendwas läuft da schief, ich hab gar keinen Krieg!<br />';
 		}
 		
 		foreach($content['wars'] as $war) {

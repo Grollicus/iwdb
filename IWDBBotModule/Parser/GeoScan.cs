@@ -554,6 +554,7 @@ namespace IWDB.Parser {
 				lastestScanUpdate.Parameters.Add("?planid", MySqlDbType.UInt32).Value = planid;
 				lastestScanUpdate.Parameters.Add("?type", MySqlDbType.String).Value = type;
 				lastestScanUpdate.Parameters.Add("?scanid", MySqlDbType.UInt32).Value = scanID;
+				lastestScanUpdate.ExecuteNonQuery();
 			} else {
 				r.Close();
 			}
