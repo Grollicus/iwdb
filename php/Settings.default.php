@@ -59,7 +59,7 @@ $uni_presets= array(
 
 // Bezeichne Angriffe als Fake wenn angreifer-Wert < $fake_att und verteidiger-Wert < $fake_def 
 $fake_att = 200000;
-$fake_def = 1000000;
+$fake_def = 2000000;
 
 $warmode = false;
 

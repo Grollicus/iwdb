@@ -729,7 +729,7 @@
 				'group' => 'uni.id',
 			),
 			'scan_schiffe' => array(
-				'cols' => array("schiff_scan.time AS schiffScanTime, GROUP_CONCAT(scan_flotten.owner, '||', scan_flotten.typ, '||', (SELECT GROUP_CONCAT(schiffe.anz, ',', schiffsnamen.name SEPARATOR '|') FROM {$pre}scans_flotten_schiffe AS schiffe INNER JOIN {$pre}schiffe AS schiffsnamen ON schiffe.schid=schiffsnamen.id WHERE schiffe.flid=scan_flotten.id GROUP BY scan_flotten.id) SEPARATOR '|||') AS scan_schiffe"),
+				'cols' => array("schiff_scan.time AS schiffScanTime, GROUP_CONCAT(scan_flotten.owner, '||', scan_flotten.typ, '||', (SELECT GROUP_CONCAT(schiffe.anz, ',', schiffsnamen.name SEPARATOR '|') FROM {$pre}scans_flotten_schiffe AS schiffe INNER JOIN {$pre}techtree_items AS schiffsnamen ON schiffe.schid=schiffsnamen.ID WHERE schiffe.flid=scan_flotten.id GROUP BY scan_flotten.id) SEPARATOR '|||') AS scan_schiffe"),
 				'tables' => array(array('uni', 0), array('lastest_schiff_scan', 0), array('schiff_scan', 0), array('scan_flotten', 0), /*array('scan_flotten_schiffe', 0), array('scan_schiffe', 0)*/),
 				'cb' => 'ModScanSchiffeCb',
 				'titles' => array('scan_schiffe' => array('', '', 100)),
@@ -1014,7 +1014,7 @@
 				$schiff = explode(',', $schiff, 2);
 				$sch[] = array(
 					'anz' => number_format(intval($schiff[0]), 0, ',', '.'),
-					'name' => EscapeO($schiff[1]),
+					'name' => EscapeOU($schiff[1]),
 				);
 			}
 			$flotte['schiffe'] = $sch;
