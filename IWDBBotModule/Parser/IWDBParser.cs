@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using MySql.Data.MySqlClient;
 using IRCeX;
 using System.Xml;
+using System.Threading;
 
 namespace IWDB {
     public interface IWDBParserManager {
@@ -55,18 +56,25 @@ namespace IWDB.Parser {
             DBPrefix = config["dbprefix"].InnerText;
 
             mysql = parserMod.GetMysqlConnection(config["mysql"].InnerText);
-            mysql.Open();
+			IRCeX.Log.WriteLine("MySqlOpen: IWDBParser constructor");
+			Monitor.Enter(mysql);
+			try {
+				mysql.Open();
 
-            handlers = new Dictionary<string, RequestHandler>();
-			techKostenCache = new TechTreeKostenCache();
-			warFilter = new WarFilter(DBPrefix, mysql, techKostenCache);
-			AddHandler(warFilter);
-            AddHandler(new NewscanHandler(mysql, DBPrefix, config["mysql"].InnerText, this, warFilter, techKostenCache));
-            AddHandler(new BauschleifenHandler());
-            AddHandler(new TechTreeDepthHandler(mysql, DBPrefix));
-			kabaFilter = new KabaFilter(DBPrefix, mysql);
-			AddHandler(kabaFilter);
-            mysql.Close();
+				handlers = new Dictionary<string, RequestHandler>();
+				techKostenCache = new TechTreeKostenCache();
+				warFilter = new WarFilter(DBPrefix, mysql, techKostenCache);
+				AddHandler(warFilter);
+				AddHandler(new NewscanHandler(mysql, DBPrefix, config["mysql"].InnerText, this, warFilter, techKostenCache));
+				AddHandler(new BauschleifenHandler());
+				AddHandler(new TechTreeDepthHandler(mysql, DBPrefix));
+				kabaFilter = new KabaFilter(DBPrefix, mysql);
+				AddHandler(kabaFilter);
+			} finally {
+				IRCeX.Log.WriteLine("MySqlClose: IWDBParser constructor");
+				mysql.Close();
+				Monitor.Exit(mysql);
+			}
             usersLoggedIn = new List<string>();
 
             listeningSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -153,15 +161,22 @@ namespace IWDB.Parser {
         public void CheckLogin(string nick, string username, string host) {
             if (parserMod.IsLoggedIn(nick))
                 return;
+			Log.WriteLine("MySqlOpen: CheckLogin");
+			Monitor.Enter(mysql);
             mysql.Open();
-            MySqlCommand cmd = new MySqlCommand("SELECT access FROM " + DBPrefix + "irc_autologin WHERE ?mask LIKE mask", mysql);
-            cmd.Parameters.Add("?mask", MySqlDbType.String).Value = nick + "!" + username + "@" + host;
-            object ret = cmd.ExecuteScalar();
-            mysql.Close();
-            if (ret == null || Convert.IsDBNull(ret))
-                return;
-            IRCModuleUser u = new IRCModuleUser(nick, (IRCModuleUserAccess)(sbyte)ret);
-            parserMod.LoginUser(nick, u);
+			try {
+				MySqlCommand cmd = new MySqlCommand("SELECT access FROM " + DBPrefix + "irc_autologin WHERE ?mask LIKE mask", mysql);
+				cmd.Parameters.Add("?mask", MySqlDbType.String).Value = nick + "!" + username + "@" + host;
+				object ret = cmd.ExecuteScalar();
+				if(ret == null || Convert.IsDBNull(ret))
+					return;
+				IRCModuleUser u = new IRCModuleUser(nick, (IRCModuleUserAccess)(sbyte)ret);
+				parserMod.LoginUser(nick, u);
+			} finally {
+				IRCeX.Log.WriteLine("MySqlClose: CheckLogin");
+				mysql.Close();
+				Monitor.Exit(mysql);
+			}
             int pos = ~usersLoggedIn.BinarySearch(nick);
             usersLoggedIn.Insert(pos, nick);
             parserMod.SendRawMessage("NOTICE " + nick + " :Du wurdest automatisch angemeldet!");
@@ -189,113 +204,143 @@ namespace IWDB.Parser {
             }
         }
         public void BauleerlaufInfo(out int anz, out List<Pair<int, String>> neu) {
+			IRCeX.Log.WriteLine("MySqlOpen: BauleerlaufInfo");
+			Monitor.Enter(mysql);
             mysql.Open();
+			try {
+				DateTime now = DateTime.Now;
+				MySqlCommand neuerLeerlaufQry = new MySqlCommand("SELECT uid, igmname FROM (SELECT uid, MAX(end) AS end, igmname FROM " + DBPrefix + "building AS building INNER JOIN " + DBPrefix + "igm_data AS igm_data ON building.uid=igm_data.id WHERE igm_data.ikea = 0 OR plani=0 GROUP BY uid, plani) AS tmp GROUP BY tmp.uid HAVING min(tmp.end) BETWEEN ?time AND ?now", mysql);
+				neuerLeerlaufQry.Parameters.Add("?time", MySqlDbType.UInt32).Value = IWDBUtils.toUnixTimestamp(now.AddSeconds(-IWDBChanModule.BauleerlaufSpamIntervalInSeconds));
+				neuerLeerlaufQry.Parameters.Add("?now", MySqlDbType.UInt32).Value = IWDBUtils.toUnixTimestamp(now);
+				MySqlDataReader r = neuerLeerlaufQry.ExecuteReader();
+				neu = new List<Pair<int, string>>();
+				while(r.Read()) {
+					neu.Add(new Pair<int, String>(r.GetInt32(0), r.GetString(1)));
+				}
+				r.Close();
 
-            DateTime now = DateTime.Now;
-            MySqlCommand neuerLeerlaufQry = new MySqlCommand("SELECT uid, igmname FROM (SELECT uid, MAX(end) AS end, igmname FROM " + DBPrefix + "building AS building INNER JOIN " + DBPrefix + "igm_data AS igm_data ON building.uid=igm_data.id WHERE igm_data.ikea = 0 OR plani=0 GROUP BY uid, plani) AS tmp GROUP BY tmp.uid HAVING min(tmp.end) BETWEEN ?time AND ?now", mysql);
-            neuerLeerlaufQry.Parameters.Add("?time", MySqlDbType.UInt32).Value = IWDBUtils.toUnixTimestamp(now.AddSeconds(-IWDBChanModule.BauleerlaufSpamIntervalInSeconds));
-            neuerLeerlaufQry.Parameters.Add("?now", MySqlDbType.UInt32).Value = IWDBUtils.toUnixTimestamp(now);
-            MySqlDataReader r = neuerLeerlaufQry.ExecuteReader();
-            neu = new List<Pair<int,string>>();
-            while (r.Read()) {
-                neu.Add(new Pair<int, String>(r.GetInt32(0), r.GetString(1)));
-            }
-            r.Close();
-
-            MySqlCommand cmd = new MySqlCommand("SELECT COUNT(*) FROM (SELECT 1 FROM (SELECT uid, MAX(end) AS end FROM " + DBPrefix + "building AS building INNER JOIN " + DBPrefix + "igm_data AS igm_data ON building.uid=igm_data.id WHERE igm_data.ikea = 0 OR plani=0 GROUP BY uid, plani) AS tmp GROUP BY tmp.uid HAVING min(tmp.end) <= ?time) AS temp2", mysql);
-            cmd.Parameters.Add("?time", MySqlDbType.UInt32).Value = IWDBUtils.toUnixTimestamp(now.AddSeconds(-IWDBChanModule.BauleerlaufSpamIntervalInSeconds));
-            anz = Convert.ToInt32(cmd.ExecuteScalar());
-
-            mysql.Close();
+				MySqlCommand cmd = new MySqlCommand("SELECT COUNT(*) FROM (SELECT 1 FROM (SELECT uid, MAX(end) AS end FROM " + DBPrefix + "building AS building INNER JOIN " + DBPrefix + "igm_data AS igm_data ON building.uid=igm_data.id WHERE igm_data.ikea = 0 OR plani=0 GROUP BY uid, plani) AS tmp GROUP BY tmp.uid HAVING min(tmp.end) <= ?time) AS temp2", mysql);
+				cmd.Parameters.Add("?time", MySqlDbType.UInt32).Value = IWDBUtils.toUnixTimestamp(now.AddSeconds(-IWDBChanModule.BauleerlaufSpamIntervalInSeconds));
+				anz = Convert.ToInt32(cmd.ExecuteScalar());
+			} finally {
+				IRCeX.Log.WriteLine("MySqlClose: BauleerlaufInfo");
+				mysql.Close();
+				Monitor.Exit(mysql);
+			}
         }
         public void SitterauftraegeOffen(out int anz, out int jobid, out DateTime next) {
             next = DateTime.MinValue;
-            mysql.Open();
+			Log.WriteLine("MySqlOpen: SitterauftraegeOffen");
+			Monitor.Enter(mysql);
+			try {
+				mysql.Open();
 
-            uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
-            MySqlCommand aktJobCnt = new MySqlCommand("SELECT ID FROM " + DBPrefix + "sitter WHERE done=0 AND FollowUpTo=0 AND time<=?time ORDER BY time", mysql);
-            aktJobCnt.Parameters.Add("?time", MySqlDbType.UInt32).Value = now;
-            aktJobCnt.Prepare();
-            MySqlDataReader r = aktJobCnt.ExecuteReader();
-            //object ret = aktJobCnt.ExecuteScalar();
-            anz = 0; jobid = 0;
-            while(r.Read()) {
-                if (anz == 0)
-                    jobid = r.GetInt32(0);
-                anz++;
-            }
-            r.Close();
+				uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
+				MySqlCommand aktJobCnt = new MySqlCommand("SELECT ID FROM " + DBPrefix + "sitter WHERE done=0 AND FollowUpTo=0 AND time<=?time ORDER BY time", mysql);
+				aktJobCnt.Parameters.Add("?time", MySqlDbType.UInt32).Value = now;
+				aktJobCnt.Prepare();
+				MySqlDataReader r = aktJobCnt.ExecuteReader();
+				//object ret = aktJobCnt.ExecuteScalar();
+				anz = 0; jobid = 0;
+				while(r.Read()) {
+					if(anz == 0)
+						jobid = r.GetInt32(0);
+					anz++;
+				}
+				r.Close();
 
-            MySqlCommand nextJob = new MySqlCommand("SELECT time FROM " + DBPrefix + "sitter WHERE done=0 AND time>?time ORDER BY time", mysql);
-            nextJob.Parameters.Add("?time", MySqlDbType.UInt32).Value = now;
-            nextJob.Prepare();
-            object ret = nextJob.ExecuteScalar();
-            if (ret != null && !Convert.IsDBNull(ret)) {
-                uint time = Convert.ToUInt32(ret);
-                next = IWDBUtils.fromUnixTimestamp(time);
-            }
-
-            mysql.Close();
+				MySqlCommand nextJob = new MySqlCommand("SELECT time FROM " + DBPrefix + "sitter WHERE done=0 AND time>?time ORDER BY time", mysql);
+				nextJob.Parameters.Add("?time", MySqlDbType.UInt32).Value = now;
+				nextJob.Prepare();
+				object ret = nextJob.ExecuteScalar();
+				if(ret != null && !Convert.IsDBNull(ret)) {
+					uint time = Convert.ToUInt32(ret);
+					next = IWDBUtils.fromUnixTimestamp(time);
+				}
+			} finally {
+				IRCeX.Log.WriteLine("MySqlClose: SitterauftraegeOffen");
+				mysql.Close();
+				Monitor.Exit(mysql);
+			}
         }
         public void AnfliegendeFlotten(out uint flottenAnz, out uint zielplaniAnz) {
-            mysql.Open();
+			IRCeX.Log.WriteLine("MySqlOpen: AnfliegendeFlotten");
+			Monitor.Enter(mysql);
+			try {
+				mysql.Open();
 
-            uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
-            MySqlCommand aktFlottenUnterwegs = new MySqlCommand("SELECT COUNT(*), COUNT(DISTINCT zielid) FROM " + DBPrefix + @"flottenerinnerungen WHERE ankunft BETWEEN ?now AND ?soon
+				uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
+				MySqlCommand aktFlottenUnterwegs = new MySqlCommand("SELECT COUNT(*), COUNT(DISTINCT zielid) FROM " + DBPrefix + @"flottenerinnerungen WHERE ankunft BETWEEN ?now AND ?soon
 AND action IN('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/Ress)')", mysql);
-            aktFlottenUnterwegs.Parameters.Add("?now", MySqlDbType.UInt32).Value = now;
-            aktFlottenUnterwegs.Parameters.Add("?soon", MySqlDbType.UInt32).Value = now + 600;
-            MySqlDataReader r = aktFlottenUnterwegs.ExecuteReader();
-            if (r.Read()) {
-                flottenAnz = (uint)(r.GetUInt64(0));
-                zielplaniAnz = (uint)(r.GetUInt64(1));
-            } else {
-                flottenAnz = zielplaniAnz = 0;
-            }
-
-            mysql.Close();
+				aktFlottenUnterwegs.Parameters.Add("?now", MySqlDbType.UInt32).Value = now;
+				aktFlottenUnterwegs.Parameters.Add("?soon", MySqlDbType.UInt32).Value = now + 600;
+				MySqlDataReader r = aktFlottenUnterwegs.ExecuteReader();
+				if(r.Read()) {
+					flottenAnz = (uint)(r.GetUInt64(0));
+					zielplaniAnz = (uint)(r.GetUInt64(1));
+				} else {
+					flottenAnz = zielplaniAnz = 0;
+				}
+			} finally {
+				IRCeX.Log.WriteLine("MySqlClose: AnfliegendeFlotten");
+				mysql.Close();
+				Monitor.Exit(mysql);
+			}
         }
         public List<PlaniData> PlanisMitBesitzer(String name) {
-            mysql.Open();
-            
-            StringBuilder qry = new StringBuilder("SELECT gala, sys, pla, planityp, objekttyp, ownername, allytag, planiname FROM ");
-            qry.Append(DBPrefix);
-            qry.Append("universum AS universum LEFT JOIN ");
-            qry.Append(DBPrefix);
-            qry.Append("uni_userdata AS uni_userdata ON universum.ownername=uni_userdata.name WHERE ownername LIKE ?arg");
-            MySqlCommand dataQry = new MySqlCommand(qry.ToString(), mysql);
-            dataQry.Parameters.Add("?arg", MySqlDbType.String).Value = name;
+			IRCeX.Log.WriteLine("MySqlOpen: PlanisMitBesitzer");
+			Monitor.Enter(mysql);
+			try {
+				mysql.Open();
 
-            MySqlDataReader r = dataQry.ExecuteReader();
-            List<PlaniData> ret = new List<PlaniData>();
-            while (r.Read()) {
-                ret.Add(new PlaniData(r));
-            }
-            r.Close();
+				StringBuilder qry = new StringBuilder("SELECT gala, sys, pla, planityp, objekttyp, ownername, allytag, planiname FROM ");
+				qry.Append(DBPrefix);
+				qry.Append("universum AS universum LEFT JOIN ");
+				qry.Append(DBPrefix);
+				qry.Append("uni_userdata AS uni_userdata ON universum.ownername=uni_userdata.name WHERE ownername LIKE ?arg");
+				MySqlCommand dataQry = new MySqlCommand(qry.ToString(), mysql);
+				dataQry.Parameters.Add("?arg", MySqlDbType.String).Value = name;
 
-            mysql.Close();
-            return ret;
+				MySqlDataReader r = dataQry.ExecuteReader();
+				List<PlaniData> ret = new List<PlaniData>();
+				while(r.Read()) {
+					ret.Add(new PlaniData(r));
+				}
+				r.Close();
+				return ret;
+			} finally {
+				IRCeX.Log.WriteLine("MySqlClose: PlanisMitBesitzer");
+				mysql.Close();
+				Monitor.Exit(mysql);
+			}
         }
         public List<PlaniData> PlanisInSystem(uint gala, uint sys) {
-            mysql.Open();
+			IRCeX.Log.WriteLine("MySqlOpen: PlanisImSystem");
+			Monitor.Enter(mysql);
+			try {
+				mysql.Open();
 
-            StringBuilder qry = new StringBuilder("SELECT gala, sys, pla, planityp, objekttyp, ownername, allytag, planiname FROM ");
-            qry.Append(DBPrefix);
-            qry.Append("universum AS universum LEFT JOIN ");
-            qry.Append(DBPrefix);
-            qry.Append("uni_userdata AS uni_userdata ON universum.ownername=uni_userdata.name WHERE gala=?gal AND sys=?sys");
-            MySqlCommand dataQry = new MySqlCommand(qry.ToString(), mysql);
-            dataQry.Parameters.Add("?gal", MySqlDbType.UInt16).Value = gala;
-            dataQry.Parameters.Add("?sys", MySqlDbType.UInt16).Value = sys;
+				StringBuilder qry = new StringBuilder("SELECT gala, sys, pla, planityp, objekttyp, ownername, allytag, planiname FROM ");
+				qry.Append(DBPrefix);
+				qry.Append("universum AS universum LEFT JOIN ");
+				qry.Append(DBPrefix);
+				qry.Append("uni_userdata AS uni_userdata ON universum.ownername=uni_userdata.name WHERE gala=?gal AND sys=?sys");
+				MySqlCommand dataQry = new MySqlCommand(qry.ToString(), mysql);
+				dataQry.Parameters.Add("?gal", MySqlDbType.UInt16).Value = gala;
+				dataQry.Parameters.Add("?sys", MySqlDbType.UInt16).Value = sys;
 
-            MySqlDataReader r = dataQry.ExecuteReader();
-            List<PlaniData> ret = new List<PlaniData>();
-            while (r.Read()) {
-                ret.Add(new PlaniData(r));
-            }
-            r.Close();
-            mysql.Close();
-            return ret;
+				MySqlDataReader r = dataQry.ExecuteReader();
+				List<PlaniData> ret = new List<PlaniData>();
+				while(r.Read()) {
+					ret.Add(new PlaniData(r));
+				}
+				r.Close();
+				return ret;
+			} finally {
+				IRCeX.Log.WriteLine("MySqlClose: PlanisImSystem");
+				mysql.Close();
+				Monitor.Exit(mysql);
+			}
         }
         #endregion
         protected bool UserNickChangeHandler(IRCMessage Msg) {

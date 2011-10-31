@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using MySql.Data.MySqlClient;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 namespace IWDB.Parser {
 	class HauptseiteKolonieinformationParser : ReportParser {
 		Dictionary<uint, OrderedList<FlottenCacheFlotte>> flottenCache;
@@ -329,28 +330,22 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 
 	class FlottenCleanupPostRequestHandler : IPostRequestHandler {
 		Dictionary<uint, OrderedList<FlottenCacheFlotte>> flottenCache;
-		String DBPrefix;
-		MySqlConnection con;
-		public FlottenCleanupPostRequestHandler(NewscanHandler h, MySqlConnection con) {
+		public FlottenCleanupPostRequestHandler(NewscanHandler h) {
 			flottenCache = h.RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
-			this.con = con;
-			DBPrefix = h.DBPrefix;
 		}
-		public void HandlePostRequest() {
-			if (flottenCache.Count > 0) {
-				con.Open();
-				MySqlCommand cleanupCmd = new MySqlCommand("DELETE FROM "+DBPrefix+"flotten WHERE id=?id", con);
+		public void HandlePostRequest(MySqlConnection con, String DBPrefix) {
+			if(flottenCache.Count > 0) {
+				MySqlCommand cleanupCmd = new MySqlCommand("DELETE FROM " + DBPrefix + "flotten WHERE id=?id", con);
 				cleanupCmd.Parameters.Add("?id", MySqlDbType.UInt32);
 				cleanupCmd.Prepare();
-				foreach (OrderedList<FlottenCacheFlotte> ol in flottenCache.Values) {
-					if (ol.Count > 0) {
-						foreach (FlottenCacheFlotte fl in ol) {
+				foreach(OrderedList<FlottenCacheFlotte> ol in flottenCache.Values) {
+					if(ol.Count > 0) {
+						foreach(FlottenCacheFlotte fl in ol) {
 							cleanupCmd.Parameters["?id"].Value = fl.id;
 							cleanupCmd.ExecuteNonQuery();
 						}
 					}
 				}
-				con.Close();
 				flottenCache.Clear();
 			}
 		}

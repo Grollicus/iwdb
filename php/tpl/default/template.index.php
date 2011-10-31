@@ -60,7 +60,8 @@ if(!function_exists('TemplateMenu')) {
 			<tr><td><a class="',$content['action'] == 'sitter_flotten' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_flotten">Flottenübersicht</a></td></tr>
 			
 			<tr><th>Krieg</th></tr>
-			<tr><td><a class="',$content['action'] == 'war_data' ? 'active' : 'item','" href="', $scripturl, '/?action=war_data">Übersicht</a></td></tr>
+			<tr><td><a class="',$content['action'] == 'war_kbs' ? 'active' : 'item','" href="', $scripturl, '/?action=war_kbs">Kampfberichte</a></td></tr>
+			<tr><td><a class="',$content['action'] == 'war_scans' ? 'active' : 'item','" href="', $scripturl, '/?action=war_scans">Scans</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'war_schedule' ? 'active' : 'item','" href="', $scripturl, '/?action=war_schedule">Zeitplan</a></td></tr>
 			
 			<tr><th>Sonstiges</th></tr>

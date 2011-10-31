@@ -638,14 +638,6 @@
 				'name' => "{$pre}scans_flotten",
 				'cond' => 'schiff_scan.id=scan_flotten.scanid',
 			),
-			'scan_flotten_schiffe' => array(
-				'name' => "{$pre}scans_flotten_schiffe",
-				'cond' => 'scan_flotten.id=scan_flotten_schiffe.flid',
-			),
-			'scan_schiffe' => array(
-				'name' => "{$pre}schiffe",
-				'cond' => 'scan_flotten_schiffe.schid=scan_schiffe.id',
-			),
 		);
 		
 		// $modules = array('modulename' => module, ..);
@@ -721,16 +713,15 @@
 				'titles' => array('planityp' => array('Planityp', 'Planetentyp', 6, 'planityp'), 'objekttyp' => array('Objekttyp', 'Objekttyp', 7, 'objecttype')),
 			),
 			'scan_gebs' => array(
-				//'cols' => array("(SELECT GROUP_CONCAT(scans_gebs.anzahl, '|', gebs.name SEPARATOR '/') FROM ({$pre}scans_gebs As scans_gebs INNER JOIN {$pre}gebs AS gebs on scans_gebs.gebid=gebs.id) WHERE scans_gebs.scanid=(SELECT id FROM {$pre}scans AS scans WHERE scans.gala=uni.gala AND scans.sys=uni.sys AND scans.pla=uni.pla AND scans.typ='geb' ORDER BY time DESC LIMIT 0,1) GROUP BY scans_gebs.scanid) AS scan_gebs"),
-				'cols' => array("geb_scan.time AS gebScanTime, GROUP_CONCAT(scan_gebs.anzahl,'|',gebs.name SEPARATOR '/') AS scan_gebs"),
-				'tables' => array(array('uni', 0), array('lastest_geb_scan', 0), array('geb_scan', 0), array('scan_gebs', 0), array('gebs', 0)),
+				'cols' => array("geb_scan.time AS gebScanTime, (SELECT GROUP_CONCAT(gebs.anzahl, '|', geb_items.name SEPARATOR '/') FROM {$pre}scans_gebs AS gebs LEFT JOIN {$pre}techtree_items AS geb_items ON gebs.gebid=geb_items.ID WHERE gebs.scanid=geb_scan.id) AS scan_gebs"),
+				'tables' => array(array('uni', 0), array('lastest_geb_scan', 0), array('geb_scan', 0)),
 				'cb' => 'ModScanGebsCb',
 				'titles' => array('scan_gebs' => array('', '', 101)),
 				'group' => 'uni.id',
 			),
 			'scan_schiffe' => array(
 				'cols' => array("schiff_scan.time AS schiffScanTime, GROUP_CONCAT(scan_flotten.owner, '||', scan_flotten.typ, '||', (SELECT GROUP_CONCAT(schiffe.anz, ',', schiffsnamen.name SEPARATOR '|') FROM {$pre}scans_flotten_schiffe AS schiffe INNER JOIN {$pre}techtree_items AS schiffsnamen ON schiffe.schid=schiffsnamen.ID WHERE schiffe.flid=scan_flotten.id GROUP BY scan_flotten.id) SEPARATOR '|||') AS scan_schiffe"),
-				'tables' => array(array('uni', 0), array('lastest_schiff_scan', 0), array('schiff_scan', 0), array('scan_flotten', 0), /*array('scan_flotten_schiffe', 0), array('scan_schiffe', 0)*/),
+				'tables' => array(array('uni', 0), array('lastest_schiff_scan', 0), array('schiff_scan', 0), array('scan_flotten', 0)),
 				'cb' => 'ModScanSchiffeCb',
 				'titles' => array('scan_schiffe' => array('', '', 100)),
 				'group' => 'uni.id',

@@ -2,7 +2,7 @@
 	if (!defined("dddfd"))
 		die("Hacking attempt");
 	
-	function TemplateWarKbs() {
+		function TemplateWarKbs() {
 		global $content;
 		TemplateHeader('<style type="text/css"><!--
 .kb_standard, .kb_standard td {
@@ -132,15 +132,8 @@
 		
 		foreach($content['wars'] as $war) {
 			echo '<h2>', $war['name'], '</h2><form method="post" action="',$content['submitUrl'],'"><table><tr><td colspan="13" style="border:none;"><table style="border:none;" width="100%"><tr><td style="border:none;width:110px;">', $content['hasPrev'] ? '<a href="'.$content['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td><th style="font-size:larger;text-align:center;">Kampfberichte</th><td style="border:none;width:110px;text-align:right;"><a href="',$content['nextLink'],'">Nächste Seite</a></td></tr></table></td></tr>
-				<tr><th>Zeit</th><th colspan="2">Angreifer</th><th>Start</th><th colspan="2">Verteidiger</th><th>Ziel</th><th>Angriff</th><th>Verlust</th><th>Verteidigung</th><th>Verlust</th><th>Raid</th><th>gebombt</th></tr>';
-			foreach($war['kbs'] as $kb) {
-				echo '<tr',$kb['isFake'] ? ' class="fake"' : '','><td><a href="', $kb['url'], '" onclick="return loadKB(\'', $kb['id'],'\', \'', $kb['hash'], '\');"> ', $kb['date'], '</a></td><td>',
-					$kb['angreiferName'], '</td><td>', $kb['angreiferAlly'], '</td><td>', $kb['startKoords'], '</td><td>', $kb['verteidigerName'], '</td><td>', $kb['verteidigerAlly'], '</td><td>',
-					$kb['zielKoords'], '</td><td>', $kb['angreiferWert'], '</td><td>', $kb['angreiferVerlust'], '</td><td>', $kb['verteidigerWert'], '</td><td>', $kb['verteidigerVerlust'], '</td><td>',
-					$kb['raidWert'], '</td><td>', $kb['bombWert'], '</td></tr>
-					<tr style="display:none;" id="kbr_', $kb['id'], '"><td id="kb_', $kb['id'], '" colspan="13" class="kbtd"></td></tr>';
-			}
-			echo '<tr>
+				<tr><th>Zeit</th><th colspan="2">Angreifer</th><th>Start</th><th colspan="2">Verteidiger</th><th>Ziel</th><th>Angriff</th><th>Verlust</th><th>Verteidigung</th><th>Verlust</th><th>Raid</th><th>gebombt</th></tr>
+				<tr>
 					<th>Filter</th>
 					<td><input type="text" name="kb_att" value="',$content['filter']['kb_att'],'" /></td>
 					<td><input type="text" name="kb_att_ally" value="',$content['filter']['kb_att_ally'],'" size="5" /></td>
@@ -149,16 +142,80 @@
 					<td><input type="text" name="kb_def_ally" value="',$content['filter']['kb_def_ally'],'" size="5" /></td>
 					<td><input type="text" name="kb_dst" value="',$content['filter']['kb_dst'],'" size="9" /></td>
 					<td colspan="6"><input type="submit" value="Filtern!" /></td>
-				</tr>
-			</table></form><br /><br /><form method="post" action="',$content['submitUrl'],'"><table><tr><td colspan="9" style="border:none;"><table style="border:none;" width="100%"><tr><td style="border:none;width:110px;">', $content['hasPrev'] ? '<a href="'.$content['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td><th style="font-size:larger;text-align:center;">Scans</th><td style="border:none;width:110px;text-align:right;"><a href="',$content['nextLink'],'">Nächste Seite</a></td></tr></table></td></tr>
-				<tr><th>Zeit</th><th>Typ</th><th>Koords</th><th colspan="2">Besitzer</th><th>Objekttyp</th><th>Planityp</th><th>Ress</th><th>Score</th></tr>';
-			foreach($war['scans'] as $scan) {
-				echo '<tr><td><a href="', $scan['url'], '" onclick="return loadSB(\'', $scan['id'],'\');"> ', $scan['date'], '</a></td><td>',
-					$scan['typ'] ,'</td><td>', $scan['coords'], '</td><td>', $scan['ownerName'], '</td><td>', $scan['ownerAlly'], '</td><td>', $scan['objekttyp'], '</td>
-					<td>', $scan['planityp'], '</td><td>', $scan['ress'], '</td><td>', $scan['score'], '</td>
-					</tr><tr style="display:none;" id="sbr_', $scan['id'], '"><td id="sb_', $scan['id'], '" colspan="9"></td></tr>';
+				</tr>';
+			foreach($war['kbs'] as $kb) {
+				echo '<tr',$kb['isFake'] ? ' class="fake"' : '','><td><a href="', $kb['url'], '" onclick="return loadKB(\'', $kb['id'],'\', \'', $kb['hash'], '\');"> ', $kb['date'], '</a></td><td ', $kb['attWin']?'style="font-weight:bold;"':'' ,'>',
+					$kb['angreiferName'], '</td><td>', $kb['angreiferAlly'], '</td><td>', $kb['startKoords'], '</td><td ', !$kb['attWin']?'style="font-weight:bold;"':'' ,'>', $kb['verteidigerName'], '</td><td>', $kb['verteidigerAlly'], '</td><td>',
+					$kb['zielKoords'], '</td><td>', $kb['angreiferWert'], '</td><td>', $kb['angreiferVerlust'], '</td><td>', $kb['verteidigerWert'], '</td><td>', $kb['verteidigerVerlust'], '</td><td>',
+					$kb['raidWert'], '</td><td>', $kb['bombWert'], '</td></tr>
+					<tr style="display:none;" id="kbr_', $kb['id'], '"><td id="kb_', $kb['id'], '" colspan="13" class="kbtd"></td></tr>';
 			}
-			echo '<tr>
+			echo '</table></form><br /><br />';
+		}
+		
+		echo '<a href="',$content['showAllLink'],'">Alle (also auch alte) Kriege anzeigen</a></div>';
+		TemplateFooter();
+	}
+	
+		function TemplateWarScans() {
+		global $content;
+		TemplateHeader('<style type="text/css"><!--
+.kbtd table {
+	border-style: none;
+	font-size:smaller;
+	background-color: transparent;
+}
+.kbtd td, .kbtd tr {
+	border-style: none;
+}
+.fake td {
+	font-size:xx-small;
+	color:#555555;
+}
+-->
+</style>');
+		TemplateMenu();
+		echo '<div class="content">
+	<script type="text/javascript"><!-- // --><![CDATA[
+		var already_loaded_sb = new Object();
+		function loadSB(id) {
+			if(already_loaded_sb[id]) {
+				toggleTableRow(getElById(\'sbr_\'+id));
+				return false;
+			}
+			already_loaded_sb[id] = true;
+			var req = getXMLRequester();
+			var url = scriptinterface+"?a=scanprint&sid="+sid+"&id="+id;
+			req.open(\'GET\', url, true);
+			req.onreadystatechange = function(){loadSbcallback(req, id);};
+			req.send(null);
+			viewLoadingState(true);
+			return false;
+		}
+		function loadSbcallback(req, id) {
+			if(req.readyState == 4) {
+				if(req.status == 200) {
+					var el = getElById(\'sbr_\'+id);
+					el.innerHTML = req.responseText;
+					toggleTableRow(getElById(\'sbr_\'+id));
+				} else {
+					alert("Request-Fehler: "+req.status);
+				}
+				viewLoadingState(false);
+			}
+		}
+	// ]]></script>';
+		
+		if(!$content['hasWars']) {
+			echo 'Irgendwas läuft da schief, ich hab gar keinen Krieg!<br />';
+		}
+		
+		foreach($content['wars'] as $war) {
+			echo '<h2>', $war['name'], '</h2>
+			<form method="post" action="',$content['submitUrl'],'"><table><tr><td colspan="9" style="border:none;"><table style="border:none;" width="100%"><tr><td style="border:none;width:110px;">', $content['hasPrev'] ? '<a href="'.$content['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td><th style="font-size:larger;text-align:center;">Scans</th><td style="border:none;width:110px;text-align:right;"><a href="',$content['nextLink'],'">Nächste Seite</a></td></tr></table></td></tr>
+				<tr><th>Zeit</th><th>Typ</th><th>Koords</th><th colspan="2">Besitzer</th><th>Objekttyp</th><th>Planityp</th><th align="center" colspan="8">Ress</th><th>Score</th></tr>
+				<tr><th colspan="7">&nbsp;</th><th>RessScore</th><th>Eisen</th><th>Stahl</th><th>Chemie</th><th>VV4A</th><th>Eis</th><th>Wasser</th><th>Energie</th><th>&nbsp;</th></tr>
+				<tr>
 				<th>Filter</th>
 					<td><select name="scan_type">';
 			foreach($content['filter']['scan_type'] as $val => $o) {
@@ -167,12 +224,29 @@
 				echo '</select></td>
 					<td><input type="text" size="9" name="scan_coords" value="',$content['filter']['scan_coords'],'" /></td>
 					<td><input type="text" name="scan_owner" value="',$content['filter']['scan_owner'],'" /></td>
-					<td colspan="5"><input type="submit" value="Filtern" /></td>
-				</tr>
+					<td><input type="text" size="4" name="scan_ally" value="',$content['filter']['scan_ally'],'" /></td>
+					<td colspan="2">&nbsp;</td>
+					<td><input type="text" size="6" name="scan_ress_score" value="',$content['filter']['scan_ress_score'],'" /></td>
+					<td><input type="text" size="6" name="scan_ress_fe" value="',$content['filter']['scan_ress_fe'],'" /></td>
+					<td><input type="text" size="6" name="scan_ress_st" value="',$content['filter']['scan_ress_st'],'" /></td>
+					<td><input type="text" size="6" name="scan_ress_ch" value="',$content['filter']['scan_ress_ch'],'" /></td>
+					<td><input type="text" size="6" name="scan_ress_vv" value="',$content['filter']['scan_ress_vv'],'" /></td>
+					<td><input type="text" size="6" name="scan_ress_ei" value="',$content['filter']['scan_ress_ei'],'" /></td>
+					<td><input type="text" size="6" name="scan_ress_wa" value="',$content['filter']['scan_ress_wa'],'" /></td>
+					<td><input type="text" size="6" name="scan_ress_en" value="',$content['filter']['scan_ress_en'],'" /></td>
+					<td colspan="3"><input type="submit" value="Filtern" /></td>
+				</tr>';
+			foreach($war['scans'] as $scan) {
+				echo '<tr><td><a href="', $scan['url'], '" onclick="return loadSB(\'', $scan['id'],'\');"> ', $scan['date'], '</a></td><td>',
+					$scan['typ'] ,'</td><td>', $scan['coords'], '</td><td>', $scan['ownerName'], '</td><td>', $scan['ownerAlly'], '</td><td>', $scan['objekttyp'], '</td>
+					<td>', $scan['planityp'], '</td><td>', $scan['ressScore'], '</td><td>', $scan['ress']['fe'], '</td><td>', $scan['ress']['st'], '</td>
+					<td>', $scan['ress']['ch'], '</td><td>', $scan['ress']['vv'], '</td><td>', $scan['ress']['ei'], '</td>
+					<td>', $scan['ress']['wa'], '</td><td>', $scan['ress']['en'], '</td><td>', $scan['score'], '</td>
+					</tr><tr style="display:none;" id="sbr_', $scan['id'], '"><td id="sb_', $scan['id'], '" colspan="9"></td></tr>';
+			}
+			echo '
 			</table></form><br /><br />';
 		}
-		
-
 		
 		echo '<a href="',$content['showAllLink'],'">Alle (also auch alte) Kriege anzeigen</a></div>';
 		TemplateFooter();
@@ -181,7 +255,7 @@
 	function TemplateScanPrint() {
 		global $content;
 		
-		echo '<td colspan="4">';
+		echo '<td colspan="5">';
 		if($content['hasShips']) {
 			echo '<table class="subtable" style="border:none;">';
 			foreach($content['scan']['flotten'] as $fl) {
@@ -198,15 +272,7 @@
 			}
 			echo '</table>';
 		}
-		echo '</td><td colspan="3"><table style="border:none;" class="subtable"  width="100%" class="kbtd">
-			<tr><td>Eisen</td><td>', $content['scan']['fe'], '</td></tr>
-			<tr><td>Stahl</td><td>', $content['scan']['st'], '</td></tr>
-			<tr><td>VV4A</td><td>', $content['scan']['vv'], '</td></tr>
-			<tr><td>Chemie</td><td>', $content['scan']['ch'], '</td></tr>
-			<tr><td>Eis</td><td>', $content['scan']['ei'], '</td></tr>
-			<tr><td>Wasser</td><td>', $content['scan']['wa'], '</td></tr>
-			<tr><td>Energie</td><td>', $content['scan']['en'], '</td></tr>
-		</table></td>';
+		echo '</td><td colspan="11">&nbsp;</td>';
 		
 	}
 	

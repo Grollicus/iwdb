@@ -76,7 +76,7 @@ function Main()
 //Now, lets see what to do now.
 	//At first, all the Possibilities, as '$_REQUEST['action']' => array('includefile','Function to call')
 	$actionArr = array(
-		'scanprint' => array('war/kbs.php', 'ScanPrint'),
+		'scanprint' => array('war/scan.php', 'ScanPrint'),
 		'kbpassthrough' => array('kbs/raids.php', 'KbPassthrough'),
 		'sittergebs' => array('sitter/own.php', 'SitterScriptListGebs'),
 		'sitterstufen' => array('sitter/own.php', 'SitterScriptListGebTimes'),

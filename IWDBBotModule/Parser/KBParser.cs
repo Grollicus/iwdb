@@ -142,7 +142,7 @@ namespace IWDB.Parser {
 			if(saveMode != KbSaveMode.None)
 				throw new InvalidOperationException("Versuche KB als KriegsKB zu speichern obwohl er schon gespeichert ist!");
 
-			MySqlCommand cmd = new MySqlCommand(@"INSERT IGNORE INTO " + DBPrefix + "war_kbs (iwid,hash,timestamp,att,attally,def,defally,attvalue,attloss,defvalue,defloss,raidvalue,bombvalue, start, dst, warid) VALUES (?iwid,?hash,?timestamp,?att,?attally,?def,?defally,?attvalue,?attloss,?defvalue,?defloss,?raidvalue,?bombvalue,?start,?dst,?warid)", con);
+			MySqlCommand cmd = new MySqlCommand(@"INSERT IGNORE INTO " + DBPrefix + "war_kbs (iwid,hash,timestamp,att,attally,def,defally,attvalue,attloss,defvalue,defloss,raidvalue,bombvalue, attwin, start, dst, warid) VALUES (?iwid,?hash,?timestamp,?att,?attally,?def,?defally,?attvalue,?attloss,?defvalue,?defloss,?raidvalue,?bombvalue,?attwin,?start,?dst,?warid)", con);
 			cmd.Parameters.Add("?iwid", MySqlDbType.UInt32).Value = iwid;
 			cmd.Parameters.Add("?hash", MySqlDbType.String).Value = hash;
 			cmd.Parameters.Add("?timestamp", MySqlDbType.UInt32).Value = TimeStamp;
@@ -165,6 +165,7 @@ namespace IWDB.Parser {
 			cmd.Parameters.Add("?raidvalue", MySqlDbType.UInt32).Value = pluenderung.RaidScore;
 			cmd.Parameters.Add("?bombvalue", MySqlDbType.UInt32).Value = Bombed.Aggregate((uint)0, (n, tp) => n + tp.Item3);
 
+			cmd.Parameters.Add("?attwin", MySqlDbType.UInt32).Value = "1" == xml.SelectSingleNode("resultat/id").Attributes["value"].InnerText;
 			cmd.Parameters.Add("?start", MySqlDbType.String).Value = StartCoords.Aggregate(new StringBuilder(), (sb, coords) => sb.AppendLine(coords), sb => sb.Length > 0 ? sb.ToString(0, sb.Length-Environment.NewLine.Length) : "");
 			cmd.Parameters.Add("?dst", MySqlDbType.String).Value = DstCoords;
 			cmd.Parameters.Add("?warid", MySqlDbType.UInt32).Value = warID;
@@ -403,6 +404,7 @@ namespace IWDB.Parser {
 		public void HandleRequest(ParserRequestMessage msg) {
 			try {
 				Log.WriteLine(LogLevel.E_NOTICE, "WarRefresh");
+				IRCeX.Log.WriteLine("MySqlOpen: WarRefresh");
 				con.Open();
 				Reload();
 				lock(wars) {
@@ -527,6 +529,7 @@ namespace IWDB.Parser {
 				try {
 					msg.Handled();
 				} finally {
+					IRCeX.Log.WriteLine("MySqlClose: WarRefresh");
 					con.Close();
 				}
 			}
