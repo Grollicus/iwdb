@@ -237,7 +237,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 Fremde\sFlotten\n
 Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 ((?:\s*\n" + KolonieName + @"\s" + Koordinaten + @"\s+" + KolonieName + @"\s" + Koordinaten + @"\n
-" + SpielerName + @"\s+" + PräziseIWZeit + @"[\s\-]+.*?\s+Angriff)+)", PatternFlags.All );
+" + SpielerName + @"\s+(?:" + PräziseIWZeit + @"|Plündert,\sMordet\sund\sBrandschatzt)[\s\-]+.*?\s+Angriff)+)", PatternFlags.All);
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
 			this.parser = parser;
 		}
@@ -264,7 +264,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 
 			foreach(Match outerMatch in matches) {
 				MatchCollection innerMatches = Regex.Matches(outerMatch.Groups[0].Value, "(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\s+(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\n
-(" + SpielerName + @")\s+(" + PräziseIWZeit + @")[\s\-]+.*?\s+Angriff", RegexOptions.IgnorePatternWhitespace);
+(" + SpielerName + @")\s+(" + PräziseIWZeit + @"|Plündert,\sMordet\sund\sBrandschatzt)[\s\-]+.*?\s+Angriff", RegexOptions.IgnorePatternWhitespace);
 				if(innerMatches.Count == 0) {
 					resp.RespondError("Hab hier feindliche Flotten ohne Flotten! Evtl läuft da was schief.. bitte mal melden!");
 					continue;
@@ -287,6 +287,8 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 				}
 
 				foreach(Match m in innerMatches) {
+					if(m.Groups[10].Value == "Plündert, Mordet und Brandschatzt")
+						continue;
 					uint zielID = idFetcherZielID.GetID(uint.Parse(m.Groups[2].Value), uint.Parse(m.Groups[3].Value), uint.Parse(m.Groups[4].Value), m.Groups[1].Value);
 					uint startID = idFetcherStartID.GetID(uint.Parse(m.Groups[6].Value), uint.Parse(m.Groups[7].Value), uint.Parse(m.Groups[8].Value), m.Groups[5].Value, m.Groups[9].Value);
 					uint time = IWDBUtils.parsePreciseIWTime(m.Groups[10].Value);

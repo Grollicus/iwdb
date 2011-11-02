@@ -134,8 +134,10 @@
 				case 'spieler':
 				case 'tag':
 				case 'planiname':
-				case 'scan_geb':
 					echo '<input type="text" size="30" name="', $filter['name'], '" value="', $filter['data'], '" />';
+					break;
+				case 'scan_geb':
+					echo '<input type="text" size="30" name="scan_geb" value="', $filter['data']['name'], '" /><input type="text" size="5" name="scan_geb_cnt" value="', $filter['data']['cnt'], '"/>';
 					break;
 				case 'planityp':
 				case 'objekttyp':

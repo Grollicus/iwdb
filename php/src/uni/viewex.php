@@ -436,7 +436,10 @@
 		);
 	}
 	function ScansGebPrepare($request) {
-		return isset($request['scan_geb']) ? EscapeO(Param('scan_geb', $request)) : '';
+		return array (
+			'name' => isset($request['scan_geb']) ? EscapeO(Param('scan_geb', $request)) : '',
+			'cnt' => isset($request['scan_geb_cnt']) ? EscapeO(Param('scan_geb_cnt', $request)) : '',
+		);
 	}
 	
 	function IntValueFilter($col, $min, $max, $req) {
@@ -571,7 +574,17 @@
 		return FloatValueFilter('geoscans.shipmod', 100, 'geo_schk_min', 'geo_schk_max', $req);
 	}
 	function ScansGebGenFilter($req) {
-		return StringLikeFilter('gebs.name', 'scan_geb', $req);
+		global $pre;
+		//return StringLikeFilter('gebs.name', 'scan_geb', $req);
+		if(empty($req['scan_geb']))
+			return '';
+		$cnt = 0;
+		if(!empty($req['scan_geb_cnt']))
+			$cnt = intval(Param('scan_geb_cnt', $req));
+		$gebIDs = DBQueryOne("SELECT GROUP_CONCAT(ID SEPARATOR',') FROM {$pre}techtree_items WHERE type='geb' AND name LIKE '%".EscapeDB(Param('scan_geb'))."%'", __FILE__, __LINE__);
+		if(empty($gebIDs))
+			return '1=0';
+		return "EXISTS (SELECT * FROM ({$pre}lastest_scans AS geb_filter_ls LEFT JOIN {$pre}scans_gebs AS geb_filter_gebs ON geb_filter_ls.scanid=geb_filter_gebs.scanid) WHERE geb_filter_ls.planid = uni.ID AND geb_filter_ls.typ='geb' AND geb_filter_gebs.anzahl >= {$cnt} AND geb_filter_gebs.gebid IN ({$gebIDs}))";
 	}
 	
 	//$active_mods = array (keys of $modules)

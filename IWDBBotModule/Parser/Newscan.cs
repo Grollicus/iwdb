@@ -338,13 +338,17 @@ namespace IWDB.Parser {
 			Respond(true, Message);
 		}
 		public override String ToString() {
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb;
+			StringBuilder negResp = new StringBuilder();
+			StringBuilder posResp = new StringBuilder();
 			foreach (KeyValuePair<String, int> resp in responses) {
 				bool error = resp.Value < 0;
 				int anz = Math.Abs(resp.Value);
 				if (error) {
+					sb = negResp;
 					sb.Append("<div class='imp'>");
 				} else {
+					sb = posResp;
 					sb.Append("<div class='simp'>");
 				}
 				if (anz > 1) {
@@ -354,7 +358,8 @@ namespace IWDB.Parser {
 				sb.Append(resp.Key);
 				sb.Append("</div>");
 			}
-			return sb.ToString();
+			negResp.Append(posResp.ToString());
+			return negResp.ToString();
 		}
 	}
 }
