@@ -143,7 +143,7 @@
 			'desc' => '_ steht für ein unbekanntes Zeichen, % für mehrere',
 			'prepare' => 'ScansGebPrepare',
 			'genFilter' => 'ScansGebGenFilter',
-			'mods_req' => array('coords', 'scan_gebs'),
+			'mods_req' => array('coords',),
 		),
 	);
 	
@@ -439,6 +439,10 @@
 		return array (
 			'name' => isset($request['scan_geb']) ? EscapeO(Param('scan_geb', $request)) : '',
 			'cnt' => isset($request['scan_geb_cnt']) ? EscapeO(Param('scan_geb_cnt', $request)) : '',
+			'cmp' => array(
+				array('value' => 0, 'desc' => '>=', 'selected' => isset($request['scan_geb_cmp']) && $request['scan_geb_cmp'] == '0'),
+				array('value' => 1, 'desc' => '<=', 'selected' => isset($request['scan_geb_cmp']) && $request['scan_geb_cmp'] == '1'),
+			)
 		);
 	}
 	
@@ -582,9 +586,15 @@
 		if(!empty($req['scan_geb_cnt']))
 			$cnt = intval(Param('scan_geb_cnt', $req));
 		$gebIDs = DBQueryOne("SELECT GROUP_CONCAT(ID SEPARATOR',') FROM {$pre}techtree_items WHERE type='geb' AND name LIKE '%".EscapeDB(Param('scan_geb'))."%'", __FILE__, __LINE__);
-		if(empty($gebIDs))
-			return '1=0';
-		return "EXISTS (SELECT * FROM ({$pre}lastest_scans AS geb_filter_ls LEFT JOIN {$pre}scans_gebs AS geb_filter_gebs ON geb_filter_ls.scanid=geb_filter_gebs.scanid) WHERE geb_filter_ls.planid = uni.ID AND geb_filter_ls.typ='geb' AND geb_filter_gebs.anzahl >= {$cnt} AND geb_filter_gebs.gebid IN ({$gebIDs}))";
+		if(!isset($req['scan_geb_cmp']) || $req['scan_geb_cmp'] == '0') { //>=
+			if(empty($gebIDs))
+				return '1=0';
+			return "EXISTS (SELECT * FROM ({$pre}lastest_scans AS geb_filter_ls LEFT JOIN {$pre}scans_gebs AS geb_filter_gebs ON geb_filter_ls.scanid=geb_filter_gebs.scanid) WHERE geb_filter_ls.planid = uni.ID AND geb_filter_ls.typ='geb' AND geb_filter_gebs.anzahl >= {$cnt} AND geb_filter_gebs.gebid IN ({$gebIDs}))";
+		} else {
+			if(empty($gebIDs))
+				return '';
+			return "EXISTS (SELECT * FROM ({$pre}lastest_scans AS geb_filter_ls LEFT JOIN {$pre}scans_gebs AS geb_filter_gebs ON geb_filter_ls.scanid=geb_filter_gebs.scanid AND geb_filter_gebs.gebid IN ({$gebIDs})) WHERE geb_filter_ls.planid = uni.ID AND geb_filter_ls.typ='geb' AND (geb_filter_gebs.anzahl <= {$cnt} OR geb_filter_gebs.anzahl IS NULL))";
+		}
 	}
 	
 	//$active_mods = array (keys of $modules)

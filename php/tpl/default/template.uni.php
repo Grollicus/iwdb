@@ -8,7 +8,7 @@ function TemplateUniMap() {
 	
 	echo '<form action="', $scripturl, '/index.php?action=uni_map" method="post">
 	<h2>Universum - Karte</h2>
-	<table><tr><th colspan="', $content['sysperline'], '">Galaxie <input type="text" size="2" name="gala" value="', $content['gala'],'"/><input type="submit" value="Ok" /></th></tr>';
+	<table  cellpadding="0" cellspacing="0" border="0"><tr><th colspan="', $content['sysperline'], '">Galaxie <input type="text" size="2" name="gala" value="', $content['gala'],'"/><input type="submit" value="Ok" /></th></tr>';
 	foreach($content['galadatalines'] as $line) {
 		echo '<tr>';
 		foreach($line as $sys) {
@@ -38,7 +38,7 @@ function TemplateUniWhosIn() {
 	echo '<div class="content">
 			<h2>Allianzen in einer Galaxie</h2>
 			<form action="', $scripturl, '/?action=uni_whosat" method="post">
-			<table>
+			<table cellpadding="0" cellspacing="0" border="0">
 				<tr><th>Galaxie <input type="text" size="2" name="gal" value="', $content['gal'], '"/><input type="submit" value="Ok" /></th></tr>';
 if(isset($content['allys'])) {
 	foreach($content['allys'] as $ally)
@@ -58,7 +58,7 @@ function TemplateUniAllyAt() {
 	echo '<div class="content">
 			<h2>Wo ist die Allianz..?</h2>
 			<form action="', $scripturl, '/?action=uni_allyat" method="post">
-			<table>
+			<table cellpadding="0" cellspacing="0" border="0">
 				<tr><th>Allytag <input type="text" size="10" name="allytag" value="', $content['allytag'], '"/><input type="submit" value="Ok" /></th></tr>';
 if(isset($content['allygals'])) {
 	foreach($content['allygals'] as $gal)
@@ -77,7 +77,7 @@ function TemplateUniAllyOverview() {
 	TemplateMenu();
 	echo '<div class="content">
 			<h2>Welche Ally ist wo?</h2>
-			<table>
+			<table cellpadding="0" cellspacing="0" border="0">
 				<tr><th>Allytag</th><th>Galaxien</th><th>Member</th><th>Planis</th></tr>';
 	foreach($content['uniallydata'] as $line) {
 		echo '	<tr><td>', $line['ally'], '</td><td>'. $line['galas'], '</td><td>',$line['members'],'</td><td>',$line['planis'],'</td></tr>';

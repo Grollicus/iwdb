@@ -90,7 +90,7 @@ function TemplateRaidOverview() {
 			}
 		}
 	// ]]></script>
-	<table>
+	<table cellpadding="0" cellspacing="0" border="0">
 		<tr align="center"><th>Zeit</th><th>Angreifer</th><th>Verteidiger</th><th colspan="8">Gewinn</th><th colspan="7">Zerstört</th></tr>
 		<tr><th colspan="3">&nbsp;</th><th>Pts</th><th>Eisen</th><th>Stahl</th><th>Chemie</th><th>VV4A</th><th>Eis</th><th>Wasser</th><th>Energie</th><th>Eisen</th><th>Stahl</th><th>Chemie</th><th>VV4A</th><th>Eis</th><th>Wasser</th><th>Energie</th>';
 		

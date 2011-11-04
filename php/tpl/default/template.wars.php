@@ -131,7 +131,7 @@
 		}
 		
 		foreach($content['wars'] as $war) {
-			echo '<h2>', $war['name'], '</h2><form method="post" action="',$content['submitUrl'],'"><table><tr><td colspan="13" style="border:none;"><table style="border:none;" width="100%"><tr><td style="border:none;width:110px;">', $content['hasPrev'] ? '<a href="'.$content['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td><th style="font-size:larger;text-align:center;">Kampfberichte</th><td style="border:none;width:110px;text-align:right;"><a href="',$content['nextLink'],'">Nächste Seite</a></td></tr></table></td></tr>
+			echo '<h2>', $war['name'], '</h2><form method="post" action="',$content['submitUrl'],'"><table cellpadding="0" cellspacing="0" border="0"><tr><td colspan="13" style="border:none;"><table style="border:none;" width="100%"><tr><td style="border:none;width:110px;">', $content['hasPrev'] ? '<a href="'.$content['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td><th style="font-size:larger;text-align:center;">Kampfberichte</th><td style="border:none;width:110px;text-align:right;"><a href="',$content['nextLink'],'">Nächste Seite</a></td></tr></table></td></tr>
 				<tr><th>Zeit</th><th colspan="2">Angreifer</th><th>Start</th><th colspan="2">Verteidiger</th><th>Ziel</th><th>Angriff</th><th>Verlust</th><th>Verteidigung</th><th>Verlust</th><th>Raid</th><th>gebombt</th></tr>
 				<tr>
 					<th>Filter</th>
@@ -212,7 +212,7 @@
 		
 		foreach($content['wars'] as $war) {
 			echo '<h2>', $war['name'], '</h2>
-			<form method="post" action="',$content['submitUrl'],'"><table><tr><td colspan="9" style="border:none;"><table style="border:none;" width="100%"><tr><td style="border:none;width:110px;">', $content['hasPrev'] ? '<a href="'.$content['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td><th style="font-size:larger;text-align:center;">Scans</th><td style="border:none;width:110px;text-align:right;"><a href="',$content['nextLink'],'">Nächste Seite</a></td></tr></table></td></tr>
+			<form method="post" action="',$content['submitUrl'],'"><table cellpadding="0" cellspacing="0" border="0"><tr><td colspan="9" style="border:none;"><table style="border:none;" width="100%"><tr><td style="border:none;width:110px;">', $content['hasPrev'] ? '<a href="'.$content['prevLink'].'">Vorherige Seite</a>' : 'Vorherige Seite', '</td><th style="font-size:larger;text-align:center;">Scans</th><td style="border:none;width:110px;text-align:right;"><a href="',$content['nextLink'],'">Nächste Seite</a></td></tr></table></td></tr>
 				<tr><th>Zeit</th><th>Typ</th><th>Koords</th><th colspan="2">Besitzer</th><th>Objekttyp</th><th>Planityp</th><th align="center" colspan="8">Ress</th><th>Score</th></tr>
 				<tr><th colspan="7">&nbsp;</th><th>RessScore</th><th>Eisen</th><th>Stahl</th><th>Chemie</th><th>VV4A</th><th>Eis</th><th>Wasser</th><th>Energie</th><th>&nbsp;</th></tr>
 				<tr>
@@ -301,7 +301,7 @@
 		<h2>Sittereinteilung</h2>';
 
 		foreach($content['schedule'] as $day) {
-			echo '<table ', $day['last'] ? '' : 'style="float:left;margin-right:5px;"', '><tr><th colspan="2">', $day['date'], '</th></tr>';
+			echo '<table  cellpadding="0" cellspacing="0" border="0" ', $day['last'] ? '' : 'style="float:left;margin-right:5px;"', '><tr><th colspan="2">', $day['date'], '</th></tr>';
 			foreach($day['times'] as $time) {
 				echo '<tr><td style="height:24px;">', $time['time'], '</td><td>';
 				foreach($time['usedSlots'] as $slot) {

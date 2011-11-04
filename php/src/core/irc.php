@@ -46,13 +46,13 @@
 						DBQuery("INSERT INTO {$pre}irc_autologin (uid, access, mask) VALUES ({$uid}, 1, '{$mask}')", __FILE__, __LINE__);
 						$content['id'] = mysql_insert_id();
 					} else {
-						if($oldids[1] != $uid) {
+						if($oldids !== false && $oldids[1] != $uid) {
 							$content['msg'] = 'Fehler!';
 							TemplateInit('main');
 							TemplateIrcMaskEdit();
 							return;
 						}
-						$content['msg'] = 'Erfolgreich aktualisiert!';
+						$content['smsg'] = 'Erfolgreich aktualisiert!';
 						DBQuery("UPDATE {$pre}irc_autologin SET mask='{$mask}' WHERE id={$id}", __FILE__, __LINE__);
 					}
 				}

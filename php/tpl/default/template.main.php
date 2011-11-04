@@ -69,7 +69,7 @@
 		echo '<div class="content">
 		<form method="POST" action="', $content['submiturl'], '">
 		<input type="hidden" name="ID" value="',$content['settings']['id']['data'],'" />
-		<table>
+		<table cellpadding="0" cellspacing="0" border="0">
 			<tr><th colspan="2">Einstellungen</th></tr>';
 		if(!empty($content['errors'])) {
 			echo '<tr><td colspan="2"><span class="imp">';
@@ -132,11 +132,11 @@
 			}
 			echo '</tr>';
 			if($name == 'currentPW')
-				echo '<tr><td colspan="2"><input name="submit" value="Absenden" type="submit" /></td></tr></table><br /><table><tr><th colspan="2">Ingame-Einstellungen</th></tr>';
+				echo '<tr><td colspan="2"><input name="submit" value="Absenden" type="submit" /></td></tr></table><br /><table cellpadding="0" cellspacing="0" border="0"><tr><th colspan="2">Ingame-Einstellungen</th></tr>';
 		}
 			
 		echo'<tr><td colspan="2"><input name="submit" value="Absenden" type="submit" /></td></tr></table></form>
-		<br /><table><tr><th colspan="2">IRC-Autologinmasken</th></tr>';
+		<br /><table cellpadding="0" cellspacing="0" border="0"><tr><th colspan="2">IRC-Autologinmasken</th></tr>';
 		foreach($content['ircAutoLogin'] as $line) {
 			echo '<tr><td>', $line['mask'], '</td><td><a href="', $line['editLink'], '">Edit</a> <a href="', $line['delLink'], '">Del</a></td></tr>';
 		}
@@ -167,6 +167,7 @@
 	<table>
 		<tr><th>Maske</th></tr>
 		', isset($content['msg']) ? '<tr><td class="imp">'.$content['msg'].'</td></tr>' : '', '
+		', isset($content['smsg']) ? '<tr><td class="simp">'.$content['smsg'].'</td></tr>' : '', '
 		<tr><td><input type="text" size="64" maxlength="64" name="mask" value="', $content['mask'], '" /></td></tr>
 		<tr><td><input type="submit" name="submit" value="Absenden" /></td></tr>
 	</table>

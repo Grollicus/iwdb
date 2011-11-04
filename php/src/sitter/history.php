@@ -42,5 +42,33 @@ WHERE sitterlog.userid={$ID_MEMBER} ORDER BY time DESC LIMIT 0, 30", __FILE__, _
 		TemplateInit('sitter');
 		TemplateSitterHistory();
 	}
+	
+	function SitterGlobalHistory() {
+		global $pre, $content;
+		
+		
+		$longTypes = array(
+			'login' => 'Sitterlogin',
+			'auftrag' => 'Sitterauftrag',
+			'scan' => 'Bericht eingelesen',
+		);
+		
+		$q = DBQuery("SELECT users.visibleName, igm_data.igmName, sitterlog.type, sitterlog.time, sitterlog.Text 
+FROM ({$pre}sitterlog AS sitterlog LEFT JOIN {$pre}users AS users ON sitterlog.userid = users.ID) LEFT JOIN {$pre}igm_data AS igm_data ON sitterlog.victimid = igm_data.id 
+ORDER BY time DESC LIMIT 0, 300", __FILE__, __LINE__);
+		$content['log'] = array();
+		while($row = mysql_fetch_row($q)) {
+			$content['log'][] = array(
+				'user' => EscapeOU($row[0]),
+				'victim' => EscapeOU($row[1]),
+				'type' => $longTypes[$row[2]],
+				'time' => FormatDate($row[3]),
+				'text' => nl2br($row[4]), //nicht escaped, weil wird escaped in die DB eingetragen
+			);
+		}
+		
+		TemplateInit('sitter');
+		TemplateSitterGlobalHistory();
+	}
 
 ?>

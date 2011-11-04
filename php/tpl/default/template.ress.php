@@ -10,7 +10,7 @@
 			echo '<option value="', $squad, '">', $squad, '</option>';
 		}
 		echo '</select>
-				<table id="resstbl">
+				<table id="resstbl"  cellpadding="0" cellspacing="0" border="0">
 					<tr>
 						<th>
 							<a href="', $content['sortLinks'][0]['link'], '">Account', $content['sortLinks'][0]['active'] ? '<img src="'.$themeurl.'/img/'.$content['order'].'.png" alt="sort" />' : '','</a><br />
@@ -96,7 +96,7 @@
 		echo '<div class="content"><h2>Ressourcenbilanz nach Accounts (eingetragene Transportberichte)</h2>';
 		
 		foreach($content['users'] as $squadname => $squadmembers) {
-			echo '<table>
+			echo '<table  cellpadding="0" cellspacing="0" border="0">
 				<tr><th colspan="9">', $squadname == 'none' ? '???' : $squadname, '</th></tr>
 				<tr>';
 			foreach($content['headers'] as $header) {

@@ -137,7 +137,10 @@
 					echo '<input type="text" size="30" name="', $filter['name'], '" value="', $filter['data'], '" />';
 					break;
 				case 'scan_geb':
-					echo '<input type="text" size="30" name="scan_geb" value="', $filter['data']['name'], '" /><input type="text" size="5" name="scan_geb_cnt" value="', $filter['data']['cnt'], '"/>';
+					echo '<input type="text" size="30" name="scan_geb" value="', $filter['data']['name'], '" /><select name="scan_geb_cmp">';
+					foreach($filter['data']['cmp'] as $cmp) 
+						echo '<option value="',$cmp['value'] ,'" ',$cmp['selected'] ? 'selected="selected"' : '','>', $cmp['desc'], '</option>';
+					echo '</select><input type="text" size="5" name="scan_geb_cnt" value="', $filter['data']['cnt'], '"/>';
 					break;
 				case 'planityp':
 				case 'objekttyp':

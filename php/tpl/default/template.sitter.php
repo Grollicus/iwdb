@@ -74,9 +74,21 @@
 				<td style="font-size:smaller;">', $line['text'], '</td>
 			</tr>';
 		}
-		echo '</table>';
-		
-		echo '</div>';
+		echo '</table><br />
+			<a href="', $scripturl, '/index.php?action=sitter_globalhist">Globale History</a>
+		</div>';
+		TemplateFooter();
+	}
+	
+	function TemplateSitterGlobalHistory() {
+		global $content, $scripturl;
+		TemplateHeader();
+		TemplateMenu();
+		echo '<div class="content"><h2>Globales Sitterlog</h2><table width="99%" cellpadding="0" cellspacing="0" border="0"><th>Toolaccount</th><th>Opfer</th><th>&nbsp;</th><th>Zeit</th><th>&nbsp;</th></tr>';
+		foreach($content['log'] as $row) {
+			echo '<tr><td>', $row['user'], '</td><td>', $row['victim'], '</td><td>', $row['type'], '</td><td>', $row['time'], '</td><td>', $row['text'], '</td></tr>';
+		}
+		echo '</table><br /><a href="', $scripturl, '/index.php?action=sitter_history">Lokale History</a></div>';
 		TemplateFooter();
 	}
 	
@@ -410,7 +422,7 @@
 		}
 	// ]]></script>
 	<div class="content"><h2>Übersicht feindliche Flotten</h2>
-		<table><tr><th colspan="4">Spieler</th><th>Ankunft</th></tr>';
+		<table cellpadding="0" cellspacing="0" border="0"><tr><th colspan="4">Spieler</th><th>Ankunft</th></tr>';
 		foreach($content['users'] as $user) {
 			echo '
 			<tr class="danger_', $user['gefahrenLevel'], '"><td colspan="4"><a href="',$user['loginLink'], '">', $user['name'], '</a></td><td>', $user['ersteAnkunft'], '</td></tr>';
