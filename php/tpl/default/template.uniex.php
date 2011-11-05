@@ -30,7 +30,10 @@
 						if(!$row['scan_gebs_exists']) {
 							echo 'Hab keinen Gebscan :(';
 						} else {
-							echo 'Scan von: ', $row['scan_gebs_time'], '<br /><table border="0" style="border: none;" class="subtable">';
+							echo '<b>Scan von:</b> ', $row['scan_gebs_time'], '<br />
+							<b>Fe:</b> ',$row['scan_gebs_fe'],' <b>St:</b> ',$row['scan_gebs_st'],' <b>Ch:</b> ',$row['scan_gebs_ch'],' <b>VV:</b> ',$row['scan_gebs_vv'],'
+							<b>Ei:</b> ',$row['scan_gebs_ei'],' <b>Wa:</b> ',$row['scan_gebs_wa'],' <b>En:</b> ',$row['scan_gebs_en'],'
+							<table border="0" cellpadding="0" cellspacing="0" style="border: none;" class="subtable">';
 							foreach($row['scan_gebs'] as $geb) {
 								echo '<tr><td>', $geb['name'], '</td><td align="right">', $geb['anz'], '</td></tr>';
 							}
@@ -43,7 +46,10 @@
 						if(!$row['scan_schiffe_exists']) {
 							echo 'Hab keinen Schiffscan :(';
 						} else {
-							echo 'Scan von: ', $row['scan_schiffe_time'], '<br /><table border="0" style="border: none;" class="subtable">';
+							echo 'Scan von: ', $row['scan_schiffe_time'], '<br />
+							<b>Fe:</b> ',$row['scan_schiffe_fe'],' <b>St:</b> ',$row['scan_schiffe_st'],' <b>Ch:</b> ',$row['scan_schiffe_ch'],' <b>VV:</b> ',$row['scan_schiffe_vv'],'
+							<b>Ei:</b> ',$row['scan_schiffe_ei'],' <b>Wa:</b> ',$row['scan_schiffe_wa'],' <b>En:</b> ',$row['scan_schiffe_en'],'
+							<table border="0" cellpadding="0" cellspacing="0" style="border: none;" class="subtable">';
 							foreach($row['scan_schiffe'] as $flotte) {
 								echo '<tr><td colspan="2" style="font-weight: bold;">', $flotte['typ'], 'e Flotte von ', $flotte['name'], '</td></tr>';
 								foreach($flotte['schiffe'] as $schiff) {

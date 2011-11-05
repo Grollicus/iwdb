@@ -736,14 +736,14 @@
 				'titles' => array('planityp' => array('Planityp', 'Planetentyp', 6, 'planityp'), 'objekttyp' => array('Objekttyp', 'Objekttyp', 7, 'objecttype')),
 			),
 			'scan_gebs' => array(
-				'cols' => array("geb_scan.time AS gebScanTime, (SELECT GROUP_CONCAT(gebs.anzahl, '|', geb_items.name SEPARATOR '/') FROM {$pre}scans_gebs AS gebs LEFT JOIN {$pre}techtree_items AS geb_items ON gebs.gebid=geb_items.ID WHERE gebs.scanid=geb_scan.id) AS scan_gebs"),
+				'cols' => array("geb_scan.time AS gebScanTime, geb_scan.fe AS geb_fe, geb_scan.st AS geb_st, geb_scan.vv AS geb_vv, geb_scan.ch AS geb_ch, geb_scan.ei AS geb_ei, geb_scan.wa AS geb_wa, geb_scan.en AS geb_en, (SELECT GROUP_CONCAT(gebs.anzahl, '|', geb_items.name SEPARATOR '/') FROM {$pre}scans_gebs AS gebs LEFT JOIN {$pre}techtree_items AS geb_items ON gebs.gebid=geb_items.ID WHERE gebs.scanid=geb_scan.id) AS scan_gebs"),
 				'tables' => array(array('uni', 0), array('lastest_geb_scan', 0), array('geb_scan', 0)),
 				'cb' => 'ModScanGebsCb',
 				'titles' => array('scan_gebs' => array('', '', 101)),
 				'group' => 'uni.id',
 			),
 			'scan_schiffe' => array(
-				'cols' => array("schiff_scan.time AS schiffScanTime, GROUP_CONCAT(scan_flotten.owner, '||', scan_flotten.typ, '||', (SELECT GROUP_CONCAT(schiffe.anz, ',', schiffsnamen.name SEPARATOR '|') FROM {$pre}scans_flotten_schiffe AS schiffe INNER JOIN {$pre}techtree_items AS schiffsnamen ON schiffe.schid=schiffsnamen.ID WHERE schiffe.flid=scan_flotten.id GROUP BY scan_flotten.id) SEPARATOR '|||') AS scan_schiffe"),
+				'cols' => array("schiff_scan.time AS schiffScanTime, schiff_scan.fe AS schiff_fe, schiff_scan.st AS schiff_st, schiff_scan.vv AS schiff_vv, schiff_scan.ch AS schiff_ch, schiff_scan.ei AS schiff_ei, schiff_scan.wa AS schiff_wa, schiff_scan.en AS schiff_en, GROUP_CONCAT(scan_flotten.owner, '||', scan_flotten.typ, '||', (SELECT GROUP_CONCAT(schiffe.anz, ',', schiffsnamen.name SEPARATOR '|') FROM {$pre}scans_flotten_schiffe AS schiffe INNER JOIN {$pre}techtree_items AS schiffsnamen ON schiffe.schid=schiffsnamen.ID WHERE schiffe.flid=scan_flotten.id GROUP BY scan_flotten.id) SEPARATOR '|||') AS scan_schiffe"),
 				'tables' => array(array('uni', 0), array('lastest_schiff_scan', 0), array('schiff_scan', 0), array('scan_flotten', 0)),
 				'cb' => 'ModScanSchiffeCb',
 				'titles' => array('scan_schiffe' => array('', '', 100)),
@@ -1004,6 +1004,13 @@
 		$data['scan_gebs'] = $gebs;
 		$data['scan_gebs_age'] = ActualityColor($row['gebScanTime']);
 		$data['scan_gebs_time'] = FormatDate($row['gebScanTime']);
+		$data['scan_gebs_fe'] = number_format($row['geb_fe'], 0, ',', '.');
+		$data['scan_gebs_st'] = number_format($row['geb_st'], 0, ',', '.');
+		$data['scan_gebs_vv'] = number_format($row['geb_vv'], 0, ',', '.');
+		$data['scan_gebs_ch'] = number_format($row['geb_ch'], 0, ',', '.');
+		$data['scan_gebs_ei'] = number_format($row['geb_ei'], 0, ',', '.');
+		$data['scan_gebs_wa'] = number_format($row['geb_wa'], 0, ',', '.');
+		$data['scan_gebs_en'] = number_format($row['geb_en'], 0, ',', '.');
 	}
 	function ModScanSchiffeCb($row, &$data) {
 		$data['scan_schiffe_age'] = ActualityColor($row['schiffScanTime']);
@@ -1034,8 +1041,14 @@
 			$flotte['schiffe'] = $sch;
 			$flotten_data[] = $flotte;
 		}
-		
 		$data['scan_schiffe'] = $flotten_data;
+		$data['scan_schiffe_fe'] = number_format($row['schiff_fe'], 0, ',', '.');
+		$data['scan_schiffe_st'] = number_format($row['schiff_st'], 0, ',', '.');
+		$data['scan_schiffe_vv'] = number_format($row['schiff_vv'], 0, ',', '.');
+		$data['scan_schiffe_ch'] = number_format($row['schiff_ch'], 0, ',', '.');
+		$data['scan_schiffe_ei'] = number_format($row['schiff_ei'], 0, ',', '.');
+		$data['scan_schiffe_wa'] = number_format($row['schiff_wa'], 0, ',', '.');
+		$data['scan_schiffe_en'] = number_format($row['schiff_en'], 0, ',', '.');
 	}
 	
 	function ModImportantSpecialsCb($row, &$data) {

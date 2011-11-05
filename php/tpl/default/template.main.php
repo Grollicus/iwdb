@@ -234,12 +234,22 @@
 		TemplateHeader();
 		TemplateMenu();
 		echo '<div class="content"><h2>KBs f&uuml;rs Forum formatieren</h2>
-	<form method="POST" action="', $content['submitUrl'], '"><textarea name="kbs" cols="80" rows="10"></textarea><br /><select name="target">';
+	<form method="POST" action="', $content['submitUrl'], '">
+		', ReqID() ,'
+		<textarea name="scans" cols="80" rows="10">', $content['scans'], '</textarea><br />
+		<select name="target">';
 foreach($content['target'] as $v => $t) {
 	echo '<option ', $t['selected'] ? 'selected="selected"':'','  value="',$v,'">', $t['desc'], '</option>';
 }
-echo '</select><input type="submit" name="submit" value="KBs formatieren!"/></form>
-<textarea readonly="readonly" cols="80" rows="10">',$content['result'],'</textarea>
+echo '</select>
+		<input type="submit" name="abs" value="KBs formatieren!"/>
+	</form>
+<textarea readonly="readonly" cols="80" rows="10">',$content['result'],'</textarea>';
+		if(!empty($content['msg']))
+			echo '<div class="imp">', $content['msg'], '</div>';
+		if(!empty($content['submsg']))
+			echo '<div class="simp">', $content['submsg'], '</div>';
+echo '
 </div>';
 		TemplateFooter();
 	}

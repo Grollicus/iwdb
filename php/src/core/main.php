@@ -116,19 +116,22 @@ function HelpPage() {
 	TemplateBugs();
 }
 function KbFormat() {
-	global $content, $scripturl;
+	global $content, $scripturl, $user, $sourcedir;
 
 	$content['result'] = '';
-	$content['kbs'] = '';
-	if(isset($_REQUEST['submit'])) {
-		$content['kbs'] = EscapeO(Param('kbs'));
+	GenRequestID();
+	$_POST['uid'] = $user['igmuser'];
+	require_once($sourcedir.'/newscan/main.php');
+	ParseScansEx(false, true);
+	
+	if(isset($_REQUEST['abs'])) {
 		$matches = array();
-		preg_match_all('~http://www\.icewars\.de/portal/kb/de/kb\.php\?id=\d+&md_hash=[a-z0-9]{32}~', Param('kbs'), $matches);
+		preg_match_all('~http://www\.icewars\.de/portal/kb/de/kb\.php\?id=\d+&md_hash=[a-z0-9]{32}~', Param('scans'), $matches);
 		foreach($matches[0] as $m) {
-			$kb = file_get_contents($m.'&typ=bbcode');
+			$kb = CacheQuery($m.'&typ=bbcode');
 			if($_REQUEST['target'] == 'forum')
 				$kb = str_replace(array(' colspan=3', ' colspan=4'), array('', ''), $kb);
-			$content['result'] .= EscapeO($kb);
+			$content['result'] .= EscapeOU($kb)."\n\n";
 		}
 	}
 	
