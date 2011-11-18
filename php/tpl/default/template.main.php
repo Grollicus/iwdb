@@ -244,7 +244,7 @@ foreach($content['target'] as $v => $t) {
 echo '</select>
 		<input type="submit" name="abs" value="KBs formatieren!"/>
 	</form>
-<textarea readonly="readonly" cols="80" rows="10">',$content['result'],'</textarea>';
+<textarea readonly="readonly" cols="80" rows="10" onClick="this.select();">',$content['result'],'</textarea>';
 		if(!empty($content['msg']))
 			echo '<div class="imp">', $content['msg'], '</div>';
 		if(!empty($content['submsg']))

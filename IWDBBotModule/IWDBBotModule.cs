@@ -72,6 +72,7 @@ namespace IWDB {
 			chan.OnUserLeave -= OnUserLeave;
 			chan.OnChannelJoined -= OnChannelJoined;
 			chan.UnregisterCmd(this, ".sitter");
+			chan.UnregisterCmd(this, ".flotten");
 			chan.UnregisterCmd(this, ".owner");
 			chan.UnregisterCmd(this, ".sys");
             chan.UnregisterCmd(this, ".status");
@@ -102,6 +103,7 @@ namespace IWDB {
 			MySqlConnection con = chan.AllocateConnection(this, conStr);
 			chan.FreeConnection(this, con);
 			chan.RegisterCmd(this, ".sitter", CmdSitter, IRCModuleUserAccess.Normal, "Sitterspam!");
+			chan.RegisterCmd(this, ".flotten", CmdFlotten, IRCModuleUserAccess.Normal, "Flottenspam!");
 			chan.RegisterCmd(this, ".owner", CmdOwner, IRCModuleUserAccess.Normal, "<Besitzer> - Planisuche nach Besitzer");
 			chan.RegisterCmd(this, ".sys", CmdSystem, IRCModuleUserAccess.Normal, "<gala>:<sys> - Listet alle Planis in dem System auf");
             chan.RegisterCmd(this, ".status", CmdStatus, IRCModuleUserAccess.Normal, "Statusspam!");
@@ -189,6 +191,9 @@ namespace IWDB {
 		void CmdSitter(IRCModuleMessage Msg) {
 			SitterSpam(true);
 		}
+		void CmdFlotten(IRCModuleMessage msg) {
+			FlottenSpam(true);
+		}
 		void CmdOwner(IRCModuleMessage Msg) {
             String args = Msg.Args.Trim();
             if (args.Length == 0) {
@@ -260,6 +265,7 @@ namespace IWDB {
 
 		void SitterSpamEventCallback(object timerIdentifyer) {
 			SitterSpam(false);
+			FlottenSpam(false);
 			sitterSpamEvent = chan.SetTimerEvent(DateTime.Now.AddMinutes(1), this, SitterSpamEventCallback, null);
 		}
         void BauLeerlaufSpamCallback(object timerIdentifyer) {

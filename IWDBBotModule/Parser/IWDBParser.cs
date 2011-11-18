@@ -270,7 +270,7 @@ namespace IWDB.Parser {
 				mysql.Open();
 
 				uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
-				MySqlCommand aktFlottenUnterwegs = new MySqlCommand("SELECT COUNT(*), COUNT(DISTINCT zielid) FROM " + DBPrefix + @"flottenerinnerungen WHERE ankunft BETWEEN ?now AND ?soon
+				MySqlCommand aktFlottenUnterwegs = new MySqlCommand("SELECT COUNT(*), COUNT(DISTINCT zielid) FROM " + DBPrefix + @"flotten WHERE ankunft BETWEEN ?now AND ?soon
 AND action IN('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/Ress)')", mysql);
 				aktFlottenUnterwegs.Parameters.Add("?now", MySqlDbType.UInt32).Value = now;
 				aktFlottenUnterwegs.Parameters.Add("?soon", MySqlDbType.UInt32).Value = now + 600;

@@ -645,10 +645,6 @@
 				'name' => "{$pre}scans_gebs",
 				'cond' => 'geb_scan.id=scan_gebs.scanid',
 			),
-			'gebs' => array(
-				'name' => "{$pre}gebs",
-				'cond' => 'scan_gebs.gebid=gebs.id',
-			),
 			'lastest_schiff_scan' => array(
 				'name' => "{$pre}lastest_scans",
 				'cond' => "uni.ID = lastest_schiff_scan.planid AND lastest_schiff_scan.typ='schiff'",

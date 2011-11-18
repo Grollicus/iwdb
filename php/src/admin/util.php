@@ -113,7 +113,7 @@
 			return;
 		}
 		
-		$truncate = array("building","errors","flotten","flottenerinnerungen","gebs","geoscans","ip_bans","iw_cache","lastest_scans","ressuebersicht","scans","scans_flotten","scans_flotten_schiffe","scans_gebs","schiffe","sitter","sitterlog","speedlog","techtree_useritems","trade_ignores","trade_reqs","universum","uni_userdata");
+		$truncate = array("building","errors","flotten","geoscans","ip_bans","iw_cache","lastest_scans","ressuebersicht","scans","scans_flotten","scans_flotten_schiffe","scans_gebs","sitter","sitterlog","speedlog","techtree_useritems","trade_ignores","trade_reqs","universum","uni_userdata");
 		$res = '<table>';
 		foreach($truncate as $tbl) {
 			DBQuery("TRUNCATE {$pre}".$tbl, __FILE__, __LINE__);

@@ -539,4 +539,10 @@ namespace IWDB.Parser {
 			get { return "WarFilter"; }
 		}
 	}
+
+	static class WarStats {
+		static void EvaluateKb(Kb kb) {
+			//Es gibt eine Tabelle db_war_stats wo die Stats rein sollen. HF -_-
+		}
+	}
 }
