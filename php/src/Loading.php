@@ -39,17 +39,17 @@ function LoadSession()
 
 function LoadUser()
 {
-	global $pre, $user, $ID_MEMBER, $content;
+	global $pre, $user, $ID_MEMBER, $content, $allow_restricted;
 	
 	if(isset($_SESSION['ID_MEMBER'])) {
 		$user['isGuest'] = false;
 		$ID_MEMBER = $_SESSION['ID_MEMBER'];
 		//Ok, then let's see what the DB says about this User
 		$userSettingsArray = DBQueryOne("SELECT 
-				visibleName, isAdmin , theme, lastactive, igmuser
+				visibleName, isAdmin, isRestricted, theme, lastactive, igmuser
 			FROM {$pre}users
 			WHERE ID = {$ID_MEMBER}",__FILE__,__LINE__,true);
-		if($userSettingsArray !== false)
+		if($userSettingsArray !== false && ($allow_restricted || !$userSettingsArray['isRestricted'])) {
 			$user = array_merge($user, $userSettingsArray);
 			if(dddfd != "script")
 				DBQuery("UPDATE {$pre}users set lastactive=".time()." where ID= {$ID_MEMBER}", __FILE__, __LINE__);
@@ -57,6 +57,10 @@ function LoadUser()
 			$user['isGuest'] = true;
 			$user['theme'] = 'default';
 		}
+	} else {
+		$user['isGuest'] = true;
+		$user['theme'] = 'default';
+	}
 }
 
 function TemplateInit ( $templateName )

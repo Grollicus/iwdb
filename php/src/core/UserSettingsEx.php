@@ -77,6 +77,15 @@ if(!defined('dddfd'))
 			'prepare' => 'CbPrepareAdmin',
 			'evaluate' => 'CbEvaluateAdmin',
 		),
+		'isRestricted' => array(
+			'name' => 'Eingeschr&auml;nkt',
+			'desc' => 'Ist der Benutzer ein Allytool-Gast?',
+			'table' => 'users',
+			'col' => 'isRestricted',
+			'isValid' => 'CbValidateNoSettings',
+			'prepare' => 'CbPrepareRestricted',
+			'evaluate' => 'CbEvaluateRestricted',
+		),
 		'sitterskin' => array(
 			'name' => 'Sitterskin',
 			'desc' => 'Der Skin, der beim Sitten anderer Accounts verwendet wird',
@@ -385,6 +394,19 @@ if(!defined('dddfd'))
 		if(!$user['isAdmin'])
 			return '';
 		return "isAdmin=".(isset($_REQUEST['isAdmin']) ? "'1', " : "'0', ");
+	}
+	function CbPrepareRestricted($dta) {
+		global $user;
+		return array(
+			'editable' => $user['isAdmin'],
+			'value' => ($user['isAdmin'] && isset($_REQUEST['submit'])) ? isset($_REQUEST['isRestricted']) : $dta['isRestricted'],
+		);
+	}
+	function CbEvaluateRestricted() {
+		global $user;
+		if(!$user['isAdmin'])
+			return '';
+		return "isRestricted=".(isset($_REQUEST['isRestricted']) ? "'1', " : "'0', ");
 	}
 	function CbValidateSitterSkin() {
 		global $content;

@@ -6,6 +6,9 @@
 	function SitterDoLogin() {
 		global $spiel, $user, $ID_MEMBER, $pre, $warmode;
 		
+		if($user['isRestricted'])
+			die("Hacking Attempt");
+		
 		$sitter= isset($_REQUEST['sitter']);
 		$id = intval($_REQUEST['ID']);
 		if(!$sitter && $id != $user['igmuser']) {
@@ -57,8 +60,11 @@
 	}
 		
 	function SitterLogin() {
-		global $ID_MEMBER, $pre, $content, $scripturl, $spiel, $sourcedir;
+		global $ID_MEMBER, $pre, $content, $scripturl, $spiel, $sourcedir, $user;
 
+		if($user['isRestricted'])
+			die("Hacking Attempt");
+		
 		require_once($sourcedir.'/newscan/main.php');
 		$tmpid = ParseScansEx(true); //für fastpaste
 		
@@ -113,6 +119,9 @@
 	function MainLogin() {
 		global $content, $pre, $ID_MEMBER, $scripturl, $user, $spiel, $sourcedir;
 		
+		if($user['isRestricted'])
+			die("Hacking Attempt");
+		
 		$dta = DBQueryOne("SELECT igmname, lastLogin FROM {$pre}igm_data WHERE ID=".$user['igmuser'], __FILE__, __LINE__);
 		$params = '&amp;id=0&amp;uid='.$user['igmuser'].'&amp;from='.EscapeO(Param('from')).'&amp;lastLogin='.$dta[1];
 		
@@ -127,7 +136,10 @@
 	}
 	
 	function SitterUtilPrepare() {
-		global $content, $pre, $scripturl, $params;
+		global $content, $pre, $scripturl, $params, $user;
+		
+		if($user['isRestricted'])
+			die("Hacking Attempt");
 		
 		$lastLogin = intval($_REQUEST['lastLogin']);
 		$content['nextLoginColor'] = LastLoginColor($lastLogin);
@@ -175,6 +187,9 @@
 	}
 	
 	function SitterUtilJob() {
+		global $user;
+		if($user['isRestricted'])
+			die("Hacking Attempt");
 		
 		if(isset($_REQUEST['done'])) {
 			SitterUtilJobDone();
@@ -189,6 +204,9 @@
 	
 	function SitterUtilJobDone() {
 		global $pre, $ID_MEMBER, $content, $user;
+		
+		if($user['isRestricted'])
+			die("Hacking Attempt");
 		
 		$id = intval($_REQUEST['id']);
 		$job = DBQueryOne("SELECT sitter.ID, sitter.done, users.visibleName, sitter.igmid, igm_data.igmname, 
@@ -252,6 +270,8 @@
 	
 	function SitterUtilJobMove() {
 		global $pre, $user, $scripturl, $content, $user, $ID_MEMBER;
+		if($user['isRestricted'])
+			die("Hacking Attempt");
 		$id = intval($_REQUEST['id']);
 		$uid = intval($_REQUEST['uid']);
 		$from = EscapeO(Param('from'));
@@ -339,7 +359,9 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 	}
 	
 	function SitterUtilJobView() {
-		global $content, $ID_MEMBER, $pre, $scripturl, $params;
+		global $content, $ID_MEMBER, $pre, $scripturl, $params, $user;
+		if($user['isRestricted'])
+			die("Hacking Attempt");
 		$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 		if($id == 0) {
 			$uid = intval($_REQUEST['uid']);
@@ -391,8 +413,10 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 	}
 	
 	function SitterUtilNewscan() {
-		global $content, $sourcedir, $scripturl, $pre, $params;
-		
+		global $content, $sourcedir, $scripturl, $pre, $params, $user;
+		if($user['isRestricted'])
+			die("Hacking Attempt");
+			
 		require($sourcedir.'/newscan/main.php');
 		ParseScansEx();
 		
@@ -427,8 +451,11 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 	}
 
 	function SitterUtilTrade() {
-		global $content, $ID_MEMBER, $scripturl, $pre, $params;
+		global $content, $ID_MEMBER, $scripturl, $pre, $params, $user;
 
+		if($user['isRestricted'])
+			die("Hacking Attempt");
+		
 		SitterUtilPrepare();
 		$content['submitUrl'] = $scripturl. '/index.php?action=sitterutil_trade'.$params;
 		
@@ -495,7 +522,10 @@ FROM (({$pre}trade_reqs AS trade_reqs INNER JOIN {$pre}igm_data AS igm_data ON t
 	}
 
 	function SitterUtilLog() {
-		global $content, $pre, $scripturl;
+		global $content, $pre, $scripturl, $user;
+		if($user['isRestricted'])
+			die("Hacking Attempt");
+			
 		$uid = intval($_REQUEST['uid']);
 		SitterUtilPrepare();
 		
@@ -521,6 +551,9 @@ WHERE sitterlog.victimid=".$uid." ORDER BY time DESC LIMIT 0, 6", __FILE__, __LI
 	
 	function SitterUtilRess() {
 		global $content, $pre, $scripturl, $user, $params;
+		
+		if($user['isRestricted'])
+			die("Hacking Attempt");
 		
 		SitterUtilPrepare();
 		$uid = intval($_REQUEST['uid']);

@@ -4,6 +4,9 @@
 	function IrcMask() {
 		global $content, $pre, $scripturl, $ID_MEMBER, $user;
 		
+		if($user['isRestricted'])
+			die("Hacking Attempt");
+		
 		$uid = intval($_REQUEST['uid']);
 		if($uid != $ID_MEMBER && !$user['isAdmin']) {
 			exit();

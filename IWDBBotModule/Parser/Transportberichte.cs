@@ -81,7 +81,7 @@ namespace IWDB.Parser {
     }
     class RessTransport : ReportParser {
         public RessTransport(NewscanHandler h)
-            : base(h) {
+            : base(h, false) {
             String dot = System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator;
             AddPatern(@"Transport\sangekommen\s" + KoordinatenEinzelMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+
 Transport\s+
@@ -151,7 +151,7 @@ Ressourcen
 
 	class FremdeUebergabe : ReportParser {
 		public FremdeUebergabe(NewscanHandler h)
-			: base(h) {
+			: base(h, false) {
 			AddPatern(@"Schiffe\sübergeben\s" + KoordinatenEinzelMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+
 Übergabe\s+
 Eine\sFlotte\sist\sauf\sdem\sPlaneten\s" + KolonieName + @"\s\d+:\d+:\d+\sangekommen\.\sDer\sAbsender\sist\s(" + SpielerName + @")\s+

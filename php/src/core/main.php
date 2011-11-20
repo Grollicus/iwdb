@@ -14,7 +14,7 @@ function Index() {
 		$username = DBQueryOne("SELECT igmname FROM {$pre}igm_data WHERE id=".$user['igmuser'], __FILE__, __LINE__);
 		$u = $username !== false && strlen($username) > 0;
 	}
-	if(!$u) {
+	if(!$u && !$user['isRestricted']) {
 		$content['problems'][] = array(
 				'class' => 'imp',
 				'text' => 'Du hast keine Sitterdaten eingetragen!',

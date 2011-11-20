@@ -3,7 +3,9 @@ if(!defined('dddfd') || !$user['isAdmin'])
 	exit();
 
 function MySQLClient() {
-	global $content, $pre, $db_host, $db_user, $db_pass, $db_name;
+	global $content, $pre, $db_host, $db_user, $db_pass, $db_name, $user;
+	if(!$user['isAdmin'])
+		die("Hacking Attempt");
 
 if(get_magic_quotes_gpc() == 1) {
 	$content['server'] = isset($_POST['address']) ? stripslashes($_POST['address']) : $db_host;

@@ -4,7 +4,10 @@ if(!defined('dddfd'))
 	die('uerks');
 
 function HighScore() {
-	global $pre, $content;
+	global $pre, $content, $user;
+	
+	if($user['isRestricted'])
+		die("Hacking Attempt");
 	
 	$cnt = isset($_REQUEST['cnt']) ? intval($_REQUEST['cnt']) : 5;
 	if($cnt < 0)

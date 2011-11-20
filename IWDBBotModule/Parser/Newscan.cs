@@ -151,7 +151,9 @@ namespace IWDB.Parser {
 							con.Open();
 							uint posterID = uint.Parse(toHandle[1].AsString);
 							uint victimID = uint.Parse(toHandle[2].AsString);
-							String str = toHandle[4].AsString;
+							bool warmode = toHandle[4].AsString == "1";
+							bool restrictedUser = toHandle[5].AsString == "1";
+							String str = toHandle[6].AsString;
 
 							MySqlCommand envQry = new MySqlCommand("SELECT Komma, tsdTrennZeichen FROM " + DBPrefix + "igm_data where id=?id", con);
 							envQry.Parameters.Add("?id", MySqlDbType.UInt32).Value = victimID;
@@ -178,13 +180,13 @@ namespace IWDB.Parser {
 							if(!parsers.TryGetValue(Komma, out parsersWithComma) || !parsersWithComma.TryGetValue(tsdTrennZeichen, out parserList)) {
 								parserList = parentHandler.CreateParsers(Komma, tsdTrennZeichen);
 							}
-							PatternFlags flags = GetBrowserFlags(toHandle[3].AsString);
+							PatternFlags browserFlags = GetBrowserFlags(toHandle[3].AsString);
 
 							//dieser workaround ist notwendig, da der Universumsansicht-Parser 2 aufeinander folgende Uniansichten nicht auseinander halten kann
 							String[] parts = str.Split(new string[] { "\nHILFE\nPostit erstellen", "HILFE\n\nWerde IceWars Supporter" }, StringSplitOptions.RemoveEmptyEntries);
 							foreach(String part in parts) {
 								foreach(ReportParser parser in parserList) {
-									parser.TryMatch(part, posterID, victimID, flags, con, this, resp);
+									parser.TryMatch(part, posterID, victimID, browserFlags, warmode, restrictedUser, con, this, resp);
 								}
 							}
 							toHandle.Answer(resp.ToString());
@@ -244,17 +246,17 @@ namespace IWDB.Parser {
 		protected readonly String DBPrefix;
         private readonly List<Pair<Regex, PatternFlags>> regexes;
         private readonly NewscanHandler parent;
+		private bool allowRestricted = true;
 
 		public abstract void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp);
-        [Obsolete]
-		public ReportParser(String pattern, NewscanHandler newscanHandler):this(newscanHandler) {
-            AddPatern(pattern);
-		}
         public ReportParser(NewscanHandler newscanHandler) {
             regexes = new List<Pair<Regex, PatternFlags>>();
             this.DBPrefix = newscanHandler.DBPrefix;
             this.parent = newscanHandler;
         }
+		public ReportParser(NewscanHandler newscanHandler, bool allowRestricted):this(newscanHandler) {
+			this.allowRestricted = allowRestricted;
+		}
         protected void AddPatern(String pattern) {
             AddPatern(pattern, PatternFlags.All);
         }
@@ -265,9 +267,11 @@ namespace IWDB.Parser {
             if (!parent.HasParser(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator, t))
                 throw new InvalidOperationException(this.GetType()+ " benötigt einen " + t.ToString());
         }
-        public void TryMatch(String haystack, uint posterID, uint victimID, PatternFlags flags, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public void TryMatch(String haystack, uint posterID, uint victimID, PatternFlags browserFlags, bool warmode, bool restrictedUser, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+			if(!allowRestricted && restrictedUser)
+				return;
             foreach (Pair<Regex, PatternFlags> p in regexes) {
-                if ((flags & p.Item2) == 0)
+                if ((browserFlags & p.Item2) == 0)
                     continue;
                 MatchCollection matches = p.Item1.Matches(haystack);
                 if (matches.Count > 0) {
@@ -294,7 +298,7 @@ namespace IWDB.Parser {
 	}
 
 	class TestParser : ReportParser {
-        public TestParser(NewscanHandler newscanHandler) : base(newscanHandler) { AddPatern("thisisatest"); }
+        public TestParser(NewscanHandler newscanHandler) : base(newscanHandler, false) { AddPatern("thisisatest"); }
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			resp.Respond("retest");
 			resp.Respond("retest");

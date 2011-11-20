@@ -9,9 +9,13 @@
 			die('Epic fail.');
 		
 		if(isset($_GET['new'])) {
-			DBQuery("INSERT INTO {$pre}igm_data (lastLogin) VALUES (".time().")", __FILE__, __LINE__);
-			$igmid = mysql_insert_id();
-			DBQuery("INSERT INTO {$pre}users (userName, igmuser) VALUES ('".EscapeDB(Param('name'))."', {$igmid})", __FILE__, __LINE__);
+			if(isset($_REQUEST['guest_submit'])) {
+				DBQuery("INSERT INTO {$pre}users (userName, igmuser, isRestricted) VALUES ('".EscapeDB(Param('guest'))."', 0, 1)", __FILE__, __LINE__);
+			} else {
+				DBQuery("INSERT INTO {$pre}igm_data (lastLogin) VALUES (".time().")", __FILE__, __LINE__);
+				$igmid = mysql_insert_id();
+				DBQuery("INSERT INTO {$pre}users (userName, igmuser) VALUES ('".EscapeDB(Param('name'))."', {$igmid})", __FILE__, __LINE__);
+			}
 		}
 		if(isset($_GET['del'])) {
 			$delid = intval($_GET['del']);
@@ -21,7 +25,7 @@
 				DBQuery("DELETE FROM {$pre}igm_data where id={$igmid}", __FILE__, __LINE__);
 		}
 			
-		$q = DBQuery("SELECT users.ID, userName, visibleName, isAdmin, lastactive, igm_data.igmname, users.igmuser, pwmd5<>'' 
+		$q = DBQuery("SELECT users.ID, userName, visibleName, isAdmin, isRestricted, lastactive, igm_data.igmname, users.igmuser, pwmd5<>'' 
 FROM {$pre}users AS users LEFT JOIN {$pre}igm_data AS igm_data ON users.igmuser=igm_data.id", __FILE__, __LINE__);
 		$content['users'] = array();
 		while($row = mysql_fetch_row($q)) {
@@ -30,10 +34,11 @@ FROM {$pre}users AS users LEFT JOIN {$pre}igm_data AS igm_data ON users.igmuser=
 				'name' => EscapeOU($row[1]),
 				'visibleName' => EscapeOU($row[2]),
 				'isAdmin' => $row[3] ? '<b>Ja</b>' : 'Nein',
-				'lastactive' => FormatDate($row[4]),
-				'igmName' => EscapeOU($row[5]),
-				'igmid' => $row[6],
-				'hasPW' => $row[7] ? 'Ja' : '<b>Nein</b>',
+				'isRestricted' => $row[4] ? '<b>Ja</b>' : 'Nein',
+				'lastactive' => FormatDate($row[5]),
+				'igmName' => EscapeOU($row[6]),
+				'igmid' => $row[7],
+				'hasPW' => $row[8] ? 'Ja' : '<b>Nein</b>',
 				'editlink' => $scripturl.'/index.php?action=settingsex&amp;ID='.$row[0],
 				'dellink' => $scripturl.'/index.php?action=useradmin&amp;del='.$row[0],
 			);

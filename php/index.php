@@ -77,7 +77,6 @@ function Main()
 	//At first, all the Possibilities, as '$_REQUEST['action']' => array('includefile','Function to call')
 	$actionArr = array(
 	'errors' => array('admin/errors.php', 'ListErrors'),
-	'flotten' => array('sitter/view.php', 'SitterFeindlFlottenUebersicht'),
 	'help' => array('core/main.php', 'HelpView'),
 	'help_page' => array('core/main.php', 'HelpPage'),
 	'hs' => array('core/highscore.php', 'HighScore'),
@@ -91,7 +90,6 @@ function Main()
 	'raids' => array('kbs/raids.php', 'RaidOverview'),
 	'ressuserlist' => array('ress/list.php', 'RessUserList'),
 	'settingsex' => array('core/UserSettingsEx.php', 'UserSettingsEx'),
-	'scans_view' => array('scans/view.php', 'ScansView'), //scheint nicht verwendet zu werden
 	'sitter_flotten' => array('sitter/view.php', 'SitterFeindlFlottenUebersicht'),
 	'sitter_login' => array('sitter/login.php', 'SitterLogin'),
 	'sitter_dologin' => array('sitter/login.php', 'SitterDoLogin'),

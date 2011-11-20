@@ -4,7 +4,10 @@ if(!defined('dddfd'))
 	die("möh");
 
 function RaidOverview() {
-	global $content, $pre;
+	global $content, $pre, $user;
+	
+	if($user['isRestricted'])
+		die("Hacking Attempt");
 	
 	$q = DBQuery("SELECT iwid, hash, time, angreifer, angrAlly, verteidiger, verteidigerAlly, score, rFe, rSt, rCh, rVv, rEi, rWa, rEn, zFe, zSt, zCh, zVv, zEi, zWa, zEn FROM {$pre}raidberichte ORDER BY time DESC LIMIT 0, 30", __FILE__, __LINE__);
 	$content['raids'] = array();

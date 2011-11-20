@@ -62,14 +62,15 @@
 				<h2>Benutzerliste</h2>
 				<form action="', $content['addurl'], '" method="post">
 				<table width="100%">
-					<tr><th>Benutzername</th><th>angezeigter Name</th><th>Ingamename</th><th>zuletzt aktiv</th><th>Admin</th><th>Hat ein PW</th><th>&nbsp;</th></tr>';
+					<tr><th>Benutzername</th><th>angezeigter Name</th><th>Ingamename</th><th>zuletzt aktiv</th><th>Admin</th><th>Gast</th><th>Hat ein PW</th><th>&nbsp;</th></tr>';
 		foreach($content['users'] as $user) {
 			echo '<tr><td>', $user['name'], ' (', $user['id'], ')</td><td>', $user['visibleName'], '</td>
 				<td>', $user['igmName'], ' (', $user['igmid'], ')</td><td>', $user['lastactive'], '</td>
-				<td>', $user['isAdmin'], '</td><td>', $user['hasPW'], '</td><td><a href="', $user['editlink'], '">Edit</a> <a href="', $user['dellink'], '" onclick="return confirm(\'', $user['name'], ' wirklich löschen?\');">Del</a></td></tr>';
+				<td>', $user['isAdmin'], '</td><td>', $user['isRestricted'], '</td><td>', $user['hasPW'], '</td><td><a href="', $user['editlink'], '">Edit</a> <a href="', $user['dellink'], '" onclick="return confirm(\'', $user['name'], ' wirklich löschen?\');">Del</a></td></tr>';
 		}
 		echo '
-					<tr><td><input type="text" name="name" value="Neuer Benutzer" /></td><td colspan="6"><input type="submit" value="Erstellen" /></td></tr>			
+					<tr><td><input type="text" name="name" value="Neuer Benutzer" /></td><td colspan="7"><input type="submit" name="user_submit" value="Neuer Benutzer" /></td></tr>
+					<tr><td><input type="text" name="guest" value="Neuer Gast" /></td><td colspan="7"><input type="submit" name="guest_submit" value="Neuer Gast" /></td></tr>
 				</table>
 				</form>
 			</div>';

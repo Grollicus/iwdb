@@ -4,6 +4,8 @@
 
 	function SitterHistory() {
 		global $ID_MEMBER, $pre, $content, $user;
+		if($user['isRestricted'])
+			die("hacking attempt");
 		
 		$longTypes = array(
 			'login' => 'Sitterlogin',
@@ -44,8 +46,9 @@ WHERE sitterlog.userid={$ID_MEMBER} ORDER BY time DESC LIMIT 0, 30", __FILE__, _
 	}
 	
 	function SitterGlobalHistory() {
-		global $pre, $content;
-		
+		global $pre, $content, $user;
+		if($user['isRestricted'])
+			die("hacking attempt");
 		
 		$longTypes = array(
 			'login' => 'Sitterlogin',

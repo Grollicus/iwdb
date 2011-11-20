@@ -4,7 +4,10 @@ if(!defined('dddfd'))
 	die('Hacking Attempt');
 
 function WarSchedule() {
-	global $pre, $content, $ID_MEMBER, $scripturl, $warmode;
+	global $pre, $content, $ID_MEMBER, $scripturl, $warmode, $user;
+	
+	if($user['isRestricted'])
+		die("hacking attempt");
 	
 	if(!$warmode) {
 		$content['schedule'] = array();
@@ -69,6 +72,9 @@ function WarSchedule() {
 
 function WarScheduleAjax() {
 	global $pre, $ID_MEMBER, $user;
+	
+	if($user['isRestricted'])
+		die("hacking attempt");
 	
 	$oldId = str_replace('"', '', $_REQUEST['el']);
 	echo '<data><setValue elementId="sched_', $oldId, '"><![CDATA[';

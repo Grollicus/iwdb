@@ -35,7 +35,7 @@ if(!function_exists('TemplateMenu')) {
 			<tr><th>M000h</th></tr>
 			<tr><td><a class="',$content['action'] == 'index' ? 'active' : 'item','" href="', $scripturl, '/?action=index">Index</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'newscanex' ? 'active' : 'item','" href="', $scripturl, '/?action=newscanex">Neuer Bericht</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'hs' ? 'active' : 'item','" href="', $scripturl, '/?action=hs">Top 5</a></td></tr>
+			', !$user['isRestricted'] ? '<tr><td><a class="'.($content['action'] == 'hs' ? 'active' : 'item').'" href="'.$scripturl.'/?action=hs">Top 5</a></td></tr>' : '','
 			<tr><th>Universum</th></tr>
 			<tr><td><a class="',$content['action'] == 'uni_map' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_map">Karte</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'uni_view' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_view">Suche</a>';
@@ -46,24 +46,32 @@ if(!function_exists('TemplateMenu')) {
 			</td></tr>
 			<!--tr><td><a class="',$content['action'] == 'uni_whosat' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_whosat">Wer ist in...</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'uni_allyat' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_allyat">Wo ist Ally xyz..?</a></td></tr-->
-			<tr><td><a class="',$content['action'] == 'uni_allyoverview' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_allyoverview">Ally-Gala-&Uuml;bersicht</a></td></tr>
+			<tr><td><a class="',$content['action'] == 'uni_allyoverview' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_allyoverview">Ally-Gala-&Uuml;bersicht</a></td></tr>';
+		if(!$user['isRestricted'])
+		echo '
 			<tr><th>Ress</th></tr>
 			<tr><td><a class="',$content['action'] == 'trade_list' ? 'active' : 'item','" href="', $scripturl, '/?action=trade_list">Handel</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'raids' ? 'active' : 'item','" href="', $scripturl, '/?action=raids">Raids</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'ressuserlist' ? 'active' : 'item','" href="', $scripturl, '/?action=ressuserlist">AccountRessProd</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'transporte' ? 'active' : 'item','" href="', $scripturl, '/?action=transporte">AccountRessBilanz</a></td></tr>
-			<tr><th>Sitterzeugs</th></tr>
+			<tr><td><a class="',$content['action'] == 'transporte' ? 'active' : 'item','" href="', $scripturl, '/?action=transporte">AccountRessBilanz</a></td></tr>';
+		echo '
+			<tr><th>Sitterzeugs</th></tr>';
+		if(!$user['isRestricted'])
+		echo '
 			<tr><td><a class="',$content['action'] == 'sitter_view' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_view">Sitterauftr&auml;ge <span id="sitter_job_cnt">', $content['sitter_job_cnt'] > 0 ? ' ('.$content['sitter_job_cnt'].')' : '', '</span></a></td></tr>
 			<tr><td><a class="',$content['action'] == 'sitter_list' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_list">Sitterlogins</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'sitter_own' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_own">Meine Auftr&auml;ge</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'sitter_history' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_history">History</a></td></tr>
+			<tr><td><a class="',$content['action'] == 'sitter_history' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_history">History</a></td></tr>';
+		echo '
 			<tr><td><a class="',$content['action'] == 'sitter_flotten' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_flotten">Flottenübersicht</a></td></tr>
 			
 			<tr><th>Krieg</th></tr>
 			<tr><td><a class="',$content['action'] == 'war_kbs' ? 'active' : 'item','" href="', $scripturl, '/?action=war_kbs">Kampfberichte</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'war_scans' ? 'active' : 'item','" href="', $scripturl, '/?action=war_scans">Scans</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'war_schedule' ? 'active' : 'item','" href="', $scripturl, '/?action=war_schedule">Zeitplan</a></td></tr>
-			
+			<tr><td><a class="',$content['action'] == 'war_scans' ? 'active' : 'item','" href="', $scripturl, '/?action=war_scans">Scans</a></td></tr>';
+		if(!$user['isRestricted'])
+		echo '
+			<tr><td><a class="',$content['action'] == 'war_schedule' ? 'active' : 'item','" href="', $scripturl, '/?action=war_schedule">Zeitplan</a></td></tr>';
+		echo '
 			<tr><th>Sonstiges</th></tr>
 			<tr><td><a class="',$content['action'] == 'techtree' ? 'active' : 'item','" href="', $scripturl, '/?action=techtree">Techtree</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'settingsex' ? 'active' : 'item','" href="', $scripturl, '/?action=settingsex">Einstellungen</a></td></tr>';
@@ -104,7 +112,7 @@ if(!function_exists('TemplateHtmlHeader')) {
 			fenster.focus();
 			return false;
 		}
-		', $user['isGuest'] ?  '' : '
+		', $user['isGuest'] || $user['isRestricted'] ?  '' : '
 		function timerCallback() {
 			AjaxRequest("sitter_cnt");
 			window.setTimeout(timerCallback, 120000);

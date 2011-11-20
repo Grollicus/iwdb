@@ -1,6 +1,9 @@
 <?php
 	function TransporteList() {
-		global $pre, $content, $scripturl, $squads;
+		global $pre, $content, $scripturl, $squads, $user;
+		
+		if($user['isRestricted'])
+			die("hacking attempt");
 		
 		$q = DBQuery("SELECT igmname, squad FROM {$pre}igm_data", __FILE__, __LINE__);
 		$squads = array();

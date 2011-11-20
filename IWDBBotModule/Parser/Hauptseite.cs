@@ -10,7 +10,7 @@ namespace IWDB.Parser {
 		Dictionary<uint, OrderedList<FlottenCacheFlotte>> flottenCache;
 		List<uint> ownerCache;
 		public HauptseiteKolonieinformationParser(NewscanHandler newscanHandler)
-			: base(newscanHandler) {
+			: base(newscanHandler, false) {
             AddPatern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch + @"[\s\S]+
 			#Lebensbedingungen,Flottenscannerreichweite, Leerzeile danach, Serverzeit, Kolonien aktuell/maximal, Schiffsübersicht,...
 			(?:Forschungsstatus\s+
@@ -85,7 +85,7 @@ namespace IWDB.Parser {
 	}
 	class HauptseiteAusbaustatusParser : ReportParser {
 		public HauptseiteAusbaustatusParser(NewscanHandler newscanHandler)
-			: base(newscanHandler) {
+			: base(newscanHandler, false) {
             AddPatern(@"Ausbaustatus
 		((?:\n" + KolonieName + @"\s+" + Koordinaten + @"\s+(?:(?:nÜscht[^\n])|(?:.*?\s+bis\s+" + IWZeit + @"[\s\-]+" + IWZeitspanne + ")))+)");
         }
@@ -139,7 +139,7 @@ namespace IWDB.Parser {
 		List<uint> ownerCache;
 		IWDBParser parser;
 		public HauptseiteFremdeFlottenParser(NewscanHandler h, IWDBParser parser)
-			: base(h) {
+			: base(h, false) {
             AddPatern(@"fremde\sFlotten\s+
 Fremde\sFlotten\n
 (?:\(Es\ssind\sfremde\sFlotten\süber\sdem\sPlaneten\sstationiert\.\)\s+)?
@@ -260,7 +260,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 		List<uint> ownerCache;
         IWDBParser parser;
         public HauptseiteFeindlicheFlottenParser(NewscanHandler h, IWDBParser parser)
-			: base(h) {
+			: base(h, false) {
 			AddPatern(@"feindliche\sFlotten\s+
 Fremde\sFlotten\n
 Ziel\s+Start\s+Ankunft\s+Aktionen\s+

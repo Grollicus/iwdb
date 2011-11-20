@@ -12,7 +12,10 @@
 		return number_format($t, 1, ',', '.').'h';
 	}
 	function RessUserList() {
-		global $content, $pre, $scripturl, $unicolor_stages;
+		global $content, $pre, $scripturl, $unicolor_stages, $user;
+		
+		if($user['isRestricted'])
+			die("Hacking Attempt");
 		
 		$content['squads'] = array();
 		$q = DBQuery("SELECT igm_data.squad FROM {$pre}igm_data AS igm_data GROUP BY igm_data.squad", __FILE__, __LINE__);

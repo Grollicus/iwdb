@@ -144,10 +144,10 @@ function DBQueryOne($query,$file,$line,$assoc = false)
 
 function CheckLogin()
 {
-	global $sourcedir;
+	global $sourcedir, $user;
 	
 	//If the User is logged in, ID_MEMBER is set
-	if (isset($_SESSION['ID_MEMBER']) && $_SESSION['user_agent'] == $_SERVER['HTTP_USER_AGENT'])
+	if (isset($_SESSION['ID_MEMBER']) && $_SESSION['user_agent'] == $_SERVER['HTTP_USER_AGENT'] && !$user['isGuest'])
 		return true;
 	//Maybe he's logging in...
 	elseif (isset($_REQUEST['login'])) {

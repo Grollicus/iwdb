@@ -1,6 +1,8 @@
 <?php
 	function SitterEdit() {
-		global $content, $pre, $scripturl, $ID_MEMBER;
+		global $content, $pre, $scripturl, $ID_MEMBER, $user;
+		if($user['isRestricted'])
+			die("hacking attempt");
 		$modules = array(
 //name => arr(
 //	'name' => Name,
@@ -528,7 +530,9 @@ WHERE techtree_items.type='For' AND techtree_useritems.count IS NULL OR techtree
 	}
 	
 	function SitterScriptListPlanis() {
-		global $pre;
+		global $pre, $user;
+		if($user['isRestricted'])
+			die("hacking attempt");
 		$uid = intval($_REQUEST['igmid']);
 		echo '<data><option><value>0</value><description>Plani auswählen!</description></option>';
 		$q = DBQuery("SELECT universum.id, universum.gala, universum.sys, universum.pla, planiname FROM {$pre}universum AS universum INNER JOIN {$pre}igm_data AS igm_data ON universum.ownername=igm_data.igmname WHERE igm_data.ID={$uid} ORDER BY CASE objekttyp WHEN 'Kolonie' THEN 1 ELSE 0 END, universum.gala, universum.sys, universum.pla", __FILE__, __LINE__);
@@ -538,8 +542,9 @@ WHERE techtree_items.type='For' AND techtree_useritems.count IS NULL OR techtree
 		echo '</data>';
 	}
 	function SitterScriptListGebs() {
-		global $pre;
-		
+		global $pre, $user;
+		if($user['isRestricted'])
+			die("hacking attempt");
 		$planid = intval($_REQUEST['planid']);
 		$igmid = intval($_REQUEST['igmid']);
 		$c = DBQueryOne("SELECT gala, sys, pla FROM {$pre}universum WHERE ID={$planid}", __FILE__, __LINE__);
@@ -557,7 +562,9 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 		echo '</data>';
 	}
 	function SitterScriptListStufen() {
-		global $pre;
+		global $pre, $user;
+		if($user['isRestricted'])
+			die("hacking attempt");
 		
 		$planid = intval($_REQUEST['planid']);
 		$c = DBQueryOne("SELECT gala, sys, pla FROM {$pre}universum WHERE ID={$planid}", __FILE__, __LINE__);
@@ -577,7 +584,9 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 		echo '</select></data>';
 	}
 	function SitterScriptListForschungen() {
-		global $pre;
+		global $pre, $user;
+		if($user['isRestricted'])
+			die("hacking attempt");
 		
 		$igmid = intval($_REQUEST['igmid']);
 		$q = DBQuery("SELECT techtree_items.ID, techtree_items.Name 

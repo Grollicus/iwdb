@@ -42,7 +42,7 @@ function ApiNewscans() {
 }
 
 function ParseScansEx($store_in_temp = false, $check_reqid = true) {
-	global $content, $ID_MEMBER, $user, $pre;
+	global $content, $ID_MEMBER, $user, $pre, $warmode;
 	
 	flush();
 	$content['scans'] = '';
@@ -58,7 +58,7 @@ function ParseScansEx($store_in_temp = false, $check_reqid = true) {
 			return;
 		}
 		$str = '';
-		if(!empty($scan) && !QueryIWDBUtil('newscan', array($ID_MEMBER, $uid, $_SERVER['HTTP_USER_AGENT'], $scan), $str)) {
+		if(!empty($scan) && !QueryIWDBUtil('newscan', array($ID_MEMBER, $uid, $_SERVER['HTTP_USER_AGENT'], $warmode, $user['isRestricted'], $scan), $str)) {
 			$content['scans'] = EscapeO($scan);
 			$content['msg'] = "Verbindung zum Parser fehlgeschlagen!";
 		} else {

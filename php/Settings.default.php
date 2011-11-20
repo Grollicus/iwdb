@@ -62,5 +62,6 @@ $fake_att = 200000;
 $fake_def = 2000000;
 
 $warmode = false;
+$allow_restricted = false;
 
 ?>

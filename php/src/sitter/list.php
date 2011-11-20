@@ -3,7 +3,9 @@ if(!defined('dddfd'))
 	die("epic fail.");
 
 function SitterList() {
-	global $content, $pre, $sittercolor_stages;
+	global $content, $pre, $sittercolor_stages, $user;
+	if($user['isRestricted'])
+		die("hacking attempt");
 	
 	$q = DBQuery("SELECT igm_data.id, igm_data.igmname, igm_data.accounttyp, igm_data.squad, igm_data.ikea, igm_data.mdp, igm_data.iwsa, 0, MIN(flotten.ankunft) AS flottenAnkunft, igm_data.lastLogin
 FROM (({$pre}igm_data AS igm_data)
@@ -25,7 +27,7 @@ GROUP BY igm_data.id", __FILE__, __LINE__);
 		$row[7] = DBQueryOne("SELECT MIN(blub.end) FROM (SELECT building.uid AS uid, MAX(building.end) AS end FROM {$pre}building AS building WHERE building.uid=".$row[0].($row[4] == 1 ? ' AND building.plani=0' : '')." GROUP BY building.plani) AS blub group by blub.uid", __FILE__, __LINE__);
 		$sortArr[] = $row;
 	}
-	function sortCB($a, $b) {
+	function sortCB($a, $b) { //TODO: Fehler mit dem NULL-Handling?
 		if(!is_null($a[8]) && is_null($b[8]) || $a[8] < $b[8]) return -1;
 		if(is_null($a[8]) && !is_null($b[8]) || $a[8] > $b[8]) return  1;
 		if($a[7] < $b[7]) return -1;

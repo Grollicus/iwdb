@@ -7,7 +7,7 @@ using MySql.Data.MySqlClient;
 namespace IWDB.Parser {
 	class RessourcenKoloÜbersichtParser : ReportParser {
 		public RessourcenKoloÜbersichtParser(NewscanHandler handler)
-			: base(handler) {
+			: base(handler, false) {
             String dot = System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator;
             String comma = System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator;
             AddPatern(@"Ressourcenkoloübersicht\s+
@@ -111,7 +111,7 @@ Kolonie\s+Eisen\s+Stahl\s+VV4A\s+chem.\sElemente\s+Eis\s+Wasser\s+Energie\s+
 	}
 	class RessourcenKoloÜbersichtTeil2Parser : ReportParser {
         public RessourcenKoloÜbersichtTeil2Parser(NewscanHandler handler)
-            : base(handler) {
+            : base(handler, false) {
             String dot = System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator;
             String comma = System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator;
             Requires(typeof(RessourcenKoloÜbersichtParser));

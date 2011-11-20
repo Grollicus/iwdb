@@ -3,6 +3,8 @@
 		exit();
 	function TradeList() {
 		global $content, $pre, $scripturl, $ID_MEMBER, $user;
+		if($user['isRestricted'])
+			die("hacking attempt");
 		if(isset($_REQUEST['new']) && CheckRequestID()) {
 			$res = Param('ressource');
 			if(is_numeric($res)) {

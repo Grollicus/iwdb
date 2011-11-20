@@ -61,7 +61,7 @@
 	}
 
 	function TemplateUserSettingsEx() {
-		global $content;
+		global $content, $user;
 		
 		TemplateHeader();
 		TemplateMenu();
@@ -110,6 +110,7 @@
 					echo '<td><input type="checkbox" name="', $name, '" value="1" ', $mod['data'] ? 'checked="checked"' : '' ,' /></td>';
 					break;
 				case 'isAdmin':
+				case 'isRestricted':
 					echo '<td><input type="checkbox" name="', $name, '" value="1" ', $mod['data']['value'] ? 'checked="checked"' : '' , $mod['data']['editable'] ? '' : 'disabled="disabled"', ' /></td>';
 					break;
 				case 'sitterskin':
@@ -135,14 +136,18 @@
 				echo '<tr><td colspan="2"><input name="submit" value="Absenden" type="submit" /></td></tr></table><br /><table cellpadding="0" cellspacing="0" border="0"><tr><th colspan="2">Ingame-Einstellungen</th></tr>';
 		}
 			
-		echo'<tr><td colspan="2"><input name="submit" value="Absenden" type="submit" /></td></tr></table></form>
+		echo '<tr><td colspan="2"><input name="submit" value="Absenden" type="submit" /></td></tr></table></form>';
+		if(!$user['isRestricted']) {
+			echo '
 		<br /><table cellpadding="0" cellspacing="0" border="0"><tr><th colspan="2">IRC-Autologinmasken</th></tr>';
 		foreach($content['ircAutoLogin'] as $line) {
 			echo '<tr><td>', $line['mask'], '</td><td><a href="', $line['editLink'], '">Edit</a> <a href="', $line['delLink'], '">Del</a></td></tr>';
 		}
 		echo '
 			<tr><td colspan="2"><a href="', $content['newIrcAutoLoginLink'], '">neue Maske</a></td></tr> 
-		</table></div>';
+		</table>';
+		}
+		echo '</div>';
 		
 		TemplateFooter();
 	}

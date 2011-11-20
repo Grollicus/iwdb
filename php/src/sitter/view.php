@@ -4,8 +4,9 @@
 	
 	
 	function SitterView() {
-		global $pre, $ID_MEMBER, $user, $content, $scripturl;
-				
+		global $pre, $ID_MEMBER, $user, $content, $scripturl, $user;
+		if($user['isRestricted'])
+			die("hacking attempt");
 		$types = array(
 			'Geb' => 'Bauauftrag',
 			'For' => 'Forschungsauftrag',
@@ -169,7 +170,8 @@ ORDER BY flotten.ankunft ASC", __FILE__, __LINE__);
 	}
 	function SitterOwn() {
 		global $content, $pre, $ID_MEMBER, $user, $scripturl;
-		
+		if($user['isRestricted'])
+			die("hacking attempt");
 		if(isset($_REQUEST['del'])) {
 			$id = intval($_REQUEST['del']);
 			DBQuery("DELETE FROM {$pre}sitter WHERE ID=$id AND (done=0 AND (uid={$ID_MEMBER} OR igmid=".$user['igmuser']."))", __FILE__, __LINE__);
@@ -234,8 +236,9 @@ ORDER BY flotten.ankunft ASC", __FILE__, __LINE__);
 	}
 	
 	function SitterScriptCnt() {
-		global $pre;
-		
+		global $pre, $user;
+		if($user['isRestricted'])
+			die("hacking attempt");
 		echo '<data><setValue elementId="sitter_job_cnt">';
 		$cnt = DBQueryOne("SELECT count(*) FROM {$pre}sitter AS sitter WHERE sitter.done=0 AND followUpTo=0 AND sitter.time <= ".time(), __FILE__, __LINE__);
 		if($cnt > 0)
