@@ -72,7 +72,7 @@ function SerializeReq($a, $prefix, &$ret) {
 
 function Login2()
 {
-	global $pre, $content, $scripturl;
+	global $pre, $content, $scripturl, $allow_restricted;
 	
 	if (!isset($_POST['login_user']))
 		die("Hacking attempt");
@@ -83,7 +83,7 @@ function Login2()
 	if($ban !== false && $ban > time())
 		die("banned.");
 	
-	$memberInfo = DBQueryOne("SELECT ID FROM {$pre}users WHERE userName='".
+	$memberInfo = DBQueryOne("SELECT ID, isRestricted FROM {$pre}users WHERE userName='".
 		EscapeDB(Param('login_user')).
 		"' AND pwmd5='".md5($_POST['login_pass'])."'",__FILE__,__LINE__);
 		
@@ -92,13 +92,16 @@ function Login2()
 		ini_set('max_execution_time', 60);
 
 //if they are wrong( no results => $memberId === false ), review the login box
-	if ($memberInfo === false) 
+	if ($memberInfo === false || (!$allow_restricted && $memberInfo[1])) 
 	{
 		
-		DBQuery("INSERT INTO {$pre}ip_bans (ip, exceeds) VALUES ('".$_SERVER['REMOTE_ADDR']."', ".(time()+10).")
+		DBQuery("INSERT INTO {$pre}ip_bans (ip, exceeds) VALUES ('".$_SERVER['REMOTE_ADDR']."', ".(time()+2).")
 						ON DUPLICATE KEY UPDATE exceeds=VALUES(exceeds)", __FILE__, __LINE__);
-		sleep(10);
-		$content['message'] = "Benutzername oder Passwort falsch!";
+		sleep(2);
+		if($memberInfo === false)
+			$content['message'] = "Benutzername oder Passwort falsch!";
+		else
+			$content['message'] = "Benutzeraccount Eingeschr&auml;nkt und eingeschr&auml;nkte Accounts nicht erlaubt!";
 		$content['user'] = EscapeO(Param('login_user'));
 		$content['pw'] = EscapeO(Param('login_pass'));
 		$url = $scripturl.'/index.php?';
@@ -123,7 +126,7 @@ function Login2()
 	} else {
 #Init the Session
 		//UserId
-		$_SESSION['ID_MEMBER'] = $memberInfo;
+		$_SESSION['ID_MEMBER'] = $memberInfo[0];
 			
 		//Useragent-check
 		$_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
