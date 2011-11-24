@@ -58,7 +58,7 @@ function ParseScansEx($store_in_temp = false, $check_reqid = true) {
 			return;
 		}
 		$str = '';
-		if(!empty($scan) && !QueryIWDBUtil('newscan', array($ID_MEMBER, $uid, $_SERVER['HTTP_USER_AGENT'], $warmode, $user['isRestricted'], $scan), $str)) {
+		if(!empty($scan) && !QueryIWDBUtil('newscan', array($ID_MEMBER, $uid, $_SERVER['HTTP_USER_AGENT'], $warmode?'1':'0', $user['isRestricted'], $scan), $str)) {
 			$content['scans'] = EscapeO($scan);
 			$content['msg'] = "Verbindung zum Parser fehlgeschlagen!";
 		} else {
