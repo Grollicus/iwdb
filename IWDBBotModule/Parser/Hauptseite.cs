@@ -9,7 +9,6 @@ namespace IWDB.Parser {
 	class HauptseiteKolonieinformationParser : ReportParser { //Beachte: Dieser Parser muss der ERSTE Hauptseitenparser sein!
 		Dictionary<uint, OrderedList<FlottenCacheFlotte>> flottenCache;
 		List<uint> ownerCache;
-		Dictionary<String, bool> alreadyMatched;
 		public HauptseiteKolonieinformationParser(NewscanHandler newscanHandler)
 			: base(newscanHandler, false) {
             AddPatern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch + @"[\s\S]+?
@@ -19,16 +18,14 @@ namespace IWDB.Parser {
 			AddPatern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch);
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
 			ownerCache = RequestCache<List<uint>>("OwnerCache");
-			alreadyMatched = new Dictionary<string, bool>();
 		}
 		public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			ownerCache.Clear();
 			foreach(Match m in matches) {
 				PlaniFetcher f = new PlaniFetcher(handler.BesData, con, DBPrefix);
 				String[] parts = m.Groups[1].Value.Split(':');
-				if(parts.Length < 3 ||alreadyMatched.ContainsKey(m.Groups[1].Value))
+				if(parts.Length < 3)
 					return;
-				alreadyMatched.Add(m.Groups[1].Value, true);
 				f.Gala = uint.Parse(parts[0]);
 				f.Sys = uint.Parse(parts[1]);
 				f.Pla = uint.Parse(parts[2]);

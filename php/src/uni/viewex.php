@@ -145,6 +145,13 @@
 			'genFilter' => 'ScansGebGenFilter',
 			'mods_req' => array('coords',),
 		),
+		'geo_gesprengt' => array(
+			'title' => 'Gesprengt',
+			'desc' => 'Nur gesprengte Planis anzeigen',
+			'prepare' => 'GeoGesprengtPrepare',
+			'genFilter' => 'GeoGesprengtGenFilter',
+			'mods_req' => array('coords', 'geo_ttl'),
+		),
 	);
 	
 	function ViewFilteredUniEx() {
@@ -445,6 +452,9 @@
 			)
 		);
 	}
+	function GeoGesprengtPrepare($request) {
+		return isset($request['geo_gesprengt']);
+	}
 	
 	function IntValueFilter($col, $min, $max, $req) {
 		if(!empty($req[$min])) {
@@ -596,6 +606,9 @@
 			return "EXISTS (SELECT * FROM ({$pre}lastest_scans AS geb_filter_ls LEFT JOIN {$pre}scans_gebs AS geb_filter_gebs ON geb_filter_ls.scanid=geb_filter_gebs.scanid AND geb_filter_gebs.gebid IN ({$gebIDs})) WHERE geb_filter_ls.planid = uni.ID AND geb_filter_ls.typ='geb' AND (geb_filter_gebs.anzahl <= {$cnt} OR geb_filter_gebs.anzahl IS NULL))";
 		}
 	}
+	function GeoGesprengtGenFilter($req) {
+		return isset($req['geo_gesprengt']) ? "(geoscans.reset<=".(time()-86400).")" : "";
+	}
 	
 	//$active_mods = array (keys of $modules)
 	//$where_condition = string to filter results (SQL) - without WHERE
@@ -666,7 +679,7 @@
 		// $title = array('Title, Column will be hidden if empty', 'Description, shown on mouseover', priority - the more, the more right, 'sort - none if empty'),
 		$modules = array(
 			'coords' => array(
-				'cols' => array('uni.gala', 'uni.sys', 'uni.pla', 'uni.inserttime', 'uni.aktuell', 'uni.planityp'),
+				'cols' => array('uni.gala', 'uni.sys', 'uni.pla', 'uni.inserttime', 'uni.planityp'),
 				'tables' => array(array('uni', 0)),
 				'cb' => 'ModCoordsCb',
 				'titles' => array('coords' => array('Koords', 'Koordinaten', 0, 'coords')),
@@ -914,7 +927,7 @@
 	
 	function ModCoordsCb($row, &$data) {
 		$data['coords'] = $row['gala'].':'.$row['sys'].':'.$row['pla'];
-		$data['act'] = ($row['planityp'] == 'Stargate') ? 'systemmap_stargate' : ($row['aktuell'] != 0 ? 'act_5' : ActualityColor($row['inserttime']));
+		$data['act'] = ($row['planityp'] == 'Stargate') ? 'systemmap_stargate' : ActualityColor($row['inserttime']);
 	}
 	function ModGeoChCb($row, &$data) {
 		if(is_null($row['chemie'])) {
