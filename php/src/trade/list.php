@@ -146,9 +146,9 @@ FROM (({$pre}trade_reqs AS trade_reqs INNER JOIN {$pre}igm_data AS igm_data ON t
 				'priority' => $prioritys[$row[3]],
 				'nameLong' => $row[4] == 'schiff' ? EscapeOU($row[9]) : $ress[$row[4]],
 				'coords' => EscapeOU($row[5]),
-				'soll' => $row[6],
-				'ist' => $row[7],
-				'diff' => $row[6]-$row[7],
+				'soll' => number_format($row[6], 0, ',', '.'),
+				'ist' => number_format($row[7], 0, ',', '.'),
+				'diff' => number_format($row[6]-$row[7], 0, ',', '.'),
 				'comment' => EscapeOU($row[8]),
 				'ignored' => $row[10] ? 'ignoriert' : '',
 			);

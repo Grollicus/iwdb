@@ -33,7 +33,7 @@
 		DBQuery("UPDATE {$pre}users SET sittertime=sittertime+".(($now-$last)*$login_factor)." WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
 		
 		if($spiel == 'iw')  {
-			$loginurl = 'http://www.icewars.de/index.php?action=login&submit=1';
+			$loginurl = 'http:///176.9.83.213/index.php?action=login&submit=1';
 			if($sitter)
 				$loginurl .= '&sitter=1';
 			$loginurl .= '&name='.EscapeOU($victim[0]);
@@ -177,6 +177,7 @@
 				'all' => array('A', 'Dieser Account ist ein Allrounder-Account'),
 			);
 			$content['accountInfo'] = array(
+				'rawType' => $infos[0],
 				'type' => $accTypes[$infos[0]][0],
 				'typeDesc' => $accTypes[$infos[0]][1],
 				'ikea' => $infos[1] != 0,
@@ -509,9 +510,9 @@ FROM (({$pre}trade_reqs AS trade_reqs INNER JOIN {$pre}igm_data AS igm_data ON t
 				'priority' => $prioritys[$req[2]],
 				'nameLong' => $req[3] == 'schiff' ? $req[9] : $ress[$req[3]],
 				'ziel' => EscapeOU($req[4]),
-				'soll' => $req[5],
-				'ist' => $req[6],
-				'fehl' => $req[5]-$req[6],
+				'soll' => number_format($req[5], 0, ',', '.'),
+				'ist' => number_format($req[6], 0, ',', '.'),
+				'fehl' => number_format($req[5]-$req[6], 0, ',', '.'),
 				'user' => EscapeOU($req[8]),
 				'comment' => EscapeOU($req[7]),
 			);

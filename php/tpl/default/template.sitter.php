@@ -134,7 +134,7 @@
 				<table width="99%" cellpadding="0" cellspacing="0" border="0">
 					<tr><th>Igmname</th><th title="Zeitpunkt, wann die erste Bauschleife/Forschungsschleife ausläuft">Bau/Forschung bis', HelpLink('sitter_bauschleifen_auslauf'), '</th><th title="Nächste angreifende Flotte / Scan">nächste  feindl. Flotte</th><th>Login</th></tr>';
 		foreach($content['list'] as $item) {
-			echo '<tr class="', $item['actuality'], '"><td>', $item['igmName'], '<br /><i style="font-size:smaller;">',$item['accountTyp'] , '@', $item['squad'], '</i>',
+			echo '<tr class="', $item['actuality'], '"><td>', $item['rawType'] == 'fle' ? '<b>'.$item['igmName'].'</b>' : $item['igmName'], '<br /><i style="font-size:smaller;">',$item['accountTyp'] , '@', $item['squad'], '</i>',
 				$item['hasIkea'] ? ', <i style="font-size:smaller;">Ikea</i>' : '',
 				$item['hasMdP'] ? ', <i style="font-size:smaller;">MdP</i>' : '',
 			 '</td><td>', $item['bauEnde'], '</td><td>', $item['angriffAnkunft'], '</td><td><a href="', $scripturl, '/index.php?action=sitter_login&amp;from=sitter_list&amp;id=', $item['ID'], '">[Jetzt einloggen]</a></td></tr>';

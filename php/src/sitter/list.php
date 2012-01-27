@@ -45,6 +45,7 @@ GROUP BY igm_data.id", __FILE__, __LINE__);
 		$content['list'][] = array(
 			'ID' => $row[0],
 			'igmName' => EscapeOU($row[1]),
+			'rawType' => $row[2],
 			'accountTyp' => $accountTypen[$row[2]],
 			'squad' => EscapeOU($row[3]),
 			'hasIkea' => $row[4] == '1',
