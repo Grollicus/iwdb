@@ -40,7 +40,7 @@ namespace IWDB.Parser {
             }
             List<ReportParser> parserList = new List<ReportParser>();
             dict.Add(tsdSeperator, parserList);
-            parserList.Add(new HauptseiteKolonieinformationParser(this)); //Dieser Parser muss der erste der Hauptseitenparser sein!
+            parserList.Add(new HauptseiteKolonieinformationParser(this, warFilter)); //Dieser Parser muss der erste der Hauptseitenparser sein!
             parserList.Add(new HauptseiteAusbaustatusParser(this));
             //parserList.Add(new UniversumsAnsichtParser(this));
             parserList.Add(new UniXMLUniversumsParser(this, this.parser));

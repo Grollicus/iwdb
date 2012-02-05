@@ -401,6 +401,8 @@ namespace IWDB.Parser {
 			}
 		}
 
+		public bool InWar { get { uint now = IWDBUtils.toUnixTimestamp(DateTime.Now); return wars.Any(w => w.begin <= now && now <= w.end); } }
+
 		public void HandleRequest(ParserRequestMessage msg) {
 			try {
 				Log.WriteLine(LogLevel.E_NOTICE, "WarRefresh");

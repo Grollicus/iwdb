@@ -7,7 +7,7 @@ function SitterList() {
 	if($user['isRestricted'])
 		die("hacking attempt");
 	
-	$q = DBQuery("SELECT igm_data.id, igm_data.igmname, igm_data.accounttyp, igm_data.squad, igm_data.ikea, igm_data.mdp, igm_data.iwsa, 0, MIN(flotten.ankunft) AS flottenAnkunft, igm_data.lastLogin
+	$q = DBQuery("SELECT igm_data.id, igm_data.igmname, igm_data.accounttyp, igm_data.squad, igm_data.ikea, igm_data.mdp, igm_data.iwsa, 0, MIN(flotten.ankunft) AS flottenAnkunft, igm_data.lastParsed
 FROM (({$pre}igm_data AS igm_data)
 LEFT JOIN {$pre}universum AS universum ON igm_data.igmname = universum.ownername)
 LEFT JOIN {$pre}flotten AS flotten ON flotten.action IN ('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/Ress)') AND universum.ID=flotten.zielid
@@ -28,8 +28,8 @@ GROUP BY igm_data.id", __FILE__, __LINE__);
 		$sortArr[] = $row;
 	}
 	function sortCB($a, $b) { //TODO: Fehler mit dem NULL-Handling?
-		if(!is_null($a[8]) && is_null($b[8]) || $a[8] < $b[8]) return -1;
-		if(is_null($a[8]) && !is_null($b[8]) || $a[8] > $b[8]) return  1;
+		if((!is_null($a[8]) && is_null($b[8])) || ($a[8] < $b[8])) return -1;
+		if((is_null($a[8]) && !is_null($b[8])) || ($a[8] > $b[8])) return  1;
 		if($a[7] < $b[7]) return -1;
 		if($a[7] > $b[7]) return  1;
 		return 0;
