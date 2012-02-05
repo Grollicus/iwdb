@@ -33,7 +33,7 @@
 		DBQuery("UPDATE {$pre}users SET sittertime=sittertime+".(($now-$last)*$login_factor)." WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
 		
 		if($spiel == 'iw')  {
-			$loginurl = 'http:///176.9.83.213/index.php?action=login&submit=1';
+			$loginurl = 'http://176.9.83.213/index.php?action=login&submit=1';
 			if($sitter)
 				$loginurl .= '&sitter=1';
 			$loginurl .= '&name='.EscapeOU($victim[0]);
