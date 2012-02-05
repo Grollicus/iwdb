@@ -9,7 +9,8 @@ namespace IWDB.Parser {
 	class HauptseiteKolonieinformationParser : ReportParser { //Beachte: Dieser Parser muss der ERSTE Hauptseitenparser sein!
 		Dictionary<uint, OrderedList<FlottenCacheFlotte>> flottenCache;
 		List<uint> ownerCache;
-		public HauptseiteKolonieinformationParser(NewscanHandler newscanHandler)
+		WarFilter warFilter;
+		public HauptseiteKolonieinformationParser(NewscanHandler newscanHandler, WarFilter warFilter)
 			: base(newscanHandler, false) {
             AddPatern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch + @"[\s\S]+?
 			#Lebensbedingungen,Flottenscannerreichweite, Leerzeile danach, Serverzeit, Kolonien aktuell/maximal, Schiffsübersicht,...
@@ -18,6 +19,7 @@ namespace IWDB.Parser {
 			AddPatern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch);
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
 			ownerCache = RequestCache<List<uint>>("OwnerCache");
+			this.warFilter = warFilter;
 		}
 		public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			ownerCache.Clear();
@@ -77,9 +79,42 @@ namespace IWDB.Parser {
 						qry.Parameters.Add("?end", MySqlDbType.UInt32).Value = IWDBUtils.parseIWTime(timeMatch.Groups[1].Value);
 					qry.Prepare();
 					qry.ExecuteNonQuery();
-
 				}
-				resp.Respond("Kolonieinformationen (" + planiowner + ") eingelesen!\n");
+
+				//lastParse
+				String bonus = "";
+				uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
+				MySqlCommand lastParsedQry = new MySqlCommand("SELECT lastParsed FROM " + DBPrefix + "igm_data WHERE ID=?id", con);
+				lastParsedQry.Parameters.Add("?id", MySqlDbType.UInt32).Value = uid;
+				Object ret = lastParsedQry.ExecuteScalar();
+				if(ret == null) {
+					resp.RespondError("Hurr? Ganz seltsamer Fehler dass der geparste Account mir nicht bekannt ist ?! :o");
+					return;
+				}
+				uint lastUpdTime = (uint)ret;
+				MySqlCommand lastParseUpd = new MySqlCommand(@"UPDATE " + DBPrefix + "igm_data SET lastParsed=?lp WHERE ID=?id", con);
+				lastParseUpd.Parameters.Add("?lp", MySqlDbType.UInt32).Value = now;
+				lastParseUpd.Parameters.Add("?id", MySqlDbType.UInt32).Value = uid;
+				lastParseUpd.ExecuteNonQuery();
+				MySqlCommand sitterScoreUpd = new MySqlCommand(@"UPDATE " + DBPrefix + "users SET sittertime=sittertime+?add WHERE ID=?uid", con);
+				int sitterfact = 1;
+				if(warFilter.InWar) {
+					sitterfact = 5;
+					uint schedule_slot = now - (now % 1800);
+					MySqlCommand sitterSlotQry = new MySqlCommand("SELECT count(*) FROM "+DBPrefix+"war_schedule WHERE time=?time AND userid=?uid", con);
+					sitterSlotQry.Parameters.Add("?time", MySqlDbType.UInt32).Value = schedule_slot;
+					sitterSlotQry.Parameters.Add("?uid", MySqlDbType.UInt32).Value=posterID;
+					ret = sitterSlotQry.ExecuteScalar();
+					if(ret != null && !Convert.IsDBNull(ret) && Convert.ToUInt32(ret) > 0) {
+						sitterfact = 20;
+						bonus = "[+Sitter]";
+					} else {
+						bonus = "[+Krieg]";
+					}
+				}
+				sitterScoreUpd.Parameters.Add("?add", MySqlDbType.UInt32).Value = (now - lastUpdTime) * sitterfact;
+				sitterScoreUpd.Parameters.Add("?uid", MySqlDbType.UInt32).Value = posterID;
+				resp.Respond("Kolonieinformationen (" + planiowner + ") eingelesen! "+bonus+"\n");
 			}
 		}
 	}
