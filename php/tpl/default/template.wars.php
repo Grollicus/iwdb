@@ -141,7 +141,11 @@
 					<td><input type="text" name="kb_def" value="',$content['filter']['kb_def'],'" /></td>
 					<td><input type="text" name="kb_def_ally" value="',$content['filter']['kb_def_ally'],'" size="5" /></td>
 					<td><input type="text" name="kb_dst" value="',$content['filter']['kb_dst'],'" size="9" /></td>
-					<td colspan="6"><input type="submit" value="Filtern!" /></td>
+					<td><input type="text" name="kb_dst" value="',$content['filter']['att_value'],'" size="9" /></td>
+					<td>&nbsp;</td>
+					<td><input type="text" name="kb_dst" value="',$content['filter']['def_value'],'" size="9" /></td>
+					<td>&nbsp;</td>
+					<td colspan="2"><input type="submit" value="Filtern!" /></td>
 				</tr>';
 			foreach($war['kbs'] as $kb) {
 				echo '<tr',$kb['isFake'] ? ' class="fake"' : '','><td><a href="', $kb['url'], '" onclick="return loadKB(\'', $kb['id'],'\', \'', $kb['hash'], '\');"> ', $kb['date'], '</a></td><td ', $kb['attWin']?'style="font-weight:bold;"':'' ,'>',

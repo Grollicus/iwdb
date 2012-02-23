@@ -45,6 +45,18 @@ function WarKbs() {
 		$filter_link .= '&amp;kb_dst='.EscapeO(Param('kb_dst'));
 		$filter_kbs .= "AND dst LIKE '".EscapeDB(Param('kb_dst'))."%' ";
 	}
+	$content['filter']['att_value'] = '';
+	if(!empty($_REQUEST['att_value'])) {
+		$content['filter']['att_value'] = EscapeO(Param('att_value'));
+		$filter_link .= '&amp;att_value='.EscapeO(Param('att_value'));
+		$filter_kbs .= "AND attvalue >= ".intval(str_replace('.', '', Param('att_value')))." ";
+	}
+	$content['filter']['def_value'] = '';
+	if(!empty($_REQUEST['def_value'])) {
+		$content['filter']['def_value'] = EscapeO(Param('def_value'));
+		$filter_link .= '&amp;def_value='.EscapeO(Param('def_value'));
+		$filter_kbs .= "AND defvalue >= ".intval(str_replace('.', '', Param('def_value')))." ";
+	}
 	
 	$now = time();
 	$content['wars'] = array();
