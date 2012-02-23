@@ -18,6 +18,9 @@
 		$victim = DBQueryOne("SELECT igmname, sitterpw, realpw FROM {$pre}igm_data AS igm_data WHERE igm_data.id=".$id, __FILE__, __LINE__);
 		if($victim === false)
 			die("noe.");
+		$now = time();
+		DBQuery("UPDATE {$pre}igm_data SET lastLogin={$now} WHERE ID={$id}", __FILE__, __LINE__);
+
 		
 		if($spiel == 'iw')  {
 			$loginurl = 'http://176.9.83.213/index.php?action=login&submit=1';
@@ -71,7 +74,7 @@
 				$id = DBQueryOne("SELECT ID FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
 			} elseif($_GET['id'] == 'idle') {
 				$now = time();
-				$id = DBQueryOne("SELECT building.uid AS uid FROM {$pre}building AS building INNER JOIN {$pre}igm_data AS igm_data ON building.uid=igm_data.ID WHERE igm_data.ikea=0 OR building.plani=0 GROUP BY building.plani, uid ORDER BY IF(MAX(building.end)<{$now}, 0, MAX(building.end)), igm_data.lastLogin LIMIT 0,1", __FILE__, __LINE__);
+				$id = DBQueryOne("SELECT building.uid AS uid FROM {$pre}building AS building INNER JOIN {$pre}igm_data AS igm_data ON building.uid=igm_data.ID WHERE igm_data.ikea=0 OR building.plani=0 GROUP BY building.plani, uid ORDER BY IF(MAX(building.end)<{$now}, 0, MAX(building.end)), igm_data.lastParsed LIMIT 0,1", __FILE__, __LINE__);
 			} else {
 				$id = intval($_GET['id']);
 			}
@@ -84,7 +87,7 @@
 		$lastloginid = DBQueryOne("SELECT userid FROM {$pre}sitterlog WHERE victimid={$id} AND userid<>{$ID_MEMBER} AND type='login' AND time >= ".(time()-300), __FILE__, __LINE__);
 		
 		LogAction($id, 'login', '');
-		$victim = DBQueryOne("SELECT igmname, lastLogin FROM {$pre}igm_data WHERE ID=".$id, __FILE__, __LINE__);
+		$victim = DBQueryOne("SELECT igmname, lastParsed FROM {$pre}igm_data WHERE ID=".$id, __FILE__, __LINE__);
 		if($victim === false)
 			return;
 		$params .= '&amp;lastLogin='.$victim[1];
@@ -109,7 +112,7 @@
 		if($user['isRestricted'])
 			die("Hacking Attempt");
 		
-		$dta = DBQueryOne("SELECT igmname, lastLogin FROM {$pre}igm_data WHERE ID=".$user['igmuser'], __FILE__, __LINE__);
+		$dta = DBQueryOne("SELECT igmname, lastParsed FROM {$pre}igm_data WHERE ID=".$user['igmuser'], __FILE__, __LINE__);
 		$params = '&amp;id=0&amp;uid='.$user['igmuser'].'&amp;from='.EscapeO(Param('from')).'&amp;lastLogin='.$dta[1];
 		
 		$content['accName'] = EscapeOU($dta[0]);
