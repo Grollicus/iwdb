@@ -100,7 +100,9 @@
 		$res .= '<tr><td>Mysqlserver-Version</td><td>'.mysql_get_server_info($db_connection).'</td></tr>';
 		$res .= '<tr><td>register_globals</td><td>'.(ini_get('register_globals') ? "<b>an</b>" : "aus").'</td></tr>';
 		$res .= '<tr><td>magic_quotes_gpc</td><td>'.get_magic_quotes_gpc().'</td></tr>';
-		
+		$res .= '<tr><td>hash_algos()</td><td>'.print_r(hash_algos(),true).'</td></tr>';
+		foreach(array('session.save_path', 'session.auto_start', 'session.gc_probability', 'session.gc_divisor', 'session.gc_maxlifetime', 'session.use_cookies', 'session.cookie_path', 'session.cookie_domain', 'session.cookie_secure', 'session.cookie_httponly', 'session.hash_function') as $s)
+			$res .= '<tr><td>'.$s.'</td><td>'.ini_get($s).'</td></tr>';
 		$res .= '</table>';
 		$content['result'] = $res;
 	}
