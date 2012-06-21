@@ -123,7 +123,7 @@ namespace IWDB.Parser {
             t.Start();
 			this.con = con;
             this.dbPrefix = dbPrefix;
-			IRCeX.Log.WriteLine("MySqlOpen: SingleNewscanRequestHandler constructor");
+			//IRCeX.Log.WriteLine("MySqlOpen: SingleNewscanRequestHandler constructor");
 			this.besData = new BesonderheitenData(con, dbPrefix);
         }
 
@@ -145,7 +145,7 @@ namespace IWDB.Parser {
                 while (true) {
 					try {
 						Monitor.Wait(t);
-						IRCeX.Log.WriteLine("MySqlOpen: SingleNewscanRequestHandler");
+						//IRCeX.Log.WriteLine("MySqlOpen: SingleNewscanRequestHandler");
 						Monitor.Enter(con);
 						try {
 							con.Open();
@@ -210,7 +210,7 @@ namespace IWDB.Parser {
 							}
 						}
 					} finally {
-						IRCeX.Log.WriteLine("MySqlClose: SingleNewscanRequestHandler");
+						//IRCeX.Log.WriteLine("MySqlClose: SingleNewscanRequestHandler");
 						con.Close();
 						Monitor.Exit(con);
 					}

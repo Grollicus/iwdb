@@ -406,7 +406,7 @@ namespace IWDB.Parser {
 		public void HandleRequest(ParserRequestMessage msg) {
 			try {
 				Log.WriteLine(LogLevel.E_NOTICE, "WarRefresh");
-				IRCeX.Log.WriteLine("MySqlOpen: WarRefresh");
+				//IRCeX.Log.WriteLine("MySqlOpen: WarRefresh");
 				con.Open();
 				Reload();
 				lock(wars) {
@@ -531,7 +531,7 @@ namespace IWDB.Parser {
 				try {
 					msg.Handled();
 				} finally {
-					IRCeX.Log.WriteLine("MySqlClose: WarRefresh");
+					//IRCeX.Log.WriteLine("MySqlClose: WarRefresh");
 					con.Close();
 				}
 			}
@@ -543,7 +543,7 @@ namespace IWDB.Parser {
 	}
 
 	static class WarStats {
-		static void EvaluateKb(Kb kb) {
+		static void EvaluateKb(Kb kb, uint warid) {
 			//Es gibt eine Tabelle db_war_stats wo die Stats rein sollen. HF -_-
 		}
 	}

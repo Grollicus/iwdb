@@ -539,7 +539,9 @@ abstract class TechtreeItem {
 			}
 		}
 		public void Set(int num, String value) {
-			float val = float.Parse(value);
+			Set(num, float.Parse(value));
+		}
+		public void Set(int num, float val) {
 			switch(num) {
 				case 0:
 					Eisen = val;

@@ -56,7 +56,7 @@ namespace IWDB.Parser {
             DBPrefix = config["dbprefix"].InnerText;
 
             mysql = parserMod.GetMysqlConnection(config["mysql"].InnerText);
-			IRCeX.Log.WriteLine("MySqlOpen: IWDBParser constructor");
+			//IRCeX.Log.WriteLine("MySqlOpen: IWDBParser constructor");
 			Monitor.Enter(mysql);
 			try {
 				mysql.Open();
@@ -71,7 +71,7 @@ namespace IWDB.Parser {
 				kabaFilter = new KabaFilter(DBPrefix, mysql);
 				AddHandler(kabaFilter);
 			} finally {
-				IRCeX.Log.WriteLine("MySqlClose: IWDBParser constructor");
+				//IRCeX.Log.WriteLine("MySqlClose: IWDBParser constructor");
 				mysql.Close();
 				Monitor.Exit(mysql);
 			}
@@ -161,7 +161,7 @@ namespace IWDB.Parser {
         public void CheckLogin(string nick, string username, string host) {
             if (parserMod.IsLoggedIn(nick))
                 return;
-			Log.WriteLine("MySqlOpen: CheckLogin");
+			//Log.WriteLine("MySqlOpen: CheckLogin");
 			Monitor.Enter(mysql);
             mysql.Open();
 			try {
@@ -173,7 +173,7 @@ namespace IWDB.Parser {
 				IRCModuleUser u = new IRCModuleUser(nick, (IRCModuleUserAccess)(sbyte)ret);
 				parserMod.LoginUser(nick, u);
 			} finally {
-				IRCeX.Log.WriteLine("MySqlClose: CheckLogin");
+				//IRCeX.Log.WriteLine("MySqlClose: CheckLogin");
 				mysql.Close();
 				Monitor.Exit(mysql);
 			}
@@ -204,7 +204,7 @@ namespace IWDB.Parser {
             }
         }
         public void BauleerlaufInfo(out int anz, out List<Pair<int, String>> neu) {
-			IRCeX.Log.WriteLine("MySqlOpen: BauleerlaufInfo");
+			//IRCeX.Log.WriteLine("MySqlOpen: BauleerlaufInfo");
 			Monitor.Enter(mysql);
             mysql.Open();
 			try {
@@ -223,14 +223,14 @@ namespace IWDB.Parser {
 				cmd.Parameters.Add("?time", MySqlDbType.UInt32).Value = IWDBUtils.toUnixTimestamp(now.AddSeconds(-IWDBChanModule.BauleerlaufSpamIntervalInSeconds));
 				anz = Convert.ToInt32(cmd.ExecuteScalar());
 			} finally {
-				IRCeX.Log.WriteLine("MySqlClose: BauleerlaufInfo");
+				//IRCeX.Log.WriteLine("MySqlClose: BauleerlaufInfo");
 				mysql.Close();
 				Monitor.Exit(mysql);
 			}
         }
         public void SitterauftraegeOffen(out int anz, out int jobid, out DateTime next) {
             next = DateTime.MinValue;
-			Log.WriteLine("MySqlOpen: SitterauftraegeOffen");
+			//Log.WriteLine("MySqlOpen: SitterauftraegeOffen");
 			Monitor.Enter(mysql);
 			try {
 				mysql.Open();
@@ -258,13 +258,13 @@ namespace IWDB.Parser {
 					next = IWDBUtils.fromUnixTimestamp(time);
 				}
 			} finally {
-				IRCeX.Log.WriteLine("MySqlClose: SitterauftraegeOffen");
+				//IRCeX.Log.WriteLine("MySqlClose: SitterauftraegeOffen");
 				mysql.Close();
 				Monitor.Exit(mysql);
 			}
         }
         public void AnfliegendeFlotten(out uint flottenAnz, out uint zielplaniAnz) {
-			IRCeX.Log.WriteLine("MySqlOpen: AnfliegendeFlotten");
+			//IRCeX.Log.WriteLine("MySqlOpen: AnfliegendeFlotten");
 			Monitor.Enter(mysql);
 			try {
 				mysql.Open();
@@ -282,13 +282,13 @@ AND action IN('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/R
 					flottenAnz = zielplaniAnz = 0;
 				}
 			} finally {
-				IRCeX.Log.WriteLine("MySqlClose: AnfliegendeFlotten");
+				//IRCeX.Log.WriteLine("MySqlClose: AnfliegendeFlotten");
 				mysql.Close();
 				Monitor.Exit(mysql);
 			}
         }
         public List<PlaniData> PlanisMitBesitzer(String name) {
-			IRCeX.Log.WriteLine("MySqlOpen: PlanisMitBesitzer");
+			//IRCeX.Log.WriteLine("MySqlOpen: PlanisMitBesitzer");
 			Monitor.Enter(mysql);
 			try {
 				mysql.Open();
@@ -309,13 +309,13 @@ AND action IN('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/R
 				r.Close();
 				return ret;
 			} finally {
-				IRCeX.Log.WriteLine("MySqlClose: PlanisMitBesitzer");
+				//IRCeX.Log.WriteLine("MySqlClose: PlanisMitBesitzer");
 				mysql.Close();
 				Monitor.Exit(mysql);
 			}
         }
         public List<PlaniData> PlanisInSystem(uint gala, uint sys) {
-			IRCeX.Log.WriteLine("MySqlOpen: PlanisImSystem");
+			//IRCeX.Log.WriteLine("MySqlOpen: PlanisImSystem");
 			Monitor.Enter(mysql);
 			try {
 				mysql.Open();
@@ -337,7 +337,7 @@ AND action IN('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/R
 				r.Close();
 				return ret;
 			} finally {
-				IRCeX.Log.WriteLine("MySqlClose: PlanisImSystem");
+				//IRCeX.Log.WriteLine("MySqlClose: PlanisImSystem");
 				mysql.Close();
 				Monitor.Exit(mysql);
 			}

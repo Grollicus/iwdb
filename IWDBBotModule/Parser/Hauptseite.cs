@@ -96,7 +96,6 @@ namespace IWDB.Parser {
 				lastParseUpd.Parameters.Add("?lp", MySqlDbType.UInt32).Value = now;
 				lastParseUpd.Parameters.Add("?id", MySqlDbType.UInt32).Value = uid;
 				lastParseUpd.ExecuteNonQuery();
-				MySqlCommand sitterScoreUpd = new MySqlCommand(@"UPDATE " + DBPrefix + "users SET sittertime=sittertime+?add WHERE ID=?uid", con);
 				int sitterfact = 1;
 				if(warFilter.InWar) {
 					sitterfact = 5;
@@ -112,8 +111,10 @@ namespace IWDB.Parser {
 						bonus = "[+Krieg]";
 					}
 				}
+                MySqlCommand sitterScoreUpd = new MySqlCommand(@"UPDATE " + DBPrefix + "users SET sittertime=sittertime+?add WHERE ID=?uid", con);
 				sitterScoreUpd.Parameters.Add("?add", MySqlDbType.UInt32).Value = (now - lastUpdTime) * sitterfact;
 				sitterScoreUpd.Parameters.Add("?uid", MySqlDbType.UInt32).Value = posterID;
+                sitterScoreUpd.ExecuteNonQuery();
 				resp.Respond("Kolonieinformationen (" + planiowner + ") eingelesen! "+bonus+"\n");
 			}
 		}

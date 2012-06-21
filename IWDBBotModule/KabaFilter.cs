@@ -21,13 +21,13 @@ namespace IWDB {
 
 		public void HandleRequest(ParserRequestMessage msg) {
 			try {
-				Log.WriteLine("MySqlOpen: KabaFilter");
+				//Log.WriteLine("MySqlOpen: KabaFilter");
 				Monitor.Enter(con);
 				con.Open();
 				UpdateFilters();
 				msg.Handled();
 			} finally {
-				IRCeX.Log.WriteLine("MySqlClose: KabaFilter");
+				//IRCeX.Log.WriteLine("MySqlClose: KabaFilter");
 				con.Close();
 				Monitor.Exit(con);
 			}

@@ -89,10 +89,10 @@ namespace IWDB.Parser {
 
 		public void HandleRequest(ParserRequestMessage msg) {
 			TechTreeDepthCalc c = new TechTreeDepthCalc(DBPrefix);
-			IRCeX.Log.WriteLine("MySqlOpen: TechTreeDepthHandler");
+			//IRCeX.Log.WriteLine("MySqlOpen: TechTreeDepthHandler");
 			con.Open();
 			c.Update(con);
-			IRCeX.Log.WriteLine("MySqlClose: TechTreeDepthHandler");
+			//IRCeX.Log.WriteLine("MySqlClose: TechTreeDepthHandler");
 			con.Close();
             msg.Handled();
         }
