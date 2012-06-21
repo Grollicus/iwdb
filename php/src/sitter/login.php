@@ -421,12 +421,12 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 					if(isset($content['msg']))
 						$content['msg'] .= '<br />'.$arr['msg'];
 					else
-						$content['msg'] = '<br />'.$arr['msg'];
+						$content['msg'] = $arr['msg'];
 				if(isset($arr['submsg']))
 					if(isset($content['submsg']))
 						$content['submsg'] .= '<br />'.$arr['submsg'];
 					else
-						$content['submsg'] = '<br />'.$arr['submsg'];
+						$content['submsg'] = $arr['submsg'];
 			}
 		}
 		
