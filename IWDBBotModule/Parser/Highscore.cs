@@ -49,7 +49,10 @@ namespace IWDB.Parser {
                     pPpd.Value = double.Parse(m.Groups[7].Value);
                     pDiff.Value = int.Parse(m.Groups[8].Value);
                     pDabei.Value = IWDBUtils.toUnixTimestamp(DateTime.ParseExact(m.Groups[9].Value, "dd.MM.yyyy", null, System.Globalization.DateTimeStyles.AssumeLocal|System.Globalization.DateTimeStyles.AdjustToUniversal));
-                    ins.ExecuteNonQuery();
+                    if (ins.ExecuteNonQuery() == 0) {
+                        resp.Respond("HS &uuml;bersprungen!");
+                        continue;
+                    }
 
                     pInsName.Value = m.Groups[2].Value;
                     pInsGebp.Value = uint.Parse(m.Groups[4].Value);
