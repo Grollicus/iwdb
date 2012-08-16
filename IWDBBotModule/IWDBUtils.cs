@@ -53,8 +53,8 @@ namespace IWDB {
     }
 	abstract class IWDBRegex {
 		public const String KolonieName = @"(?:(?:[a-zA-Z0-9_\-\.äöüÄÖÜß*+][a-zA-Z0-9_\-\. äöüÄÖÜß*+]*[a-zA-Z0-9_\-\.äöüÄÖÜß*+])|[a-zA-Z0-9_\-\.äöüÄÖÜß*+])";
-		public const String SpielerName = @"[a-zA-Z0-9_\- \.]+";
-		public const String AllyTag = @"(?:\[[a-zA-Z0-9\-_\.\{\}\(\)= ]+\])";
+		public const String SpielerName = @"[a-zA-Z0-9_\- \.*=]+";
+        public const String AllyTag = @"(?:\[[a-zA-Z0-9\-_\.\{\}\(\)= *äöüÄÖÜ]+\])";
 		public const String Koordinaten = @"\(\d+:\d+:\d+\)";
 		public const String KoordinatenMatch = @"\((\d+:\d+:\d+)\)";
 		public const String KoordinatenEinzelMatch = @"\((\d+):(\d+):(\d+)\)";
