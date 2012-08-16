@@ -38,6 +38,8 @@
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.label4 = new System.Windows.Forms.Label();
             this.cbHandler = new System.Windows.Forms.ComboBox();
+            this.BtPerfTest = new System.Windows.Forms.Button();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -177,7 +179,10 @@
             // 
             // backgroundWorker1
             // 
+            this.backgroundWorker1.WorkerReportsProgress = true;
+            this.backgroundWorker1.WorkerSupportsCancellation = true;
             this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
             this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
             // 
             // label4
@@ -206,11 +211,30 @@
             this.cbHandler.Size = new System.Drawing.Size(98, 21);
             this.cbHandler.TabIndex = 11;
             // 
+            // BtPerfTest
+            // 
+            this.BtPerfTest.Location = new System.Drawing.Point(116, 227);
+            this.BtPerfTest.Name = "BtPerfTest";
+            this.BtPerfTest.Size = new System.Drawing.Size(75, 23);
+            this.BtPerfTest.TabIndex = 13;
+            this.BtPerfTest.Text = "PerfTest";
+            this.BtPerfTest.UseVisualStyleBackColor = true;
+            this.BtPerfTest.Click += new System.EventHandler(this.BtPerfTest_Click);
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(10, 227);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(100, 23);
+            this.progressBar1.TabIndex = 14;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 262);
+            this.Controls.Add(this.progressBar1);
+            this.Controls.Add(this.BtPerfTest);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.cbHandler);
             this.Controls.Add(this.cbRestricted);
@@ -254,6 +278,8 @@
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ComboBox cbHandler;
+        private System.Windows.Forms.Button BtPerfTest;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 

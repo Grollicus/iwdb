@@ -14,7 +14,7 @@ namespace IWDB.Parser {
 		TechTreeKostenCache techKostenCache;
 		public KBParser(NewscanHandler newscanHandler, WarFilter warFilter, TechTreeKostenCache tkc)
 			: base(newscanHandler) {
-				AddPatern(@"http://www\.icewars\.de/portal/kb/de/kb\.php\?id=(\d+)&md_hash=([a-z0-9A-Z]{32})");
+				AddPattern(@"http://www\.icewars\.de/portal/kb/de/kb\.php\?id=(\d+)&md_hash=([a-z0-9A-Z]{32})");
 				this.warFilter = warFilter;
 				this.techKostenCache = tkc;
 		}

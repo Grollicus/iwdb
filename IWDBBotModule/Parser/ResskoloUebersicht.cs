@@ -10,7 +10,7 @@ namespace IWDB.Parser {
 			: base(handler, false) {
             String dot = System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator;
             String comma = System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-            AddPatern(@"Ressourcenkoloübersicht\s+
+            AddPattern(@"Ressourcenkoloübersicht\s+
 Kolonie\s+Eisen\s+Stahl\s+VV4A\s+chem.\sElemente\s+Eis\s+Wasser\s+Energie\s+
 [\s\S]+?Gesamt[\s\S]+?(?:\s+[\d" + dot + comma + @" ]+\s+\([-\d" + dot + comma + @"]+\)+)\s+Lager\sund\sBunker\sanzeigen", PatternFlags.All);
         }
@@ -115,7 +115,7 @@ Kolonie\s+Eisen\s+Stahl\s+VV4A\s+chem.\sElemente\s+Eis\s+Wasser\s+Energie\s+
             String dot = System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator;
             String comma = System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator;
             Requires(typeof(RessourcenKoloÜbersichtParser));
-            AddPatern(@"Ressourcenkoloübersicht\s+Teil\s2\s+
+            AddPattern(@"Ressourcenkoloübersicht\s+Teil\s2\s+
 Kolonie\s+FP\s+Credits\s+Steuersatz\s+Bevölkerung\s+Zufr\s+
 ([\s\S]+?)
 Gesamt\s+[\d" + dot+@"]+\s+\(\S+?\*\((\d+,\d+)\+(\d+,\d+)\)\)\s+([\d"+dot+comma+@"]+)\s+\([^)]+\)\sAllisteuer:\s+([\d"+dot+comma+@"]+)", PatternFlags.All);

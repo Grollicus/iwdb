@@ -185,9 +185,17 @@ namespace IWDB.Parser {
 
 							//dieser workaround ist notwendig, da der Universumsansicht-Parser 2 aufeinander folgende Uniansichten nicht auseinander halten kann
 							String[] parts = str.Split(new string[] { "\nHILFE\nPostit erstellen", "HILFE\n\nWerde IceWars Supporter" }, StringSplitOptions.RemoveEmptyEntries);
+                            MySqlCommand perfLog = new MySqlCommand("INSERT INTO " + DBPrefix + "speedlog (action, sub, runtime) VALUES ('parser', ?p, ?rt)", con);
+                            MySqlParameter pParser = perfLog.Parameters.Add("?p", MySqlDbType.String);
+                            MySqlParameter pRT = perfLog.Parameters.Add("?rt", MySqlDbType.UInt32);
 							foreach(String part in parts) {
 								foreach(ReportParser parser in parserList) {
+                                    DateTime start = DateTime.Now;
 									parser.TryMatch(part, posterID, victimID, browserFlags, warmode, restrictedUser, con, this, resp);
+                                    TimeSpan parseTime = DateTime.Now - start;
+                                    pParser.Value = parser.ToString();
+                                    pRT.Value = parseTime.Ticks;
+                                    perfLog.ExecuteNonQuery();
 								}
 							}
 							toHandle.Answer(resp.ToString());
@@ -245,24 +253,27 @@ namespace IWDB.Parser {
     abstract class ReportParser:IWDBRegex {
         
 		protected readonly String DBPrefix;
-        private readonly List<Pair<Regex, PatternFlags>> regexes;
+        private readonly List<Tuple<Regex, String, PatternFlags>> regexes;
         private readonly NewscanHandler parent;
 		private bool allowRestricted = true;
 
 		public abstract void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp);
         public ReportParser(NewscanHandler newscanHandler) {
-            regexes = new List<Pair<Regex, PatternFlags>>();
+            regexes = new List<Tuple<Regex, String, PatternFlags>>();
             this.DBPrefix = newscanHandler.DBPrefix;
             this.parent = newscanHandler;
         }
 		public ReportParser(NewscanHandler newscanHandler, bool allowRestricted):this(newscanHandler) {
 			this.allowRestricted = allowRestricted;
 		}
-        protected void AddPatern(String pattern) {
-            AddPatern(pattern, PatternFlags.All);
+        protected void AddPattern(String pattern) {
+            AddPattern(pattern, PatternFlags.All);
         }
-        protected void AddPatern(String pattern, PatternFlags flags) {
-            regexes.Add(new Pair<Regex, PatternFlags>(new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace), flags));
+        protected void AddPattern(String pattern, PatternFlags flags) {
+            AddPattern(pattern, null, flags);
+        }
+        protected void AddPattern(String pattern, String prefilter, PatternFlags flags) {
+            regexes.Add(new Tuple<Regex, String, PatternFlags>(new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace), prefilter, flags));
         }
         protected void Requires(Type t) {
             if (!parent.HasParser(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator, t))
@@ -271,8 +282,10 @@ namespace IWDB.Parser {
         public void TryMatch(String haystack, uint posterID, uint victimID, PatternFlags browserFlags, bool warmode, bool restrictedUser, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			if(!allowRestricted && restrictedUser)
 				return;
-            foreach (Pair<Regex, PatternFlags> p in regexes) {
-                if ((browserFlags & p.Item2) == 0)
+            foreach (Tuple<Regex, String, PatternFlags> p in regexes) {
+                if ((browserFlags & p.Item3) == 0)
+                    continue;
+                if (p.Item2 != null && !haystack.Contains(p.Item2))
                     continue;
                 MatchCollection matches = p.Item1.Matches(haystack);
                 if (matches.Count > 0) {
@@ -299,7 +312,7 @@ namespace IWDB.Parser {
 	}
 
 	class TestParser : ReportParser {
-        public TestParser(NewscanHandler newscanHandler) : base(newscanHandler, false) { AddPatern("thisisatest"); }
+        public TestParser(NewscanHandler newscanHandler) : base(newscanHandler, false) { AddPattern("thisisatest"); }
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			resp.Respond("retest");
 			resp.Respond("retest");
@@ -311,9 +324,9 @@ namespace IWDB.Parser {
 	}
     class OperaDummyParser : ReportParser {
         public OperaDummyParser(NewscanHandler h):base(h) {
-            AddPatern(@"Gebäudeinfo:[\s\S]+?Farbenlegende:", PatternFlags.Opera);
-            AddPatern(@"Forschungsinfo:\s+(.+)[\s\S]+?Farbenlegende:", PatternFlags.Opera);
-            AddPatern(@"Schiffinfo:\s+", PatternFlags.Opera);
+            AddPattern(@"Gebäudeinfo:[\s\S]+?Farbenlegende:", PatternFlags.Opera);
+            AddPattern(@"Forschungsinfo:\s+(.+)[\s\S]+?Farbenlegende:", PatternFlags.Opera);
+            AddPattern(@"Schiffinfo:\s+", PatternFlags.Opera);
         }
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
             resp.RespondError("Bitte für Gebäudeinfo, Schiffsinfo, Forschungsinfo den Firefox benutzen!");

@@ -94,8 +94,8 @@ namespace IWDB.Parser {
 	}
 	class ScanLinkParser : ReportParser {
 		WarFilter warFilter;
-        public ScanLinkParser(NewscanHandler newscanHandler, WarFilter warFilter) : base(newscanHandler) { 
-			AddPatern(@"http://www\.icewars\.de/portal/kb/de/sb\.php\?id=(\d+)&md_hash=([a-z0-9A-Z]{32})");
+        public ScanLinkParser(NewscanHandler newscanHandler, WarFilter warFilter) : base(newscanHandler) {
+            AddPattern(@"http://www\.icewars\.de/portal/kb/de/sb\.php\?id=(\d+)&md_hash=([a-z0-9A-Z]{32})", "kb/de/sb.php", PatternFlags.All);
 			this.warFilter = warFilter;
 		}
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
@@ -288,7 +288,9 @@ namespace IWDB.Parser {
                     s.resetTimestamp = uint.Parse(n.SelectSingleNode("scann/plani_data/reset_timestamp").InnerText) + s.timestamp + 86400;
                 }
                 return s;
-			} catch (Exception) {
+			} catch (Exception e) {
+                IRCeX.Log.WriteLine(IRCeX.LogLevel.E_DEBUG, "Exception beim Geoscan-Einlesen");
+                IRCeX.Log.WriteException(e);
                 return null;
 			}
 		}

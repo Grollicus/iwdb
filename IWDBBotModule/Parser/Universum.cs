@@ -117,7 +117,7 @@ namespace IWDB.Parser {
     class UniXMLUniversumsParser : UniXmlParser {
         public UniXMLUniversumsParser(NewscanHandler h, IWDBParser parser)
             : base(h, parser) {
-            AddPatern("<\\?xml[^>]+?>\\s+<planeten_data>[\\s\\S]+?</planeten_data>");
+            AddPattern("<\\?xml[^>]+?>\\s+<planeten_data>[\\s\\S]+?</planeten_data>");
         }
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
             List<XmlNode> xmls = new List<XmlNode>();
@@ -134,7 +134,7 @@ namespace IWDB.Parser {
     class UniXMLLinkParser:UniXmlParser {
 		public UniXMLLinkParser(NewscanHandler h, IWDBParser parser)
 			: base(h, parser) {
-            base.AddPatern(@"http://www.icewars.de/xml/user_univ_scan/[a-f0-9]{32}\.xml", PatternFlags.All);
+            base.AddPattern(@"http://www.icewars.de/xml/user_univ_scan/[a-f0-9]{32}\.xml", PatternFlags.All);
 		}
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			List<XmlNode> xmls = new List<XmlNode>();

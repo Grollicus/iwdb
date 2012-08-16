@@ -8,7 +8,7 @@ using MySql.Data.MySqlClient;
 namespace IWDB.Parser {
     class HighscoreParser:ReportParser {
         public HighscoreParser(NewscanHandler h):base(h, false) {
-            AddPatern(@"Highscore\s+Highscore\s+Letzte\sAktualisierung\s(" + IWZeit + @")\s+Manueller\sStart:[\s\S]*?Ordnung\snach\sPunkten\s+Pos\s+Name\s+Allianz\s+Gebpkt.\s+Forschpkt.\s+Gesamt\s+P.\s/\sTag\s+dabei\sseit
+            AddPattern(@"Highscore\s+Highscore\s+Letzte\sAktualisierung\s(" + IWZeit + @")\s+Manueller\sStart:[\s\S]*?Ordnung\snach\sPunkten\s+Pos\s+Name\s+Allianz\s+Gebpkt.\s+Forschpkt.\s+Gesamt\s+P.\s/\sTag\s+dabei\sseit
 ((?:\s+\d+\s+" + SpielerName + @"\s+(?:" + AllyTag + @")?\s+" + Number + "\\s+" + Number + "\\s+" + Number + "\\s+" + DecimalNumber + @"\s+-?" + Number + "\\s+" + Datum + ")+)");
         }
         public override void Matched(System.Text.RegularExpressions.MatchCollection matches, uint posterID, uint victimID, MySql.Data.MySqlClient.MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {

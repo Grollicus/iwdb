@@ -83,7 +83,7 @@ namespace IWDB.Parser {
         public RessTransport(NewscanHandler h)
             : base(h, false) {
             String dot = System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator;
-            AddPatern(@"Transport\sangekommen\s" + KoordinatenEinzelMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+
+            AddPattern(@"Transport\sangekommen\s" + KoordinatenEinzelMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+
 Transport\s+
 Eine\sFlotte\sist\sauf\sdem\sPlaneten\s" + KolonieName + @"\s+\d+:\d+:\d+\s+angekommen\.\s+Der\sAbsender\sist\s(" + SpielerName + @")\.\sDer\sEmpfänger\sist\s(" + SpielerName + @")\.\s+
 .*\s+
@@ -111,7 +111,7 @@ Ressourcen
 	class EigeneUebergabe : ReportParser {
 		public EigeneUebergabe(NewscanHandler h)
 			: base(h, false) {
-			AddPatern(@"Schiffe\sübergeben\s" + KoordinatenEinzelMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+
+			AddPattern(@"Schiffe\sübergeben\s" + KoordinatenEinzelMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+
 Übergabe\s+
 Es\swurde\seine\sFlotte\sauf\sdem\sPlaneten\s" + KolonieName + @"\s\d+:\d+:\d+\sübergeben\.\sDer\sEmpfänger\sist\s(" + SpielerName + @")\s+
 Es\swurden\sfolgende\sSachen\sübergeben\s+
@@ -152,7 +152,7 @@ Ressourcen
 	class FremdeUebergabe : ReportParser {
 		public FremdeUebergabe(NewscanHandler h)
 			: base(h, false) {
-			AddPatern(@"Schiffe\sübergeben\s" + KoordinatenEinzelMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+
+			AddPattern(@"Schiffe\sübergeben\s" + KoordinatenEinzelMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+
 Übergabe\s+
 Eine\sFlotte\sist\sauf\sdem\sPlaneten\s" + KolonieName + @"\s\d+:\d+:\d+\sangekommen\.\sDer\sAbsender\sist\s(" + SpielerName + @")\s+
 Es\swurden\sfolgende\sSachen\sübergeben\s+

@@ -12,11 +12,11 @@ namespace IWDB.Parser {
 		WarFilter warFilter;
 		public HauptseiteKolonieinformationParser(NewscanHandler newscanHandler, WarFilter warFilter)
 			: base(newscanHandler, false) {
-            AddPatern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch + @"[\s\S]+?
+            AddPattern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch + @"[\s\S]+?
 			#Lebensbedingungen,Flottenscannerreichweite, Leerzeile danach, Serverzeit, Kolonien aktuell/maximal, Schiffsübersicht,...
 			Forschungsstatus\s+
 			([^\n]+)\s+("+IWZeit+")");
-			AddPatern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch);
+			AddPattern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch);
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
 			ownerCache = RequestCache<List<uint>>("OwnerCache");
 			this.warFilter = warFilter;
@@ -146,7 +146,7 @@ namespace IWDB.Parser {
 	class HauptseiteAusbaustatusParser : ReportParser {
 		public HauptseiteAusbaustatusParser(NewscanHandler newscanHandler)
 			: base(newscanHandler, false) {
-            AddPatern(@"Ausbaustatus
+            AddPattern(@"Ausbaustatus
 		((?:\n" + KolonieName + @"\s+" + Koordinaten + @"\s+(?:(?:nÜscht[^\n])|(?:.*?\s+bis\s+" + IWZeit + @"[\s\-]+" + IWZeitspanne + ")))+)");
         }
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
@@ -200,7 +200,7 @@ namespace IWDB.Parser {
 		IWDBParser parser;
 		public HauptseiteFremdeFlottenParser(NewscanHandler h, IWDBParser parser)
 			: base(h, false) {
-            AddPatern(@"fremde\sFlotten\s+
+            AddPattern(@"fremde\sFlotten\s+
 Fremde\sFlotten\n
 (?:\(Es\ssind\sfremde\sFlotten\süber\sdem\sPlaneten\sstationiert\.\)\s+)?
 Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
@@ -321,7 +321,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
         IWDBParser parser;
         public HauptseiteFeindlicheFlottenParser(NewscanHandler h, IWDBParser parser)
 			: base(h, false) {
-			AddPatern(@"feindliche\sFlotten\s+
+			AddPattern(@"feindliche\sFlotten\s+
 Fremde\sFlotten\n
 Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 ((?:\s*\n" + KolonieName + @"\s" + Koordinaten + @"\s+" + KolonieName + @"\s" + Koordinaten + @"\n
