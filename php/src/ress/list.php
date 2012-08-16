@@ -8,7 +8,7 @@
 		if($t < 1)
 			return '<b>&lt;1 h</b>';
 		if($t > 72)
-			return '<b>&gt;75 h</b>';
+			return '&gt;75 h';
 		return number_format($t, 1, ',', '.').'h';
 	}
 	function RessUserList() {

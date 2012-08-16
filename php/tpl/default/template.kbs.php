@@ -62,7 +62,7 @@ function TemplateRaidOverview() {
 -->
 </style>');
 	TemplateMenu();
-	echo '<div class="content"><h2>Neue Raids</h2>
+	echo '<div class="content" style="border:none;padding:none;"><h2>Neue Raids</h2>
 	<script type="text/javascript"><!-- // --><![CDATA[
 		var already_loaded = new Object();
 		function loadKB(id, hash) {
@@ -106,7 +106,7 @@ function TemplateRaidOverview() {
 			<tr style="display:none;" id="kbr_', $raid['id'], '"><td id="kb_', $raid['id'], '" colspan="18" class="kbtd"></td></tr>';
 	}
 	
-	echo '</table></div>';
+	echo '<tr><td>', $content['hasPrev'] ? '<a href="'.$content['prevLink'].'">Prev</a>' : 'Prev', '</td><td colspan="16">&nbsp;</td><td><a href="', $content['nextLink'], '">Next</a></td></tr></table></div>';
 	TemplateFooter();
 }
 

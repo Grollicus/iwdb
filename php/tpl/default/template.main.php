@@ -258,4 +258,17 @@ echo '
 </div>';
 		TemplateFooter();
 	}
+
+	function TemplateInactives() {
+		global $content;
+		TemplateHeader();
+		TemplateMenu();
+		echo '<div class="content"><h2>(Gebbau-)Inaktive</h2><table>
+		<tr><th>Name</th><th>&nbsp;</th><th>Gebpts</th></tr>';
+		foreach($content['inactives'] as $line) {
+			echo '<tr class=',$line['age'],'><td>', $line['name'], '</td><td>', $line['span'], '</td><td>', $line['pts'], '</td></tr>';
+		}
+		echo '</table></div>';
+		TemplateFooter();
+	}
 ?>

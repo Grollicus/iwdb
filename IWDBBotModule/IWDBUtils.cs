@@ -54,16 +54,18 @@ namespace IWDB {
 	abstract class IWDBRegex {
 		public const String KolonieName = @"(?:(?:[a-zA-Z0-9_\-\.äöüÄÖÜß*+][a-zA-Z0-9_\-\. äöüÄÖÜß*+]*[a-zA-Z0-9_\-\.äöüÄÖÜß*+])|[a-zA-Z0-9_\-\.äöüÄÖÜß*+])";
 		public const String SpielerName = @"[a-zA-Z0-9_\- \.]+";
-		public const String AllyTag = @"(?:\[[a-zA-Z0-9\-_\.\{\}]+\])";
+		public const String AllyTag = @"(?:\[[a-zA-Z0-9\-_\.\{\}\(\)= ]+\])";
 		public const String Koordinaten = @"\(\d+:\d+:\d+\)";
 		public const String KoordinatenMatch = @"\((\d+:\d+:\d+)\)";
 		public const String KoordinatenEinzelMatch = @"\((\d+):(\d+):(\d+)\)";
-		public const String IWZeit = @"\d{2}\.\d{2}\.\d{4}\s\d{2}:\d{2}";
-		public const String PräziseIWZeit = @"\d{2}\.\d{2}\.\d{4}\s\d{2}:\d{2}:\d{2}";
+        public const String Datum = @"\d{2}\.\d{2}\.\d{4}";
+		public const String IWZeit = Datum+@"\s\d{2}:\d{2}";
+		public const String PräziseIWZeit = Datum+@"\s\d{2}:\d{2}:\d{2}";
 		public const String IWZeitspanne = @"(?:(?:1\s+Tag\s+)|(?:\d+\s+Tage\s+))?\d{2}:\d{2}:\d{2}";
 		public const String IWObjektTyp = @"Kolonie|Sammelbasis|Kampfbasis|Artefaktbasis|---";
 		public const String IWPlanetenTyp = @"Steinklumpen|Eisplanet|Gasgigant|Nichts|Asteroid|Elektrosturm|Raumverzerrung|Ionensturm|grav.\sAnomalie";
-		public static String Number { get { return "[0-9" + System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator + "]+"; } }
+		public static String Number { get { return "[\\d+" + System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator + "]+"; } }
+        public static String DecimalNumber { get { return "[\\d+" + System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator + System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator + "]+"; } }
 		public const String RessourcenName = @"(?:Eisen|Stahl|VV4A|chem\.\sElemente|Eis|Wasser|Energie|Pinguine|Credits|Bevölkerung)";
 		public const String AbladeAktionen = @"Erforscht\sgrade\sseine\sNase|Erklaert\sdie\sInfinitesimalrechnung|Faselt\swas\svon\sWurzelzwergen|Faselt\swirres\sZeug\sins\sInterkom|Hört\sMusik|Im\sLandeanflug|Liegt\sbesoffen\sin\sder\sEcke|Pfeift\sder\sfeschen\sPilotin\shinterher\sund\smacht\skomische\sAndeutungen|Quatscht\smit\sder\sBodenkontrolle|Schaut\sder\sfeschen\sPilotin\shinterher|Sabbert\sdie\sInstrumente\svoll|Surft\sim\sBordnetz|Versucht\sdie\srichtigen\sKnöpfe\sfür\sdie\sLandung\szu\sfinden|Wartet\sauf\sLandeplatz|Wartet\sauf\sWeihnachten|Wurzelzwergen,\süberall\sWurzelzwergen|Wartet\sauf\sWeihnachten|Bewertet\sdas\sFlottenessen";
 	}

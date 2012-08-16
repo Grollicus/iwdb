@@ -110,7 +110,7 @@ Ressourcen
     }
 	class EigeneUebergabe : ReportParser {
 		public EigeneUebergabe(NewscanHandler h)
-			: base(h) {
+			: base(h, false) {
 			AddPatern(@"Schiffe\sübergeben\s" + KoordinatenEinzelMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+
 Übergabe\s+
 Es\swurde\seine\sFlotte\sauf\sdem\sPlaneten\s" + KolonieName + @"\s\d+:\d+:\d+\sübergeben\.\sDer\sEmpfänger\sist\s(" + SpielerName + @")\s+

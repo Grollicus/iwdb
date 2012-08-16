@@ -59,5 +59,23 @@ function HighScore() {
 	TemplateHighscore();
 	
 }
+
+function Inactives() {
+	global $pre, $content;
+	
+	$q = DBQuery("SELECT name, since, until, gebp FROM {$pre}highscore_inactive WHERE since<>until ORDER BY until-since DESC, gebp DESC LIMIT 0,100", __FILE__, __LINE__);
+	$content['inactives'] = array();
+	while($row = mysql_fetch_row($q)) {
+		$content['inactives'][] = array(
+			'name' => EscapeOU($row[0]),
+			'span' => FormatTime($row[2]-$row[1]),
+			'age' => ActualityColor($row[2]),
+			'pts' => number_format($row[3], 2, ',', '.'),
+		);
+	}
+	
+	TemplateInit('main');
+	TemplateInactives();
+}
  
  ?>

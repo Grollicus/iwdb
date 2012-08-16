@@ -4,12 +4,13 @@ if(!defined('dddfd'))
 	die("möh");
 
 function RaidOverview() {
-	global $content, $pre, $user;
+	global $content, $pre, $user, $scripturl;
 	
 	if($user['isRestricted'])
 		die("Hacking Attempt");
 	
-	$q = DBQuery("SELECT iwid, hash, time, angreifer, angrAlly, verteidiger, verteidigerAlly, score, rFe, rSt, rCh, rVv, rEi, rWa, rEn, zFe, zSt, zCh, zVv, zEi, zWa, zEn FROM {$pre}raidberichte ORDER BY time DESC LIMIT 0, 30", __FILE__, __LINE__);
+	$limit = isset($_REQUEST['l']) ? intval($_REQUEST['l']) : 0;
+	$q = DBQuery("SELECT iwid, hash, time, angreifer, angrAlly, verteidiger, verteidigerAlly, score, rFe, rSt, rCh, rVv, rEi, rWa, rEn, zFe, zSt, zCh, zVv, zEi, zWa, zEn FROM {$pre}raidberichte ORDER BY time DESC LIMIT {$limit}, ".($limit+50), __FILE__, __LINE__);
 	$content['raids'] = array();
 	while($row = mysql_fetch_row($q)) {
 		$content['raids'][] = array(
@@ -38,6 +39,10 @@ function RaidOverview() {
 			'zEn' => number_format($row[21], 0, ',', '.'),
 		);
 	}
+	
+	$content['hasPrev'] = $limit > 0;
+	$content['prevLink'] = $scripturl.'/index.php?action=raids&amp;l='.max(0, $limit-50);
+	$content['nextLink'] = $scripturl.'/index.php?action=raids&amp;l='.($limit+50);
 	
 	TemplateInit('kbs');
 	TemplateRaidOverview();

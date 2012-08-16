@@ -24,7 +24,7 @@ namespace IWDB.Parser {
 
 	//TODO: Parser umbauen so dass sie auch Tausendertrennzeichen beherrschen, zumindest die grundlegenden wie [,. ]
 	class GebäudeinfoParser : ReportParser {
-        public GebäudeinfoParser(NewscanHandler newscanHandler) : base(newscanHandler) { AddPatern(@"Gebäudeinfo:[\s\S]+?Farbenlegende:", PatternFlags.Firefox); }
+        public GebäudeinfoParser(NewscanHandler newscanHandler) : base(newscanHandler, false) { AddPatern(@"Gebäudeinfo:[\s\S]+?Farbenlegende:", PatternFlags.Firefox); }
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySql.Data.MySqlClient.MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match gebinfo in matches) {
 				try {
@@ -45,7 +45,7 @@ namespace IWDB.Parser {
 	}
 	class ForschungsinfoParser:ReportParser {
         public ForschungsinfoParser(NewscanHandler newscanHandler)
-            : base(newscanHandler) {
+            : base(newscanHandler, false) {
             AddPatern(@"Forschungsinfo:\s+(.+)[\s\S]+?Farbenlegende:", PatternFlags.Firefox);
         }
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySql.Data.MySqlClient.MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
@@ -67,7 +67,7 @@ namespace IWDB.Parser {
 	}
 	class SchiffsinfoParser:ReportParser {
 		public SchiffsinfoParser(NewscanHandler newscanHandler)
-            : base(newscanHandler) {
+            : base(newscanHandler, false) {
             AddPatern(@"Schiffinfo:\s+([a-zA-Z0-9 äöü()\-]+)\n
 [\s\S]+
 Kosten\s+([\s\S]*?)\n
@@ -92,7 +92,7 @@ Verbrauch\sEnergie\s+(\d+)\n", PatternFlags.Firefox);
 		}
 	}
 class ForschungsübersichtParser:ReportParser {
-    public ForschungsübersichtParser(NewscanHandler newscanHandler) : base(newscanHandler) { AddPatern(@"Erforschte\sForschungen\n([\s\S]+)", PatternFlags.All); }
+    public ForschungsübersichtParser(NewscanHandler newscanHandler) : base(newscanHandler, false) { AddPatern(@"Erforschte\sForschungen\n([\s\S]+)", PatternFlags.All); }
     public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match m in matches) {
 
@@ -797,7 +797,7 @@ abstract class TechtreeItem {
 	}
 	class SchiffsKostenXmlParser : ReportParser {
 		public SchiffsKostenXmlParser(NewscanHandler h)
-			: base(h) {
+			: base(h, false) {
 				AddPatern("http://www.icewars.de/portal/xml/de/schiffkosten.xml", PatternFlags.All);
 		}
 		public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {

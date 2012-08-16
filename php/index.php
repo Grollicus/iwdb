@@ -80,6 +80,7 @@ function Main()
 	'help' => array('core/main.php', 'HelpView'),
 	'help_page' => array('core/main.php', 'HelpPage'),
 	'hs' => array('core/highscore.php', 'HighScore'),
+	'highscore_inactives' => array('core/highscore.php', 'Inactives'),
 	'ircmask' => array('core/irc.php', 'IrcMask'),
 	'index' => array('core/main.php', 'Index'),
 	'iwlogin' => array('sitter/login.php', 'MainLogin'),

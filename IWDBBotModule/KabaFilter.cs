@@ -58,7 +58,7 @@ namespace IWDB {
 
 		public bool ApplyFilter(uint gala, uint sys, uint pla, String ownerName, String ally) {
 			foreach(Tuple<uint?, uint?, uint?, String, String> el in filters) {
-				if((el.Item1 == null || el.Item2 == gala) && (el.Item2 == null || el.Item2 == sys) && (el.Item3 == null || el.Item3 == pla) && (el.Item4 == null || el.Item4 == ownerName) && (el.Item5 == null || el.Item5 == ally))
+				if((el.Item1 == null || el.Item1 == gala) && (el.Item2 == null || el.Item2 == sys) && (el.Item3 == null || el.Item3 == pla) && (el.Item4 == null || el.Item4 == ownerName) && (el.Item5 == null || el.Item5 == ally))
 					return true;
 			}
 			return false;

@@ -110,7 +110,7 @@
 		
 		TemplateHeader();
 		TemplateMenu();
-		echo '<div class="content" style="border:none;">';
+		echo '<div class="content" style="border:none; padding: 0px;">';
 		
 		if($content['hasResults']) {
 			TemplateUniViewEx();

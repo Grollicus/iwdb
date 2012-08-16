@@ -32,8 +32,7 @@ if(!function_exists('TemplateMenu')) {
 		global $scripturl, $content, $user, $spiel, $uni_presets;
 		echo '
 		<table class="menu" cellspacing="0" cellpadding="0">
-			<tr><th>M000h</th></tr>
-			<tr><td><a class="',$content['action'] == 'index' ? 'active' : 'item','" href="', $scripturl, '/?action=index">Index</a></td></tr>
+			<tr><th><a class="',$content['action'] == 'index' ? 'active' : 'item','" href="', $scripturl, '/?action=index">Index</a></th></tr>
 			<tr><td><a class="',$content['action'] == 'newscanex' ? 'active' : 'item','" href="', $scripturl, '/?action=newscanex">Neuer Bericht</a></td></tr>
 			', !$user['isRestricted'] ? '<tr><td><a class="'.($content['action'] == 'hs' ? 'active' : 'item').'" href="'.$scripturl.'/?action=hs">Top 5</a></td></tr>' : '','
 			<tr><th>Universum</th></tr>
@@ -52,8 +51,8 @@ if(!function_exists('TemplateMenu')) {
 			<tr><th>Ress</th></tr>
 			<tr><td><a class="',$content['action'] == 'trade_list' ? 'active' : 'item','" href="', $scripturl, '/?action=trade_list">Handel</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'raids' ? 'active' : 'item','" href="', $scripturl, '/?action=raids">Raids</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'ressuserlist' ? 'active' : 'item','" href="', $scripturl, '/?action=ressuserlist">AccountRessProd</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'transporte' ? 'active' : 'item','" href="', $scripturl, '/?action=transporte">AccountRessBilanz</a></td></tr>';
+			<tr><td><a class="',$content['action'] == 'ressuserlist' ? 'active' : 'item','" href="', $scripturl, '/?action=ressuserlist">Produktion</a></td></tr>
+			<tr><td><a class="',$content['action'] == 'transporte' ? 'active' : 'item','" href="', $scripturl, '/?action=transporte">Bilanz</a></td></tr>';
 		echo '
 			<tr><th>Sitterzeugs</th></tr>';
 		if(!$user['isRestricted'])

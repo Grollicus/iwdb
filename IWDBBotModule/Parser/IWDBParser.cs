@@ -93,6 +93,7 @@ namespace IWDB.Parser {
         private void NetworkCallback(NetworkMessage Msg) {
             try {
                 Socket s = ((NewConnectionNetworkMessage)Msg).NewSocket;
+                s.ReceiveTimeout = 1000;
                 StringBuilder sb = new StringBuilder();
                 byte b = 0;
                 byte previous;
@@ -115,10 +116,12 @@ namespace IWDB.Parser {
                             if (previous == 0) { // zwei Nullen => Ende der Nachricht
                                 finished = true;
                                 break;
-                            } else {
+                            }
+                            else {
                                 part = msg.NextPart();
                             }
-                        } else {
+                        }
+                        else {
                             part.Add(b);
                         }
                     }
@@ -130,11 +133,18 @@ namespace IWDB.Parser {
                 RequestHandler handler;
                 if (handlers.TryGetValue(msg[0].AsString, out handler)) {
                     handler.HandleRequest(msg);
-                } else {
+                }
+                else {
                     msg.AnswerLine("Protocol Mismatch.");
                 }
-            } catch (IOException e) {
-                Console.WriteLine(e.ToString());
+            }
+            catch (IOException e) {
+                Log.WriteLine(LogLevel.E_NOTICE, "IWDBParser exception");
+                Log.WriteException(e);
+            }
+            catch (SocketException e) {
+                Log.WriteLine(LogLevel.E_NOTICE, "IWDBParser exception");
+                Log.WriteException(e);
             }
         }
 
@@ -535,6 +545,7 @@ class ParserRequestMessagePart {
 		}
         public void Handled() {
             w.Close();
+            s.Shutdown(SocketShutdown.Both);
             s.Close();
         }
 	}
