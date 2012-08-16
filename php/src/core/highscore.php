@@ -63,7 +63,7 @@ function HighScore() {
 function Inactives() {
 	global $pre, $content;
 	
-	$q = DBQuery("SELECT name, since, until, gebp FROM {$pre}highscore_inactive WHERE since<>until ORDER BY until-since DESC, gebp DESC LIMIT 0,100", __FILE__, __LINE__);
+	$q = DBQuery("SELECT name, since, until, gebp FROM {$pre}highscore_inactive WHERE since<>until or 1=1 ORDER BY until-since DESC, gebp DESC LIMIT 0,100", __FILE__, __LINE__);
 	$content['inactives'] = array();
 	while($row = mysql_fetch_row($q)) {
 		$content['inactives'][] = array(

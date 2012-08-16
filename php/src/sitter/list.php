@@ -3,14 +3,15 @@ if(!defined('dddfd'))
 	die("epic fail.");
 
 function SitterList() {
-	global $content, $pre, $sittercolor_stages, $user;
+	global $content, $pre, $sittercolor_stages, $user, $scripturl;
 	if($user['isRestricted'])
 		die("hacking attempt");
 	
-	$q = DBQuery("SELECT igm_data.id, igm_data.igmname, igm_data.accounttyp, igm_data.squad, igm_data.ikea, igm_data.mdp, igm_data.iwsa, 0, MIN(flotten.ankunft) AS flottenAnkunft, igm_data.lastParsed
-FROM (({$pre}igm_data AS igm_data)
+	$q = DBQuery("SELECT igm_data.id, igm_data.igmname, igm_data.accounttyp, igm_data.squad, igm_data.ikea, igm_data.mdp, igm_data.iwsa, 0, MIN(flotten.ankunft) AS flottenAnkunft, igm_data.lastParsed, techtree_items.name, igm_data.forschung_ende
+FROM ((({$pre}igm_data AS igm_data)
 LEFT JOIN {$pre}universum AS universum ON igm_data.igmname = universum.ownername)
-LEFT JOIN {$pre}flotten AS flotten ON flotten.action IN ('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/Ress)') AND universum.ID=flotten.zielid
+LEFT JOIN {$pre}flotten AS flotten ON flotten.action IN ('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/Ress)') AND universum.ID=flotten.zielid)
+LEFT JOIN {$pre}techtree_items AS techtree_items ON techtree_items.id=igm_data.forschung 
 GROUP BY igm_data.id", __FILE__, __LINE__);
 	$content['list'] = array();
 	$now = time();
@@ -53,6 +54,9 @@ GROUP BY igm_data.id", __FILE__, __LINE__);
 			'bauEnde' => ($row[7] == NULL || $row[7] < $now) ? 'Leerlauf?' : FormatDate($row[7]),
 			'angriffAnkunft' => ($row[8] == NULL) ? '-' : FormatDate($row[8]),
 			'actuality' => LastLoginColor($row[9]),
+			'forschung' => EscapeOU($row[10]),
+			'forschungEnde' => FormatDate($row[11]),
+			'loginLink' => $scripturl.'/index.php?action=sitter_login&amp;from=sitter_list&amp;id='.$row[0],
 		);
 	}
 	TemplateInit('sitter');

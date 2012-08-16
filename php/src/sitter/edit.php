@@ -292,7 +292,7 @@
 			$content['planet'][] = array('id' => $row[0], 'name' => "({$row[1]}:{$row[2]}:{$row[3]}) ".EscapeOU($row[4]), 'selected' => $row[0] == $active); 
 		}
 	}
-	function CbEvaluatePlanet($data) {
+	function CbEvaluatePlanet(&$data) {
 		$data['planID'] = intval($_REQUEST['planet']);
 	}
 	function CbValidateBauschleife() {

@@ -13,15 +13,14 @@
 			',isset($content['msg']) ? '<div class="imp">'.$content['msg'].'</div><br />' : '','
 			<table width="99%" cellpadding="0" cellspacing="0" border="0">
 				<tr><th colspan="5">Sitterauftr&auml;ge offen</th></tr>
-				<tr><th style="width:120px;">Zeit</th><th>Bei</th><th>Koordinaten</th><th>Auftrag</th><th style="width:50px;"></th></tr>';
+				<tr><th style="width:120px;">Zeit</th><th>Bei</th><th>Koordinaten</th><th>Auftrag</th></tr>';
 		foreach ($content['sitternow'] as $line) {
 			echo '
 				<tr class="sitterjob_', $line['ownershipState'], '">
 					<td>', $line['time'], '</td>
-					<td>', $line['igmName'], '<br /><i style="fonz-size:smaller;">(', $line['userName'], ')</i></td>
+					<td><a href="', $line['loginLink'], '">[', $line['igmName'], ']</a><br /><i style="fonz-size:smaller;">(', $line['userName'], ')</i></td>
 					<td>[', $line['coords'], '] ', $line['planiName'], '</td>
 					<td><b>', $line['typeLong'], '</b><br />', $line['text'], '</td>
-					<td align="center"><a href="', $line['loginLink'], '">Login</a></td>
 				</tr>';
 		}
 		echo '<tr><th colspan="5">Farbenlegende: <span class="sitterjob_own">Eigener Auftrag</span> <span class="sitterjob_account">Fremder Auftrag für eigenen Account</span></th></tr></table><br /><br /><br />
@@ -132,12 +131,12 @@
 		echo '
 			<div class="content">
 				<table width="99%" cellpadding="0" cellspacing="0" border="0">
-					<tr><th>Igmname</th><th title="Zeitpunkt, wann die erste Bauschleife/Forschungsschleife ausläuft">Bau/Forschung bis', HelpLink('sitter_bauschleifen_auslauf'), '</th><th title="Nächste angreifende Flotte / Scan">nächste  feindl. Flotte</th><th>Login</th></tr>';
+					<tr><th>Igmname</th><th title="Zeitpunkt, wann die erste Bauschleife/Forschungsschleife ausläuft">Bau/Forschung bis', HelpLink('sitter_bauschleifen_auslauf'), '</th><th>Forschung</th><th title="Nächste angreifende Flotte / Scan">nächste  feindl. Flotte</th></tr>';
 		foreach($content['list'] as $item) {
-			echo '<tr class="', $item['actuality'], '"><td>', $item['rawType'] == 'fle' ? '<b>'.$item['igmName'].'</b>' : $item['igmName'], '<br /><i style="font-size:smaller;">',$item['accountTyp'] , '@', $item['squad'], '</i>',
+			echo '<tr class="', $item['actuality'], '"><td><a href="', $item['loginLink'] ,'">[', $item['rawType'] == 'fle' ? '<b>'.$item['igmName'].'</b>' : $item['igmName'], ']</a><br /><i style="font-size:smaller;">',$item['accountTyp'] , '@', $item['squad'], '</i>',
 				$item['hasIkea'] ? ', <i style="font-size:smaller;">Ikea</i>' : '',
 				$item['hasMdP'] ? ', <i style="font-size:smaller;">MdP</i>' : '',
-			 '</td><td>', $item['bauEnde'], '</td><td>', $item['angriffAnkunft'], '</td><td><a href="', $scripturl, '/index.php?action=sitter_login&amp;from=sitter_list&amp;id=', $item['ID'], '">[Jetzt einloggen]</a></td></tr>';
+			 '</td><td>', $item['bauEnde'], '</td><td>', $item['forschung'] ,'</td><td>', $item['angriffAnkunft'], '</td></tr>';
 		}
 		echo '
 				<tr><th colspan="4">Die Farben zeigen, wann zuletzt jemand die Hauptseite eingelesen hat:';
@@ -425,7 +424,7 @@
 		<table cellpadding="0" cellspacing="0" border="0"><tr><th colspan="4">Spieler</th><th>Ankunft</th></tr>';
 		foreach($content['users'] as $user) {
 			echo '
-			<tr class="danger_', $user['gefahrenLevel'], '"><td colspan="4"><a href="',$user['loginLink'], '">', $user['name'], '</a></td><td>', $user['ersteAnkunft'], '</td></tr>';
+			<tr class="danger_', $user['gefahrenLevel'], '"><td colspan="4"><a href="',$user['loginLink'], '">[', $user['name'], ']</a></td><td>', $user['ersteAnkunft'], '</td></tr>';
 			foreach($user['planis'] as $plani) {
 				echo '
 			<tr id="p_', $plani['ID'], '" class="danger_', $plani['gefahrenLevel'], '">

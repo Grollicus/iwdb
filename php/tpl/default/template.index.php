@@ -39,7 +39,7 @@ if(!function_exists('TemplateMenu')) {
 			<tr><td><a class="',$content['action'] == 'uni_map' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_map">Karte</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'uni_view' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_view">Suche</a>';
 		foreach($uni_presets as $presetname => $preseturl) {
-			echo '<br /><a style="font-size:smaller; padding-left:8px;" class="item" href="', $scripturl, '/?action=uni_view&',$preseturl,'">', $presetname, '</a>';
+			echo '<br /><a style="font-size:smaller; padding-left:8px;" class="item" href="', $scripturl, '/?action=uni_view&amp;',$preseturl,'">', $presetname, '</a>';
 		}
 		echo '
 			</td></tr>
@@ -73,6 +73,7 @@ if(!function_exists('TemplateMenu')) {
 		echo '
 			<tr><th>Sonstiges</th></tr>
 			<tr><td><a class="',$content['action'] == 'techtree' ? 'active' : 'item','" href="', $scripturl, '/?action=techtree">Techtree</a></td></tr>
+			<tr><td><a class="',$content['action'] == 'highscore_inactives' ? 'active' : 'item','" href="', $scripturl, '/?action=highscore_inactives">Inaktivensuche</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'settingsex' ? 'active' : 'item','" href="', $scripturl, '/?action=settingsex">Einstellungen</a></td></tr>';
 		if($user['isAdmin'])
 		echo '
@@ -119,6 +120,8 @@ if(!function_exists('TemplateHtmlHeader')) {
 		window.setTimeout(timerCallback, 120000);
 		', '
 	// ]]></script>
+	<script type="text/javascript" src="', $themeurl, '/jquery-1.8.0.min.js"></script>
+	<script type="text/javascript" src="', $themeurl, '/jquery.tablesorter.min.js"></script>
 	<script type="text/javascript" src="', $themeurl, '/dhtml.js"></script>', $html_header_add, '
 </head>
 ';
@@ -198,7 +201,8 @@ if (!function_exists('TemplateFooter'))
 				ob_start();
 				var_dump($content);
 				$ob = ob_get_clean();
-				echo str_replace(array("<pre class='xdebug-var-dump' dir='ltr'>", "</pre>"), array('<span style="font-family: courier, monospace;">', "</span>"), $ob);				
+				echo str_replace(array("<pre class='xdebug-var-dump' dir='ltr'>", "</pre>"), array('<span style="font-family: courier, monospace;">', "</span>"), $ob);
+				echo '</span>';				
 			}
 		}
 		echo '

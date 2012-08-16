@@ -25,6 +25,8 @@
         private void InitializeComponent() {
             this.BtGo = new System.Windows.Forms.Button();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.tbScan = new System.Windows.Forms.TextBox();
+            this.tbResp = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.tbID = new System.Windows.Forms.TextBox();
             this.TbUID = new System.Windows.Forms.TextBox();
@@ -33,8 +35,6 @@
             this.label3 = new System.Windows.Forms.Label();
             this.cbWar = new System.Windows.Forms.CheckBox();
             this.cbRestricted = new System.Windows.Forms.CheckBox();
-            this.tbScan = new System.Windows.Forms.TextBox();
-            this.tbResp = new System.Windows.Forms.TextBox();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.label4 = new System.Windows.Forms.Label();
             this.cbHandler = new System.Windows.Forms.ComboBox();
@@ -46,6 +46,7 @@
             // 
             // BtGo
             // 
+            this.BtGo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BtGo.Location = new System.Drawing.Point(197, 227);
             this.BtGo.Name = "BtGo";
             this.BtGo.Size = new System.Drawing.Size(75, 23);
@@ -56,6 +57,9 @@
             // 
             // splitContainer1
             // 
+            this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.splitContainer1.Location = new System.Drawing.Point(12, 65);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -71,8 +75,28 @@
             this.splitContainer1.SplitterDistance = 78;
             this.splitContainer1.TabIndex = 1;
             // 
+            // tbScan
+            // 
+            this.tbScan.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tbScan.Location = new System.Drawing.Point(0, 0);
+            this.tbScan.Multiline = true;
+            this.tbScan.Name = "tbScan";
+            this.tbScan.Size = new System.Drawing.Size(260, 78);
+            this.tbScan.TabIndex = 0;
+            // 
+            // tbResp
+            // 
+            this.tbResp.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tbResp.Location = new System.Drawing.Point(0, 0);
+            this.tbResp.Multiline = true;
+            this.tbResp.Name = "tbResp";
+            this.tbResp.ReadOnly = true;
+            this.tbResp.Size = new System.Drawing.Size(260, 74);
+            this.tbResp.TabIndex = 1;
+            // 
             // label1
             // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(137, 15);
             this.label1.Name = "label1";
@@ -82,6 +106,7 @@
             // 
             // tbID
             // 
+            this.tbID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.tbID.Location = new System.Drawing.Point(161, 12);
             this.tbID.Name = "tbID";
             this.tbID.Size = new System.Drawing.Size(34, 20);
@@ -89,6 +114,7 @@
             // 
             // TbUID
             // 
+            this.TbUID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.TbUID.Location = new System.Drawing.Point(238, 12);
             this.TbUID.Name = "TbUID";
             this.TbUID.Size = new System.Drawing.Size(34, 20);
@@ -96,6 +122,7 @@
             // 
             // label2
             // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(206, 15);
             this.label2.Name = "label2";
@@ -105,6 +132,8 @@
             // 
             // cbUserAgent
             // 
+            this.cbUserAgent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.cbUserAgent.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbUserAgent.FormattingEnabled = true;
             this.cbUserAgent.Items.AddRange(new object[] {
@@ -146,25 +175,6 @@
             this.cbRestricted.Text = "Restricted";
             this.cbRestricted.UseVisualStyleBackColor = true;
             // 
-            // tbScan
-            // 
-            this.tbScan.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbScan.Location = new System.Drawing.Point(0, 0);
-            this.tbScan.Multiline = true;
-            this.tbScan.Name = "tbScan";
-            this.tbScan.Size = new System.Drawing.Size(260, 78);
-            this.tbScan.TabIndex = 0;
-            // 
-            // tbResp
-            // 
-            this.tbResp.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbResp.Location = new System.Drawing.Point(0, 0);
-            this.tbResp.Multiline = true;
-            this.tbResp.Name = "tbResp";
-            this.tbResp.ReadOnly = true;
-            this.tbResp.Size = new System.Drawing.Size(260, 74);
-            this.tbResp.TabIndex = 1;
-            // 
             // backgroundWorker1
             // 
             this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
@@ -181,6 +191,8 @@
             // 
             // cbHandler
             // 
+            this.cbHandler.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.cbHandler.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbHandler.FormattingEnabled = true;
             this.cbHandler.Items.AddRange(new object[] {

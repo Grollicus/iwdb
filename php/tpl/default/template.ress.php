@@ -10,7 +10,8 @@
 			echo '<option value="', $squad, '">', $squad, '</option>';
 		}
 		echo '</select>
-				<table id="resstbl"  cellpadding="0" cellspacing="0" border="0">
+				<table id="resstbl" cellpadding="0" cellspacing="0" border="0">
+					<thead>
 					<tr>
 						<th>
 							<a href="', $content['sortLinks'][0]['link'], '">Account', $content['sortLinks'][0]['active'] ? '<img src="'.$themeurl.'/img/'.$content['order'].'.png" alt="sort" />' : '','</a><br />
@@ -50,23 +51,7 @@
 							<a href="', $content['sortLinks'][16]['link'], '">Credits', $content['sortLinks'][16]['active'] ? '<img src="'.$themeurl.'/img/'.$content['order'].'.png" alt="sort" />' : '','</a><br />
 							<span class="sub"><a href="', $content['sortLinks'][17]['link'], '">Gelagert', $content['sortLinks'][17]['active'] ? '<img src="'.$themeurl.'/img/'.$content['order'].'.png" alt="sort" />' : '','</a></span>
 						</th>
-					</tr>';
-		foreach($content['users'] as $user) {
-			echo '
-				<tr class="', $user['age'], '">
-					<td>', $user['name'], '<br /><i style="font-size:smaller;">',$user['accountTyp'] , '@', $user['squad'], '</i></td>
-					<td align="right">', $user['vFe'], '<br /><span class="sub">', $user['tFe'], ' ', $user['fe'], '</span></td>
-					<td align="right">', $user['vSt'], '<br /><span class="sub">', $user['tSt'], ' ', $user['st'], '</span></td>
-					<td align="right">', $user['vVv'], '<br /><span class="sub">', $user['tVv'], ' ', $user['vv'], '</span></td>
-					<td align="right">', $user['vCh'], '<br /><span class="sub">', $user['tCh'], ' ', $user['ch'], '</span></td>
-					<td align="right">', $user['vEi'], '<br /><span class="sub">', $user['tEi'], ' ', $user['ei'], '</span></td>
-					<td align="right">', $user['vWa'], '<br /><span class="sub">', $user['tWa'], ' ', $user['wa'], '</span></td>
-					<td align="right">', $user['vEn'], '<br /><span class="sub">', $user['tEn'], ' ', $user['en'], '</span></td>
-					<td align="right">', $user['fp'], '</td>
-					<td align="right">', $user['vCr'], '<br /><span class="sub">', $user['cr'], '</span></td>
-				</tr>';
-		}
-		echo '<tr style="font-weight:bold;">
+					</tr></thead><tfoot><tr style="font-weight:bold;">
 					<td>Gesamt</td>
 					<td align="right">', $content['ges']['vFe'], '<br /><span class="sub">', $content['ges']['fe'], '</span></td>
 					<td align="right">', $content['ges']['vSt'], '<br /><span class="sub">', $content['ges']['st'], '</span></td>
@@ -83,7 +68,23 @@
 			echo '&nbsp;<span class="act_', $stage, '">', $time, '</span>';
 		}
 		echo '<span class="act_5">+</span></th></tr>
-				</table>
+				</tfoot><tbody>';
+		foreach($content['users'] as $user) {
+			echo '
+				<tr class="', $user['age'], '">
+					<td><a href="', $user['loginLink'], '">[', $user['name'], ']</a><br /><i style="font-size:smaller;">',$user['accountTyp'] , '@', $user['squad'], '</i></td>
+					<td align="right">', $user['vFe'], '<br /><span class="sub">', $user['tFe'], ' ', $user['fe'], '</span></td>
+					<td align="right">', $user['vSt'], '<br /><span class="sub">', $user['tSt'], ' ', $user['st'], '</span></td>
+					<td align="right">', $user['vVv'], '<br /><span class="sub">', $user['tVv'], ' ', $user['vv'], '</span></td>
+					<td align="right">', $user['vCh'], '<br /><span class="sub">', $user['tCh'], ' ', $user['ch'], '</span></td>
+					<td align="right">', $user['vEi'], '<br /><span class="sub">', $user['tEi'], ' ', $user['ei'], '</span></td>
+					<td align="right">', $user['vWa'], '<br /><span class="sub">', $user['tWa'], ' ', $user['wa'], '</span></td>
+					<td align="right">', $user['vEn'], '<br /><span class="sub">', $user['tEn'], ' ', $user['en'], '</span></td>
+					<td align="right">', $user['fp'], '</td>
+					<td align="right">', $user['vCr'], '<br /><span class="sub">', $user['cr'], '</span></td>
+				</tr>';
+		}
+		echo '</tbody></table>
 			</div>';
 		Templatefooter();
 	}
@@ -109,7 +110,7 @@
 			echo '</tr>';
 			foreach($squadmembers as $user) {
 				echo '<tr>
-					<td>', $user['name'], '</td>
+					<td>', $user['hasLogin'] ? '<a href="'.$user['loginLink'].'">['.$user['name']."]</a>" : $user['name'], '</td>
 					<td>', $user['fe'], '</td>
 					<td>', $user['st'], '</td>
 					<td>', $user['vv'], '</td>

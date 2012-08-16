@@ -18,7 +18,7 @@
 					<td><input type="text" name="anz[', $req['id'], ']" size="5" /></tr>';
 		}
 		echo '
-<tr><td colspan="12"><select name="todo"><option value="done">Erledigt</option><option value="ignore">Ignorieren</option><option value="unignore">Nicht mehr ignorieren</option><option value="delete">Löschen</value></select>&nbsp;<input type="submit" name="update" /></td></tr>
+<tr><td colspan="12"><select name="todo"><option value="done">Erledigt</option><option value="ignore">Ignorieren</option><option value="unignore">Nicht mehr ignorieren</option><option value="delete">Löschen</option></select>&nbsp;<input type="submit" name="update" /></td></tr>
 </table></form><br />
 <form action="', $content['submitUrl'], '" method="post">
 ', ReqID(), '

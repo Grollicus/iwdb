@@ -44,16 +44,6 @@
 				'loginLink' => $scripturl.'/index.php?action=sitter_login&amp;from=sitter_view&amp;jobid='.$row[0],
 				'ownershipState' => $row[1] == $ID_MEMBER ? 'own' : ($row[3] == $user['igmuser'] ? 'account' : 'none'),
 			);
-			/*if($a['hasOwnerLinks']) {
-				$a['editLink'] = $scripturl.'/index.php?action=sitter_ownex&amp;mod='.$row[6].'&amp;ID='.$row[0];
-				//TODO: $a['delLink']
-				if($row[6] == 'Geb') {
-					$a['canAppend'] = true;
-					$a['appendLink'] = $scripturl.'/index.php?action=sitter_ownex&amp;mod='.$row[6].'&amp;angehaengtAn='.$row[0];
-				} else {
-					$a['canAppend'] = false;
-				}
-			}*/
 		}
 		
 		$q = DBQuery("SELECT sitter.ID, sitter.uid, users.visibleName, sitter.igmid, igm_data.igmname, 

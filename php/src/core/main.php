@@ -68,6 +68,15 @@ function Index() {
 		}
 	}
 	
+	$q = DBQuery("SELECT time, event FROM {$pre}events ORDER BY ID DESC LIMIT 0,20", __FILE__, __LINE__);
+	$content['events'] = array();
+	while($row = mysql_fetch_row($q)) {
+		$content['events'][] = array(
+			'time' => FormatDate($row[0]),
+			'text' => $row[1], //unescaped, weil da schon Zeug in der DB steht
+		);
+	}
+	
 	TemplateInit('main');
 	TemplateIndex();
 }
@@ -143,4 +152,5 @@ function KbFormat() {
 	TemplateInit('main');
 	TemplateKbFormat();
 }
+
 ?>

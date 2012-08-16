@@ -5,10 +5,12 @@
 		if($user['isRestricted'])
 			die("hacking attempt");
 		
-		$q = DBQuery("SELECT igmname, squad FROM {$pre}igm_data", __FILE__, __LINE__);
+		$q = DBQuery("SELECT id, igmname, squad FROM {$pre}igm_data", __FILE__, __LINE__);
 		$squads = array();
+		$uids = array();
 		while($row = mysql_fetch_row($q)) {
-			$squads[$row[0]] = EscapeOU($row[1]);
+			$squads[$row[1]] = EscapeOU($row[2]);
+			$uids[$row[1]] = $row[0];
 		}
 		
 		$q = DBQuery("SELECT absender, SUM(eisen), SUM(stahl), SUM(chemie), SUM(vv4a), SUM(eis), SUM(wasser), SUM(energie), SUM(bev) FROM {$pre}bilanz GROUP BY absender", __FILE__, __LINE__);
@@ -97,16 +99,15 @@
 		$content['users'] = array();
 		foreach($ppl as $u) {
 			$a = array();
-			foreach($u as $k => $v) {
-				if($k == 'name') {
-					$a[$k] = $v;
-				} else {
-					$a[$k] = number_format($v, 0, ',', '.');
-				}
-			}
-			if(isset($squads[$a['name']])) {
+			$a['name'] = $u['name'];
+			foreach(array('fe', 'st', 'vv', 'ch', 'ei', 'wa', 'en', 'bev') as $k)
+				$a[$k] = number_format($u[$k], 0, ',', '.');
+			if(isset($squads[$u['name']])) {
+				$a['hasLogin'] = true;
+				$a['loginLink'] = $scripturl.'/index.php?action=sitter_login&amp;from=transporte&amp;id='.$uids[$u['name']];
 				$content['users'][$squads[$a['name']]][] = $a;
 			} else {
+				$a['hasLogin'] = false;
 				$content['users']['none'][] = $a;
 			}
 		}

@@ -18,6 +18,7 @@ namespace IWDB {
 		void BauleerlaufInfo(out int Anzahl, out List<Pair<int, String>> neuerLeerlauf);
         void SitterauftraegeOffen(out int offeneAuftraege, out int firstJobId, out DateTime naechsterAuftrag);
         void AnfliegendeFlotten(out uint flottenAnz, out uint zielplaniAnz);
+        void LogEvent(String evt);
         List<PlaniData> PlanisMitBesitzer(String name);
         List<PlaniData> PlanisInSystem(uint gala, uint sys);
     }
@@ -42,6 +43,30 @@ namespace IWDB {
 		Dictionary<String, String> objektKürzel;
 		Dictionary<String, String> planiKürzel;
 
+        static Dictionary<String, String> ircColors;
+        static IWDBChanModule() {
+            ircColors = new Dictionary<string, string>();
+            ircColors.Add("0", "white");
+            ircColors.Add("1", "black");
+            ircColors.Add("2", "navy");
+            ircColors.Add("3", "green");
+            ircColors.Add("4", "red");
+            ircColors.Add("5", "maroon");
+            ircColors.Add("6", "purple");
+            ircColors.Add("7", "orange");
+            ircColors.Add("8", "yellow");
+            ircColors.Add("9", "lime");
+            ircColors.Add("10", "teal");
+            ircColors.Add("11", "cyan");
+            ircColors.Add("12", "royal");
+            ircColors.Add("13", "fuchsia");
+            ircColors.Add("14", "grey");
+            ircColors.Add("15", "silver");
+            for (int i = 0; i < 16; ++i) {
+                ircColors.Add("," + i.ToString(), ircColors[i.ToString()]);
+            }
+        }
+
 		internal IWDBChanModule() {
 			objektKürzel = new Dictionary<string, string>();
 			objektKürzel.Add("", "FEHLER"); //Kann nur auftreten wenn beim Einfügen des Planis in die Datenbank etwas schief gegangen ist
@@ -64,8 +89,8 @@ namespace IWDB {
 			planiKürzel.Add("grav. Anomalie", "gAn");
 		}
 
-#region IIRCChanModule Member
-		public bool Disable() {
+        #region IIRCChanModule Member
+        public bool Disable() {
 			iwdb.OnNeueFlottenGesichtet -= NeueFlottenEntdecktCallback;
 			iwdb.OnNeueKbGesichtet -= NeueKabaEntdecktCallback;
 			chan.OnUserJoin -= OnUserJoin;
@@ -130,6 +155,46 @@ namespace IWDB {
 			this.config = Config;
 		}
 #endregion
+
+        public static String IrcToHtml(String msg) {
+            StringBuilder sb = new StringBuilder();
+            msg = IRCeX.ConfigUtils.XmlEscape(msg);
+            msg = System.Text.RegularExpressions.Regex.Replace(msg, "\u0003(\\d{1,2})?(,\\d{1,2})?", m => !m.Groups[1].Success ? "</span>" : "<span style=\"color: " + ircColors[m.Groups[1].Value] + (m.Groups[2].Success ? ";background-color:" + ircColors[m.Groups[2].Value] : "") + ";\">");
+            bool bold=false;
+            bool underline=false;
+
+            foreach (char c in msg) {
+                switch (c) {
+                    case IrcFormat.Bold:
+                        sb.Append(bold ? "</b>" : "<b>");
+                        bold = !bold;
+                        break;
+                    case IrcFormat.Underline:
+                        sb.Append(underline ? "</span>" : "<span style=\"text-decoration:underline;\">");
+                        underline = !underline;
+                        break;
+                    case IrcFormat.Reverse:
+                        //Nicht unterstützt, aber zumindest ignoriert
+                        break;
+                    default:
+                        sb.Append(c);
+                        break;
+                }
+            }
+            if (bold)
+                sb.Append("</b>");
+            if (underline)
+                sb.Append("</span>");
+            String str = sb.ToString();
+            for (int i = str.Replace("</span", "</spa").Length - str.Replace("<span", "<spa").Length; i > 0; i--) {
+                sb.Append("</span>");
+            }
+            return sb.ToString();
+        }
+
+        protected void LogEvent(String msg) {
+            iwdb.LogEvent(IrcToHtml(msg));
+        }
 
 		void OnUserJoin(string nick, string username, string host) {
 			iwdb.CheckLogin(nick, username, host);
@@ -278,9 +343,12 @@ namespace IWDB {
 			List<Pair<int, String>> neuerLeerlauf;
             iwdb.BauleerlaufInfo(out anzahl, out neuerLeerlauf);
 			foreach(Pair<int, String> igmAccount in neuerLeerlauf) {
-				chan.SendDelayedChanMsg(igmAccount.Item2 + " hat jetzt Leerlauf! " + baseUrl + "index.php?action=sitter_login&from=sitter_list&id=" + igmAccount.Item1);
+                String msg = igmAccount.Item2 + " hat jetzt Leerlauf! " + baseUrl + "index.php?action=sitter_login&from=sitter_list&id=" + igmAccount.Item1;
+                LogEvent(msg);
+				chan.SendDelayedChanMsg(msg);
             }
             if (anzahl > 0 || verbose) {
+                LogEvent(anzahl + " Leute haben momentan Bau- oder Forschungsleerlauf!");
                 chan.SendChanMsg(anzahl + " Leute haben momentan Bau- oder Forschungsleerlauf!");
             }
 
@@ -293,7 +361,9 @@ namespace IWDB {
                 if (offen == 0) {
                     chan.SendChanMsg("Es sind momentan 0 Sitteraufträge offen!");
                 } else {
-					chan.SendChanMsg(SitterSpamColor + "Es sind momentan " + offen + " Sitteraufträge offen! " + baseUrl + "index.php?action=sitter_login&from=sitter_view&jobid=" + jobid);
+                    String msg = SitterSpamColor + "Es sind momentan " + offen + " Sitteraufträge offen! " + baseUrl + "index.php?action=sitter_login&from=sitter_view&jobid=" + jobid;
+                    LogEvent(msg);
+					chan.SendChanMsg(msg);
                 }
             if (verbose && naechster!=DateTime.MinValue) {
                 TimeSpan s = naechster - DateTime.Now;
@@ -303,17 +373,27 @@ namespace IWDB {
 		void FlottenSpam(bool verbose) {
             uint flottenAnz, zielPlaniAnz;
             iwdb.AnfliegendeFlotten(out flottenAnz, out zielPlaniAnz);
-            if (flottenAnz > 0 || verbose)
-                chan.SendChanMsg(FlottenSpamColor+"Innerhalb der nächsten 5 Minuten kommen " + flottenAnz + " Flotten bei " + zielPlaniAnz + " verschiedenen Zielplanis an!");
+            if (flottenAnz > 0 || verbose) {
+                String msg = FlottenSpamColor + "Innerhalb der nächsten 5 Minuten kommen " + flottenAnz + " Flotten bei " + zielPlaniAnz + " verschiedenen Zielplanis an!";
+                LogEvent(msg);
+                chan.SendChanMsg(msg);
+            }
 		}
 		void NeueFlottenEntdecktCallback(String spieler, int anz, bool angriff) {
-			if(angriff)
-				chan.SendChanMsg(FlottenSpamColor + IrcFormat.Bold + "ANGRIFF " + IrcFormat.Bold + " auf " + spieler + " - " + anz + " neue angreifende Flotten!");
-			else
-				chan.SendChanMsg(FlottenSpamColor + IrcFormat.Bold + "SCAN" + IrcFormat.Bold + " auf " + spieler + " - " + anz + " neue Scans!");
+            if (angriff) {
+                String msg = FlottenSpamColor + IrcFormat.Bold + "ANGRIFF " + IrcFormat.Bold + " auf " + spieler + " - " + anz + " neue angreifende Flotten!";
+                LogEvent(msg);
+                chan.SendChanMsg(msg);
+            } else {
+                String msg = FlottenSpamColor + IrcFormat.Bold + "SCAN" + IrcFormat.Bold + " auf " + spieler + " - " + anz + " neue Scans!";
+                LogEvent(msg);
+                chan.SendChanMsg(msg);
+            }
 		}
 		void NeueKabaEntdecktCallback(uint gala, uint sys, uint pla, string ownerName, string ownerAlly) {
-			chan.SendChanMsg(FlottenSpamColor + IrcFormat.Bold + "KABA" + IrcFormat.Bold + " "+gala+":"+sys+":"+pla+" von "+ownerName+(ownerAlly != null ? "["+ownerAlly+"]" : ""));
+            String msg = FlottenSpamColor + IrcFormat.Bold + "KABA" + IrcFormat.Bold + " " + gala + ":" + sys + ":" + pla + " von " + ownerName + (ownerAlly != null ? "[" + ownerAlly + "]" : "");
+            LogEvent(msg);
+			chan.SendChanMsg(msg);
 		}
 	}
 	public class IWDBChanModuleFactory:IIRCChanModuleFactory {

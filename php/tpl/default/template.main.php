@@ -18,7 +18,12 @@
 				echo '<br /><span style="font-size: large;" class="', $problem['class'], '">', $problem['text'], '</span>';
 		}
 		echo GetText2('welcomepage');
-		echo '</div>';
+		echo '<br /><br /><table width="100%"><tr><th colspan="2">Neue Ereignisse</th></tr>';
+		
+		foreach($content['events'] as $evt) {
+			echo '<tr><td style="width:150px;">', $evt['time'], '</td><td>', $evt['text'], '</td></tr>';
+		}
+		echo '</table></div>';
 		TemplateFooter();
 	}
 	
@@ -67,7 +72,7 @@
 		TemplateMenu();
 		
 		echo '<div class="content">
-		<form method="POST" action="', $content['submiturl'], '">
+		<form method="post" action="', $content['submiturl'], '">
 		<input type="hidden" name="ID" value="',$content['settings']['id']['data'],'" />
 		<table cellpadding="0" cellspacing="0" border="0">
 			<tr><th colspan="2">Einstellungen</th></tr>';
@@ -117,7 +122,7 @@
 				case 'accounttyp':
 					echo '<td><select name="', $name, '">';
 					foreach($mod['data'] as $val => $desc) {
-						echo '<option value="', $val, '" , ',$desc['selected'] ? 'selected="selected" ' : '','>', $desc['text'], '</option>';
+						echo '<option value="', $val, '" ',$desc['selected'] ? 'selected="selected" ' : '','>', $desc['text'], '</option>';
 					}
 					echo '</select></td>';
 					break;
@@ -263,12 +268,18 @@ echo '
 		global $content;
 		TemplateHeader();
 		TemplateMenu();
-		echo '<div class="content"><h2>(Gebbau-)Inaktive</h2><table>
-		<tr><th>Name</th><th>&nbsp;</th><th>Gebpts</th></tr>';
+		echo '<div class="content"><h2>(Gebbau-)Inaktive</h2>
+		<script type="text/javascript">
+			$(document).ready(function() {
+				$("#inactives_table").tablesorter();
+			});
+		</script>
+		<table border="0" class="tablesorter" id="inactives_table">
+		<thead><tr><th>Name</th><th>&nbsp;</th><th>Gebpts</th></tr></thead><tbody>';
 		foreach($content['inactives'] as $line) {
 			echo '<tr class=',$line['age'],'><td>', $line['name'], '</td><td>', $line['span'], '</td><td>', $line['pts'], '</td></tr>';
 		}
-		echo '</table></div>';
+		echo '</tbody></table></div>';
 		TemplateFooter();
 	}
 ?>

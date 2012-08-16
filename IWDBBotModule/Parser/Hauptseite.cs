@@ -15,19 +15,39 @@ namespace IWDB.Parser {
             AddPatern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch + @"[\s\S]+?
 			#Lebensbedingungen,Flottenscannerreichweite, Leerzeile danach, Serverzeit, Kolonien aktuell/maximal, Schiffsübersicht,...
 			Forschungsstatus\s+
-			(.+)");
+			([^\n]+)\s+("+IWZeit+")");
 			AddPatern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch);
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
 			ownerCache = RequestCache<List<uint>>("OwnerCache");
 			this.warFilter = warFilter;
 		}
+
+        private uint getItemID(String name, String type, MySqlConnection con) {
+            MySqlCommand cmd = new MySqlCommand("SELECT ID FROM " + DBPrefix + "techtree_items WHERE name=?name AND type=?type", con);
+            cmd.Parameters.Add("?name", MySqlDbType.String).Value = name;
+            cmd.Parameters.Add("?type", MySqlDbType.String).Value = type;
+            cmd.Prepare();
+            object obj = cmd.ExecuteScalar();
+            if (obj != null) {
+                return (uint)obj;
+            }
+            MySqlCommand insert = new MySqlCommand("INSERT INTO " + DBPrefix + "techtree_items (name, type) VALUES (?name, ?type)", con);
+            insert.Parameters.Add("?name", MySqlDbType.String).Value = name;
+            insert.Parameters.Add("?type", MySqlDbType.String).Value = type;
+            insert.Prepare();
+            insert.ExecuteNonQuery();
+            return (uint)insert.LastInsertedId;
+        }
+
 		public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			ownerCache.Clear();
 			foreach(Match m in matches) {
 				PlaniFetcher f = new PlaniFetcher(handler.BesData, con, DBPrefix);
 				String[] parts = m.Groups[1].Value.Split(':');
-				if(parts.Length < 3)
-					return;
+                if (parts.Length < 3) {
+                    resp.RespondError("Fehler beim Einlesen der Koloinformationen (" + m.Groups[1].Value + "): Koordinaten kaputt!\n");
+                    return;
+                }
 				f.Gala = uint.Parse(parts[0]);
 				f.Sys = uint.Parse(parts[1]);
 				f.Pla = uint.Parse(parts[2]);
@@ -60,12 +80,6 @@ namespace IWDB.Parser {
 				bauCleanup.ExecuteNonQuery();
 
 				if(m.Groups[2].Success) {
-					Match timeMatch = Regex.Match(m.Groups[2].Value, ".*?(" + IWZeit + ")");
-					if(!timeMatch.Success) {
-						resp.RespondError("Fehler beim Uhrzeit parsen!");
-						return;
-					}
-
 					MySqlCommand iwsaQry = new MySqlCommand("SELECT iwsa FROM " + DBPrefix + "igm_data WHERE ID=?id", con);
 					iwsaQry.Parameters.Add("?id", MySqlDbType.UInt32).Value = uid;
 					iwsaQry.Prepare();
@@ -74,9 +88,9 @@ namespace IWDB.Parser {
 					MySqlCommand qry = new MySqlCommand("INSERT INTO " + DBPrefix + "building (uid, plani, end) VALUES (?uid, 0, ?end)", con);
 					qry.Parameters.Add("?uid", MySqlDbType.UInt32).Value = uid;
 					if(iwsa)
-						qry.Parameters.Add("?end", MySqlDbType.UInt32).Value = IWDBUtils.parseIWTime(timeMatch.Groups[1].Value) + 10800;
+						qry.Parameters.Add("?end", MySqlDbType.UInt32).Value = IWDBUtils.parseIWTime(m.Groups[3].Value) + 10800;
 					else
-						qry.Parameters.Add("?end", MySqlDbType.UInt32).Value = IWDBUtils.parseIWTime(timeMatch.Groups[1].Value);
+						qry.Parameters.Add("?end", MySqlDbType.UInt32).Value = IWDBUtils.parseIWTime(m.Groups[3].Value);
 					qry.Prepare();
 					qry.ExecuteNonQuery();
 				}
@@ -92,10 +106,20 @@ namespace IWDB.Parser {
 					return;
 				}
 				uint lastUpdTime = (uint)ret;
-				MySqlCommand lastParseUpd = new MySqlCommand(@"UPDATE " + DBPrefix + "igm_data SET lastParsed=?lp WHERE ID=?id", con);
-				lastParseUpd.Parameters.Add("?lp", MySqlDbType.UInt32).Value = now;
-				lastParseUpd.Parameters.Add("?id", MySqlDbType.UInt32).Value = uid;
-				lastParseUpd.ExecuteNonQuery();
+                if (m.Groups[2].Success) {
+                    MySqlCommand lastParseUpd = new MySqlCommand(@"UPDATE " + DBPrefix + "igm_data SET lastParsed=?lp, forschung=?for, forschung_ende=?end WHERE ID=?id", con);
+                    lastParseUpd.Parameters.Add("?lp", MySqlDbType.UInt32).Value = now;
+                    lastParseUpd.Parameters.Add("?for", MySqlDbType.UInt32).Value = getItemID(m.Groups[2].Value, "geb", con);
+                    lastParseUpd.Parameters.Add("?end", MySqlDbType.UInt32).Value = IWDBUtils.parseIWTime(m.Groups[3].Value);
+                    lastParseUpd.Parameters.Add("?id", MySqlDbType.UInt32).Value = uid;
+                    lastParseUpd.ExecuteNonQuery();
+                } else {
+                    MySqlCommand lastParseUpd = new MySqlCommand(@"UPDATE " + DBPrefix + "igm_data SET lastParsed=?lp WHERE ID=?id", con);
+                    lastParseUpd.Parameters.Add("?lp", MySqlDbType.UInt32).Value = now;
+                    lastParseUpd.Parameters.Add("?id", MySqlDbType.UInt32).Value = uid;
+                    lastParseUpd.ExecuteNonQuery();
+                }
+
 				int sitterfact = 1;
 				if(warFilter.InWar) {
 					sitterfact = 5;

@@ -114,7 +114,7 @@ function WarScans() {
 		while($row = mysql_fetch_row($q)) {
 			$wardata['scans'][] = array(
 				'id' => $row[0],
-				'url' => 'http://www.icewars.de/portal/kb/de/sb.php?id='.$row[1].'&md_hash='.$row[2],
+				'url' => 'http://www.icewars.de/portal/kb/de/sb.php?id='.$row[1].'&amp;md_hash='.$row[2],
 				'date' => FormatDate($row[3]),
 				'coords' => $row[4].':'.$row[5].':'.$row[6],
 				'typ' => EscapeOU($row[7]),

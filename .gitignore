@@ -1,1 +1,3 @@
 *.suo
+/Tester/obj
+/Tester/bin

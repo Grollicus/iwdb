@@ -352,6 +352,17 @@ AND action IN('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/R
 				Monitor.Exit(mysql);
 			}
         }
+        public void LogEvent(String evt) {
+            mysql.Open();
+            try {
+                MySqlCommand cmd = new MySqlCommand("INSERT INTO "+DBPrefix+"events (time, event) VALUES (?time, ?evt)", mysql);
+                cmd.Parameters.Add("?time", MySqlDbType.UInt32).Value = IWDBUtils.toUnixTimestamp(DateTime.Now);
+                cmd.Parameters.Add("?evt", MySqlDbType.String).Value = evt;
+                cmd.ExecuteNonQuery();
+            } finally {
+                mysql.Close();
+            }
+        }
         #endregion
         protected bool UserNickChangeHandler(IRCMessage Msg) {
             int pos = usersLoggedIn.BinarySearch(Msg.SenderNick);
