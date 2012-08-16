@@ -327,13 +327,14 @@ namespace IWDB.Parser {
 			responses = new Dictionary<string, int>();
 		}
 		protected void Respond(bool error, String message) {
+            message = IRCeX.ConfigUtils.XmlEscape(message);
 			if (responses.ContainsKey(message)) {
 				if (error)
 					responses[message]--;
 				else
 					responses[message]++;
 			} else {
-				responses.Add(IRCeX.ConfigUtils.XmlEscape(message), error ? -1 : 1);
+				responses.Add(message, error ? -1 : 1);
 			}
 		}
 		public void Respond(String Message) {

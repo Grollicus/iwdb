@@ -50,7 +50,7 @@ namespace IWDB.Parser {
                     pDiff.Value = int.Parse(m.Groups[8].Value);
                     pDabei.Value = IWDBUtils.toUnixTimestamp(DateTime.ParseExact(m.Groups[9].Value, "dd.MM.yyyy", null, System.Globalization.DateTimeStyles.AssumeLocal|System.Globalization.DateTimeStyles.AdjustToUniversal));
                     if (ins.ExecuteNonQuery() == 0) {
-                        resp.Respond("HS &uuml;bersprungen!");
+                        resp.Respond("HS übersprungen!");
                         continue;
                     }
 
