@@ -43,11 +43,11 @@ namespace IWDB.Parser {
                     pPos.Value = uint.Parse(m.Groups[1].Value);
                     pName.Value = m.Groups[2].Value;
                     pAlly.Value = m.Groups[3].Value;
-                    pGebp.Value = uint.Parse(m.Groups[4].Value);
-                    pForp.Value = uint.Parse(m.Groups[5].Value);
-                    pGesp.Value = uint.Parse(m.Groups[6].Value);
-                    pPpd.Value = double.Parse(m.Groups[7].Value);
-                    pDiff.Value = int.Parse(m.Groups[8].Value);
+                    pGebp.Value = uint.Parse(m.Groups[4].Value, System.Globalization.NumberStyles.Any);
+                    pForp.Value = uint.Parse(m.Groups[5].Value, System.Globalization.NumberStyles.Any);
+                    pGesp.Value = uint.Parse(m.Groups[6].Value, System.Globalization.NumberStyles.Any);
+                    pPpd.Value = double.Parse(m.Groups[7].Value, System.Globalization.NumberStyles.Any);
+                    pDiff.Value = int.Parse(m.Groups[8].Value, System.Globalization.NumberStyles.Any);
                     pDabei.Value = IWDBUtils.toUnixTimestamp(DateTime.ParseExact(m.Groups[9].Value, "dd.MM.yyyy", null, System.Globalization.DateTimeStyles.AssumeLocal|System.Globalization.DateTimeStyles.AdjustToUniversal));
                     if (ins.ExecuteNonQuery() == 0) {
                         resp.Respond("HS übersprungen!");
@@ -55,7 +55,7 @@ namespace IWDB.Parser {
                     }
 
                     pInsName.Value = m.Groups[2].Value;
-                    pInsGebp.Value = uint.Parse(m.Groups[4].Value);
+                    pInsGebp.Value = uint.Parse(m.Groups[4].Value, System.Globalization.NumberStyles.Any);
                     insInactive.ExecuteNonQuery();
 
                     resp.Respond("HS eingelesen!");

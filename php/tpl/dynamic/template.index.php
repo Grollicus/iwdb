@@ -31,62 +31,72 @@ if(!function_exists('TemplateMenu')) {
 	function TemplateMenu() {
 		global $scripturl, $content, $user, $spiel, $uni_presets;
 		echo '
-		<table class="menu" cellspacing="0" cellpadding="0">
-			<tr><th><a class="',$content['action'] == 'index' ? 'active' : 'item','" href="', $scripturl, '/?action=index">Index</a></th></tr>
-			<tr><td><a class="',$content['action'] == 'newscanex' ? 'active' : 'item','" href="', $scripturl, '/?action=newscanex">Neuer Bericht</a></td></tr>
-			', !$user['isRestricted'] ? '<tr><td><a class="'.($content['action'] == 'hs' ? 'active' : 'item').'" href="'.$scripturl.'/?action=hs">Top 5</a></td></tr>' : '','
-			<tr><th>Universum</th></tr>
-			<tr><td><a class="',$content['action'] == 'uni_map' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_map">Karte</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'uni_view' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_view">Suche</a>';
-		foreach($uni_presets as $presetname => $preseturl) {
-			echo '<br /><a style="font-size:smaller; padding-left:8px;" class="item" href="', $scripturl, '/?action=uni_view&amp;',$preseturl,'">', $presetname, '</a>';
-		}
-		echo '
-			</td></tr>
-			<!--tr><td><a class="',$content['action'] == 'uni_whosat' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_whosat">Wer ist in...</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'uni_allyat' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_allyat">Wo ist Ally xyz..?</a></td></tr-->
-			<tr><td><a class="',$content['action'] == 'uni_allyoverview' ? 'active' : 'item','" href="', $scripturl, '/?action=uni_allyoverview">Ally-Gala-&Uuml;bersicht</a></td></tr>';
-		if(!$user['isRestricted'])
-		echo '
-			<tr><th>Ress</th></tr>
-			<tr><td><a class="',$content['action'] == 'trade_list' ? 'active' : 'item','" href="', $scripturl, '/?action=trade_list">Handel</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'raids' ? 'active' : 'item','" href="', $scripturl, '/?action=raids">Raids</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'ressuserlist' ? 'active' : 'item','" href="', $scripturl, '/?action=ressuserlist">Produktion</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'transporte' ? 'active' : 'item','" href="', $scripturl, '/?action=transporte">Bilanz</a></td></tr>';
-		echo '
-			<tr><th>Sitterzeugs</th></tr>';
-		if(!$user['isRestricted'])
-		echo '
-			<tr><td><a class="',$content['action'] == 'sitter_view' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_view">Sitterauftr&auml;ge <span id="sitter_job_cnt">', $content['sitter_job_cnt'] > 0 ? ' ('.$content['sitter_job_cnt'].')' : '', '</span></a></td></tr>
-			<tr><td><a class="',$content['action'] == 'sitter_list' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_list">Sitterlogins</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'sitter_own' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_own">Meine Auftr&auml;ge</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'sitter_history' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_history">History</a></td></tr>';
-		echo '
-			<tr><td><a class="',$content['action'] == 'sitter_flotten' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_flotten">Flottenübersicht</a></td></tr>
+		<div id="menu">
+		<ul>
+			<li><a href="', $scripturl, '/?action=index">Index</a></li>
+			<li><a href="', $scripturl, '/?action=newscanex">Neuer Bericht</a></li>
+			', !$user['isRestricted'] ? '<li><a class="'.($content['action'] == 'hs' ? 'active' : 'item').'" href="'.$scripturl.'/?action=hs">Top 5</a></li>' : '','
 			
-			<tr><th>Krieg</th></tr>
-			<tr><td><a class="',$content['action'] == 'war_kbs' ? 'active' : 'item','" href="', $scripturl, '/?action=war_kbs">Kampfberichte</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'war_scans' ? 'active' : 'item','" href="', $scripturl, '/?action=war_scans">Scans</a></td></tr>';
+			<li>Universum
+				<ul>
+					<li><a href="', $scripturl, '/?action=uni_map">Karte</a></li>
+					<li><a href="', $scripturl, '/?action=uni_view">Suche</a>
+				<ul>';
+		foreach($uni_presets as $presetname => $preseturl) {
+			echo '<li><a style="font-size:smaller;" class="item" href="', $scripturl, '/?action=uni_view&amp;',$preseturl,'">', $presetname, '</a></li>';
+		}
+		echo '</ul></li>
+				<li><a href="', $scripturl, '/?action=uni_allyoverview">Ally-Galas</a></li>
+			</ul></li>';
 		if(!$user['isRestricted'])
 		echo '
-			<tr><td><a class="',$content['action'] == 'war_schedule' ? 'active' : 'item','" href="', $scripturl, '/?action=war_schedule">Zeitplan</a></td></tr>';
+			<li>Ress
+				<ul>
+					<li><a href="', $scripturl, '/?action=trade_list">Handel</a></li>
+					<li><a href="', $scripturl, '/?action=raids">Raids</a></li>
+					<li><a href="', $scripturl, '/?action=ressuserlist">Produktion</a></li>
+					<li><a href="', $scripturl, '/?action=transporte">Bilanz</a></li>
+			</ul></li>';
 		echo '
-			<tr><th>Sonstiges</th></tr>
-			<tr><td><a class="',$content['action'] == 'techtree' ? 'active' : 'item','" href="', $scripturl, '/?action=techtree">Techtree</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'highscore_inactives' ? 'active' : 'item','" href="', $scripturl, '/?action=highscore_inactives">Inaktivensuche</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'settingsex' ? 'active' : 'item','" href="', $scripturl, '/?action=settingsex">Einstellungen</a></td></tr>';
+			<li>Sitter
+				<ul>';
+		if(!$user['isRestricted'])
+		echo '
+				<li><a href="', $scripturl, '/?action=sitter_view">Aufträge <span id="sitter_job_cnt">', $content['sitter_job_cnt'] > 0 ? ' ('.$content['sitter_job_cnt'].')' : '', '</span></a></li>
+				<li><a href="', $scripturl, '/?action=sitter_list">Logins</a></li>
+				<li><a href="', $scripturl, '/?action=sitter_own">Meine Auftr&auml;ge</a></li>
+				<li><a href="', $scripturl, '/?action=sitter_history">History</a></li>';
+		echo '
+				<li><a href="', $scripturl, '/?action=sitter_flotten">Flotten</a></li>
+			</ul></li>
+			<li>Krieg
+				<ul>
+					<li><a href="', $scripturl, '/?action=war_kbs">Kampfberichte</a></li>
+					<li><a href="', $scripturl, '/?action=war_scans">Scans</a></li>';
+		if(!$user['isRestricted'])
+		echo '
+					<li><a href="', $scripturl, '/?action=war_schedule">Zeitplan</a></li>';
+		echo '
+				</ul></li>
+			<li>Sonstiges
+				<ul>
+					<li><a href="', $scripturl, '/?action=techtree">Techtree</a></li>
+					<li><a href="', $scripturl, '/?action=highscore_inactives">Inaktivensuche</a></li>
+					<li><a href="', $scripturl, '/?action=settingsex">Einstellungen</a></li>
+				</ul></li>';
 		if($user['isAdmin'])
-		echo '
-				<tr><th>Admin</th></tr>
-				<tr><td><a class="',$content['action'] == 'mysql' ? 'active' : 'item','" href="', $scripturl, '/?action=mysql">Mysql-Client</a></td></tr>
-				<tr><td><a class="',$content['action'] == 'speedlog' ? 'active' : 'item','" href="', $scripturl, '/?action=speedlog">Speedlog</a></td></tr>
-				<tr><td><a class="',$content['action'] == 'errors' ? 'active' : 'item','" href="', $scripturl, '/?action=errors">Fehlerlog</a></td></tr>				
-				<tr><td><a class="',$content['action'] == 'useradmin' ? 'active' : 'item','" href="', $scripturl, '/?action=useradmin">Useradmin</a></td></tr>
-				<tr><td><a class="',$content['action'] == 'texts' ? 'active' : 'item','" href="', $scripturl, '/?action=texts">Texte bearbeiten</a></td></tr>
-				<tr><td><a class="',$content['action'] == 'util' ? 'active' : 'item','" href="', $scripturl, '/?action=util">Utils</a></td></tr>';
-echo '		<tr><th>&nbsp;</th></tr>
-			<tr><td><a class="item" href="'.$scripturl.'/?action=logout">Logout</a></td></tr>
-		</table>
+			echo '
+				<li>Admin
+					<ul>
+						<li><a href="', $scripturl, '/?action=mysql">Mysql-Client</a></li>
+						<li><a href="', $scripturl, '/?action=speedlog">Speedlog</a></li>
+						<li><a href="', $scripturl, '/?action=errors">Fehlerlog</a></li>				
+						<li><a href="', $scripturl, '/?action=useradmin">Useradmin</a></li>
+						<li><a href="', $scripturl, '/?action=texts">Texte bearbeiten</a></li>
+						<li><a href="', $scripturl, '/?action=util">Utils</a></li>
+					</ul></li>';
+echo '	</ul>
+		</div>
 ';
 	}
 }
@@ -137,26 +147,24 @@ if (!function_exists('TemplateHeader'))
 		TemplateHtmlHeader($html_header_add);
 		echo '
 <body class="body"><div class="page">
-	<div class="header">
-		<table width="100%" cellpadding="0" cellspacing="0" border="0">
-			<tr class="categoryheader">
-				<td style="height: 32px;">
-					<span style="font-size: 140%; font-weight: bold;">StonedSheep - ', strtoupper($spiel), 'DB</span>
-				</td>
-				<td id="dhtml_loading_header" style="text-align:left; padding:10px; font-weight:bold;">
-				</td>
-			</tr>
-			<tr><td class="categoryheader">
-				<a href="', $scripturl, '/index.php?action=iwlogin&amp;from=', $content['action'], '">[', strtoupper($spiel), ']</a>&nbsp;&nbsp;
-				<a href="/blub/">[Forum]</a>&nbsp;&nbsp;
-				<a href="', $scripturl, '/index.php?action=sitter_login&amp;from=', $content['action'], '&amp;id=next" title="Sitterlogin zum nächsten Account">[Sitten]</a>&nbsp;&nbsp;
-				<b>User Online:</b> ', implode(', ', $content['users_online']), '
-				</td><td class="categoryheader" style="text-align: right;">
-				<a href="', $scripturl, '/index.php?action=kbformat">[KBFormat]</a>
-				<a href="', $scripturl, '/index.php?action=help_page">[FAQ]</a>
-			</td></tr>
-		</table>
-	</div>'; 
+	<div id="header">
+		<h1>StonedSheep - ', strtoupper($spiel), 'DB</h1>
+		<span id="dhtml_loading_header" style="text-align:right; right:0px; padding:10px; font-weight:bold;"></span>
+	</div>
+	<div id="nav">
+		<div id="navl">
+			<a href="', $scripturl, '/index.php?action=iwlogin&amp;from=', $content['action'], '">[', strtoupper($spiel), ']</a>&nbsp;&nbsp;
+			<a href="/blub/">[Forum]</a>&nbsp;&nbsp;
+			<a href="', $scripturl, '/index.php?action=sitter_login&amp;from=', $content['action'], '&amp;id=next" title="Sitterlogin zum nächsten Account">[Sitten]</a>&nbsp;&nbsp;
+		</div>
+		<div id="navr">
+			<a href="', $scripturl, '/index.php?action=kbformat">[KBFormat]</a>&nbsp;&nbsp;
+			<a href="', $scripturl, '/index.php?action=help_page">[FAQ]</a>&nbsp;&nbsp;
+			<a href="'.$scripturl.'/?action=logout">[Logout]</a>
+		</div>
+	</div>
+	<div id="usersonline">', implode(', ', $content['users_online']), '</div>
+	<div id="main">'; 
 	}
 }
 
@@ -174,7 +182,8 @@ if (!function_exists('TemplateFooter'))
 	{
 		global $starttime, $sql_log, $content;
 		echo '
-	<div class="footer">';
+	</div>
+	<div id="footer">';
 		if($content['debug_mode'] >= 1) {
 			echo '
 		<hr style="margin-top:20px;" />
