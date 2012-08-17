@@ -6,11 +6,12 @@ function SitterList() {
 	global $content, $pre, $sittercolor_stages, $user, $scripturl;
 	if($user['isRestricted'])
 		die("hacking attempt");
+	$now = time();
 	
 	$q = DBQuery("SELECT igm_data.id, igm_data.igmname, igm_data.accounttyp, igm_data.squad, igm_data.ikea, igm_data.mdp, igm_data.iwsa, 0, MIN(flotten.ankunft) AS flottenAnkunft, igm_data.lastParsed, techtree_items.name, igm_data.forschung_ende
 FROM ((({$pre}igm_data AS igm_data)
 LEFT JOIN {$pre}universum AS universum ON igm_data.igmname = universum.ownername)
-LEFT JOIN {$pre}flotten AS flotten ON flotten.action IN ('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/Ress)') AND universum.ID=flotten.zielid)
+LEFT JOIN {$pre}flotten AS flotten ON flotten.action IN ('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/Ress)') AND flotten.ankunft>={$now} AND universum.ID=flotten.zielid)
 LEFT JOIN {$pre}techtree_items AS techtree_items ON techtree_items.id=igm_data.forschung 
 GROUP BY igm_data.id", __FILE__, __LINE__);
 	$content['list'] = array();

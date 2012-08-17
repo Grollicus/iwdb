@@ -18,7 +18,7 @@ function Index() {
 		$content['problems'][] = array(
 				'class' => 'imp',
 				'text' => 'Du hast keine Sitterdaten eingetragen!',
-				'link' => $scripturl. '/index.php?action=settings',
+				'link' => $scripturl. '/index.php?action=settingsex',
 			);
 	}
 	if($user['isAdmin']) {
