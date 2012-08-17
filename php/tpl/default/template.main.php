@@ -277,7 +277,7 @@ echo '
 		<table border="0" class="tablesorter" id="inactives_table">
 		<thead><tr><th>Name</th><th>&nbsp;</th><th>Gebpts</th></tr></thead><tbody>';
 		foreach($content['inactives'] as $line) {
-			echo '<tr class=',$line['age'],'><td>', $line['name'], '</td><td>', $line['span'], '</td><td>', $line['pts'], '</td></tr>';
+			echo '<tr class="',$line['age'],'"><td>', $line['name'], '</td><td>', $line['span'], '</td><td>', $line['pts'], '</td></tr>';
 		}
 		echo '</tbody></table></div>';
 		TemplateFooter();

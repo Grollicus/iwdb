@@ -214,12 +214,12 @@ body, td, th, tr {
 /* Bilder sollen keinen Rand haben, sähe doof aus. Muss nach unten */
 img { border-width: 0px; }
 
-*.act_0, *.act_0 td { background-color: #00FF00; }
-*.act_1, *.act_1 td { background-color: #80FF00; }
-*.act_2, *.act_2 td { background-color: #C4FF00; }
-*.act_3, *.act_3 td { background-color: #FFFF00; }
-*.act_4, *.act_4 td { background-color: #FF8040; }
-*.act_5, *.act_5 td { background-color: #FF0000; }
+*.act_0, *.act_0 td { background-color: #00FF00 !important; }
+*.act_1, *.act_1 td { background-color: #80FF00 !important;}
+*.act_2, *.act_2 td { background-color: #C4FF00 !important; }
+*.act_3, *.act_3 td { background-color: #FFFF00 !important; }
+*.act_4, *.act_4 td { background-color: #FF8040 !important; }
+*.act_5, *.act_5 td { background-color: #FF0000 !important; }
 
 /* tablesorter */
 table.tablesorter {
@@ -236,7 +236,7 @@ table.tablesorter thead tr th, table.tablesorter tfoot tr th {
 	padding: 4px;
 }
 table.tablesorter thead tr .header {
-	background-image: url(img/bg.gif);
+	background-image: url('img/bg.gif');
 	background-repeat: no-repeat;
 	background-position: center right;
 	cursor: pointer;
@@ -251,10 +251,10 @@ table.tablesorter tbody tr.odd td {
 	background-color:#F0F0F6;
 }
 table.tablesorter thead tr .headerSortUp {
-	background-image: url(img/asc.gif);
+	background-image: url('img/asc.gif');
 }
 table.tablesorter thead tr .headerSortDown {
-	background-image: url(img/desc.gif);
+	background-image: url("img/desc.gif");
 }
 table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
 background-color: #8dbdd8;

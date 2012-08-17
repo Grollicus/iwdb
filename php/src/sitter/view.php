@@ -89,7 +89,7 @@
 			$ret .= (!empty($ret) ? '<br/>' : '').'[Bauschleife]';
 		}
 		if(!empty($row[15])) {
-			$ret .= (!empty($ret) ? '<br/>' : '').'<i>'.nl2br(EscapeOU($row[15])).'</i)';
+			$ret .= (!empty($ret) ? '<br/>' : '').'<i>'.nl2br(EscapeOU($row[15])).'</i>';
 		}
 		return $ret;
 	}
