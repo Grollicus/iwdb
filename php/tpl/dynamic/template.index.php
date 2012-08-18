@@ -17,9 +17,11 @@ if(!function_exists('TemplateHtmlHeader')) {
 	<meta name="description" content="StonedSheep - IWDB" />
 	<title>StonedSheep-DB</title>
 	<link rel="stylesheet" type="text/css" href="'.$themeurl.'/style.css" />
+	<link rel="stylesheet" type="text/css" href="'.$themeurl.'/jquery-ui.css" />
 	<link rel="icon" href="favicon.png" type="image/png" />
 	<script type="text/javascript" src="', $themeurl, '/jquery-1.8.0.min.js"></script>
 	<script type="text/javascript" src="', $themeurl, '/jquery.tablesorter.min.js"></script>
+	<script type="text/javascript" src="', $themeurl, '/jquery-ui-1.8.23.custom.min.js"></script>
 	<script type="text/javascript" src="', $themeurl, '/dhtml.js"></script>
 	<script type="text/javascript"><!-- // --><![CDATA[
 		var themeurl = "', $themeurl, '";
@@ -38,14 +40,16 @@ if(!function_exists('TemplateHtmlHeader')) {
 		window.setTimeout(timerCallback, 120000);
 		
 		function loadContent(url) {
-			$("#content").load(url+" #content");
+			$("#content").load(url+" #content", function(data, status, xhr) {
+				var v = $(xhr.responseText).filter("script");
+				$.each(v, function(idx, val) { eval(val.text);});
+			});
 		}
 		$(document).ready(function() {
 			$("#menu a").click(function() {
 				loadContent(this.href);
 				return false;
 			});
-			loadContent("newscanex");
 		});
 		
 		', '

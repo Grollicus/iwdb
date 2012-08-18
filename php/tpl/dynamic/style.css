@@ -80,6 +80,7 @@ table tr td, table tr th {
 	margin: 1em 0 0;
 }
 #footer {
+	clear:both;
 }
 hr {
 	border: none;

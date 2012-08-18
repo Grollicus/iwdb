@@ -194,7 +194,27 @@
 		TemplateHeader();
 		TemplateMenu();
 
-		echo '<div><form method="get" action="', $scripturl, '">Top <input type="hidden" name="action" value="hs" /><input type="text" name="cnt" value="', $content['cnt'], '" size="5" /><input type="submit" value="Anzeigen" /></form></div>';
+		echo '<script type="text/javascript"><!-- // --><![CDATA[
+	$(function() {
+		$( ".column" ).sortable({
+			connectWith: ".column"
+		});
+	
+		$( ".portlet" ).addClass( "ui-widget ui-widget-content ui-helper-clearfix ui-corner-all" )
+			.find( ".portlet-header" )
+				.addClass( "ui-widget-header ui-corner-all" )
+				.prepend( "<span class=\"ui-icon ui-icon-minusthick\"></span>")
+				.end()
+			.find( ".portlet-content" );
+	
+		$( ".portlet-header" ).click(function() {
+			$( this ).toggleClass( "ui-icon-minusthick" ).toggleClass( "ui-icon-plusthick" );
+			$( this ).parents( ".portlet:first" ).find( ".portlet-content" ).toggle();
+		});
+	
+		$( ".column" ).disableSelection();
+	});
+		// ]]></script><div><div><form method="get" action="', $scripturl, '">Top <input type="hidden" name="action" value="hs" /><input type="text" name="cnt" value="', $content['cnt'], '" size="5" /><input type="submit" value="Anzeigen" /></form></div>';
 		
 		$j = 0;
 		for($i = 0; $i < 3; ++$i) {
@@ -205,7 +225,7 @@
 				echo '<div class="portlet">
 					<div class="portlet-header">', $hs['title'], '</div>
 					<div class="portlet-content">
-						<table>';
+						<table style="width:100%;">';
 				foreach($hs['data'] as $line) {
 					echo '<tr><td>', $line['name'], '</td><td>', $line['value'], '</td></tr>';
 				}
@@ -216,7 +236,7 @@
 			}
 			echo '</div>';
 		}
-		
+		echo '</div>';
 		TemplateFooter();
 	}
 	function TemplateKbFormat() {
