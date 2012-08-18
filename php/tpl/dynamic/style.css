@@ -5,7 +5,7 @@
 body {
 	background: none repeat scroll 0 0 #FFFFFF;
 	font: 100.01% Verdana;
-	text-align: center;
+	/* text-align: center; */
 	color: #6A6A6A;
 }
 a, a:link {
@@ -57,15 +57,17 @@ table tr td, table tr th {
 	font-size: smaller;
 }
 #main {
-	margin: 0 auto;
+	position: absolute;
+	left: 180px;
 	text-align: left;
-	width: 1024px;
+	margin: 0 1em 0;
 }
 #menu {
-	float: left;
+	position: absolute;
 	width: 180px;
 	overflow: hidden;
 	margin: 2em 0 0;
+	text-align: left;
 	border-right: 1px solid #FF8C00;
 }
 #menu ul li {
@@ -75,20 +77,32 @@ table tr td, table tr th {
 	padding: 0 0 0 15px;
 }
 #content {
-	margin: 2em 0 0;
-	float: right;
-	width: 823px;
+	margin: 1em 0 0;
 }
 #footer {
-	clear:right;
-	padding: 2em 0 0;
 }
 hr {
 	border: none;
 	border-top: 1px solid #FF8C00;
 }
 
-
+.column { 
+	width: 200px;
+	float:left;
+	overflow: hidden;
+}
+.portlet {
+	margin: 0 1em 1em 0;
+}
+.portlet-header {
+	margin: 0.3em;
+}
+.portlet-header .ui-icon {
+	float: right;
+}
+.portlet-content {
+	padding: 0.4em;
+}
 
 
 
@@ -100,7 +114,6 @@ table {
 	/*background-color: #CDCDCD;*/
 	margin:10px 0pt 15px;
 	font-size: 8pt;
-	width: 100%;
 	text-align: left;
 }
 table thead tr th, table tfoot tr th {

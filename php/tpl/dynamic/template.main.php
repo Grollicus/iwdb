@@ -10,7 +10,6 @@
 //			echo '<tr><td>', $line[0], '</td><td>', $line[1], '</td><td>',  $line[2], '%</td>';
 //		}
 //		echo '</table></div>';
-		echo '<div id="content">';
 		foreach($content['problems'] as $problem) {
 			if(!empty($problem['link']))
 				echo '<br /><a href="', $problem['link'], '"><span style="font-size: large;" class="', $problem['class'], '">', $problem['text'], '</span></a>';
@@ -23,7 +22,7 @@
 		foreach($content['events'] as $evt) {
 			echo '<tr><td style="width:150px;">', $evt['time'], '</td><td>', $evt['text'], '</td></tr>';
 		}
-		echo '</table></div>';
+		echo '</table>';
 		TemplateFooter();
 	}
 	
@@ -32,8 +31,7 @@
 		
 		TemplateHeader();
 		TemplateMenu();
-		echo '<div id="content">
-			<h2>Neuen Bericht einlesen', HelpLink('newscan'), '</h2>
+		echo '<h2>Neuen Bericht einlesen', HelpLink('newscan'), '</h2>
 			<form action="', $scripturl, '/index.php?action=newscanex" method="post" accept-charset="UTF-8">
 			', ReqID() ,'
 			<textarea name="scans" cols="70" rows="12">', $content['scans'], '</textarea><br />';
@@ -52,7 +50,7 @@
 		echo '<input type="submit" name="abs" value="Einlesen" />
 			<br />
 			', $content['desc'], '
-		</form></div>';
+		</form>';
 		TemplateFooter();
 		
 	}
@@ -61,7 +59,7 @@
 		
 		TemplateHeader();
 		TemplateMenu();
-		echo '<div id="content"><h2>Unbekannte Action!</h2></div>';
+		echo '<h2>Unbekannte Action!</h2>';
 		TemplateFooter();
 	}
 
@@ -71,8 +69,7 @@
 		TemplateHeader();
 		TemplateMenu();
 		
-		echo '<div id="content">
-		<form method="post" action="', $content['submiturl'], '">
+		echo '<form method="post" action="', $content['submiturl'], '">
 		<input type="hidden" name="ID" value="',$content['settings']['id']['data'],'" />
 		<table id="settings1"><thead>
 			<tr><th colspan="2">Einstellungen</th></tr>';
@@ -153,7 +150,6 @@
 			<tr><td colspan="2"><a href="', $content['newIrcAutoLoginLink'], '">neue Maske</a></td></tr> 
 		</table>';
 		}
-		echo '</div>';
 		
 		TemplateFooter();
 	}
@@ -172,7 +168,7 @@
 		global $content;
 		TemplateHeader();
 		TemplateMenu();
-		echo '<div id="content"><h2>IRC-Autologin-Maske ', $content['edit'] ? 'bearbeiten' : 'erstellen', '</h2>
+		echo '<h2>IRC-Autologin-Maske ', $content['edit'] ? 'bearbeiten' : 'erstellen', '</h2>
 	<form action="', $content['submitUrl'], '" method="post">
 	<input type="hidden" name="id" value="', $content['id'], '" />
 	<table>
@@ -182,15 +178,14 @@
 		<tr><td><input type="text" size="64" maxlength="64" name="mask" value="', $content['mask'], '" /></td></tr>
 		<tr><td><input type="submit" name="submit" value="Absenden" /></td></tr>
 	</table>
-	</form>
-</div>';
+	</form>';
 		TemplateFooter();
 	}
 	function TemplateBugs() {
 		global $content;
 		TemplateHeader();
 		TemplateMenu();
-		echo '<div id="content">', $content['text'], '</div>';
+		echo $content['text'];
 		TemplateFooter();
 	}
 	
@@ -198,53 +193,37 @@
 		global $content, $scripturl;
 		TemplateHeader();
 		TemplateMenu();
-		echo '<div id="content">';
+
+		echo '<div><form method="get" action="', $scripturl, '">Top <input type="hidden" name="action" value="hs" /><input type="text" name="cnt" value="', $content['cnt'], '" size="5" /><input type="submit" value="Anzeigen" /></form></div>';
 		
-		$i = 0;
-		foreach($content['hs'] as $hs) {
-			switch ($i++) {
-				case 0:
-				case 3:
-				case 6:
-				case 9:
-				case 12:
-					echo '<table style="float:left; min-width:150px; margin-right:5px;">';
-					break;
-				case 1:
-				case 4:
-				case 7:
-				case 10:
-				case 13:
-					//if($i == 11 || $i == 5)
-					//	echo '<table style="margin-right: 5px; min-width:150px;">';
-					//else
-						echo '<table style="float:left; margin-right: 5px; min-width:150px;">';
-					break;
-				case 2:
-				case 5:
-				case 8:
-				case 11:
-					echo '<table style="min-width:150px;">';
-					break;
+		$j = 0;
+		for($i = 0; $i < 3; ++$i) {
+			echo '<div class="column">';
+			$max = count($content['hs'])*($i+1)/3;
+			for(; $j < $max; ++$j) {
+				$hs = $content['hs'][$j];
+				echo '<div class="portlet">
+					<div class="portlet-header">', $hs['title'], '</div>
+					<div class="portlet-content">
+						<table>';
+				foreach($hs['data'] as $line) {
+					echo '<tr><td>', $line['name'], '</td><td>', $line['value'], '</td></tr>';
+				}
+				echo '	</table>
+					</div>';
+				
+				echo '</div>';
 			}
-			echo '<tr><th colspan="2">', $hs['title'], '</th></tr>';
-			foreach($hs['data'] as $line) {
-				echo '<tr><td>', $line['name'], '</td><td>', $line['value'], '</td></tr>';
-			}
-			echo '</table>';
-			if($i == 3 || $i == 6 || $i == 9) {
-				echo '<br />';
-			}
+			echo '</div>';
 		}
 		
-		echo '<br /><form method="get" action="', $scripturl, '"><div>Top <input type="hidden" name="action" value="hs" /><input type="text" name="cnt" value="', $content['cnt'], '" size="5" /><input type="submit" value="Anzeigen" /></div></form></div>';
 		TemplateFooter();
 	}
 	function TemplateKbFormat() {
 		global $content;
 		TemplateHeader();
 		TemplateMenu();
-		echo '<div id="content"><h2>KBs f&uuml;rs Forum formatieren</h2>
+		echo '<h2>KBs f&uuml;rs Forum formatieren</h2>
 	<form method="POST" action="', $content['submitUrl'], '">
 		', ReqID() ,'
 		<textarea name="scans" cols="80" rows="10">', $content['scans'], '</textarea><br />
@@ -260,8 +239,6 @@ echo '</select>
 			echo '<div class="imp">', $content['msg'], '</div>';
 		if(!empty($content['submsg']))
 			echo '<div class="simp">', $content['submsg'], '</div>';
-echo '
-</div>';
 		TemplateFooter();
 	}
 
@@ -269,7 +246,7 @@ echo '
 		global $content;
 		TemplateHeader();
 		TemplateMenu();
-		echo '<div id="content"><h2>(Gebbau-)Inaktive</h2>
+		echo '<h2>(Gebbau-)Inaktive</h2>
 		<script type="text/javascript">
 			$(document).ready(function() {
 				$("#inactives_table").tablesorter();
@@ -280,7 +257,7 @@ echo '
 		foreach($content['inactives'] as $line) {
 			echo '<tr class="',$line['age'],'"><td>', $line['name'], '</td><td>', $line['span'], '</td><td>', $line['pts'], '</td></tr>';
 		}
-		echo '</tbody></table></div>';
+		echo '</tbody></table>';
 		TemplateFooter();
 	}
 ?>

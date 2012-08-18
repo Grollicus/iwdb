@@ -110,7 +110,6 @@
 		
 		TemplateHeader();
 		TemplateMenu();
-		echo '<div id="content" style="border:none; padding: 0px;">';
 		
 		if($content['hasResults']) {
 			TemplateUniViewEx();
@@ -196,7 +195,6 @@
 			</tbody></table>
 		</form>';
 		
-		echo '</div>';
 		TemplateFooter();
 	}
 ?>

@@ -33,8 +33,6 @@ function HighScore() {
 		$arr[] = array('name' => EscapeOU($row[0]), 'value' => number_format($row[1], 0, ',', '.'));
 	$content['hs'][] = array('title' => 'Raids', 'data' => $arr);
 	
-	
-	
 	$qs = array(
 		'Eisen' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vFe) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,{$cnt}"),
 		'Stahl' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vSt) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,{$cnt}"),
