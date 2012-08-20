@@ -33,6 +33,12 @@ function HighScore() {
 		$arr[] = array('name' => EscapeOU($row[0]), 'value' => number_format($row[1], 0, ',', '.'));
 	$content['hs'][] = array('title' => 'Raids', 'data' => $arr);
 	
+	$q = DBQuery("SELECT verteidiger, SUM(score) AS sum FROM {$pre}raidberichte GROUP BY verteidiger ORDER BY sum DESC LIMIT 0,{$cnt}", __FILE__, __LINE__);
+	$arr = array();
+	while($row = mysql_fetch_row($q))
+		$arr[] = array('name' => EscapeOU($row[0]), 'value' => number_format($row[1], 0, ',', '.'));
+	$content['hs'][] = array('title' => 'Raidopfer', 'data' => $arr);
+	
 	$qs = array(
 		'Eisen' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vFe) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,{$cnt}"),
 		'Stahl' => array('fact' => 0.01, 'qry' => "SELECT igm_data.igmname, SUM(vSt) AS sum FROM {$pre}ressuebersicht AS ressuebersicht INNER JOIN {$pre}igm_data AS igm_data ON ressuebersicht.uid=igm_data.id GROUP BY igm_data.igmname ORDER BY sum DESC LIMIT 0,{$cnt}"),
