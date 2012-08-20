@@ -1,0 +1,105 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="AreaZeusRechner.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="KostenAreaArea" Type="System.String" Scope="User">
+      <Value Profile="(Default)">5709</Value>
+    </Setting>
+    <Setting Name="KostenAreaZeus" Type="System.String" Scope="User">
+      <Value Profile="(Default)">14865</Value>
+    </Setting>
+    <Setting Name="KostenAreaGenV2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">10000</Value>
+    </Setting>
+    <Setting Name="KostenZeusArea" Type="System.String" Scope="User">
+      <Value Profile="(Default)">2519</Value>
+    </Setting>
+    <Setting Name="KostenZeusZeus" Type="System.String" Scope="User">
+      <Value Profile="(Default)">18055</Value>
+    </Setting>
+    <Setting Name="KostenZeusGenV2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">10000</Value>
+    </Setting>
+    <Setting Name="Kosten80OrbArea" Type="System.String" Scope="User">
+      <Value Profile="(Default)">2519</Value>
+    </Setting>
+    <Setting Name="Kosten80OrbZeus" Type="System.String" Scope="User">
+      <Value Profile="(Default)">18055</Value>
+    </Setting>
+    <Setting Name="Kosten80OrbGenV2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">10000</Value>
+    </Setting>
+    <Setting Name="InitialFP" Type="System.String" Scope="User">
+      <Value Profile="(Default)">9672,48</Value>
+    </Setting>
+    <Setting Name="InitialFe" Type="System.String" Scope="User">
+      <Value Profile="(Default)">21890,88</Value>
+    </Setting>
+    <Setting Name="InitialSt" Type="System.String" Scope="User">
+      <Value Profile="(Default)">20028,75</Value>
+    </Setting>
+    <Setting Name="InitialVV" Type="System.String" Scope="User">
+      <Value Profile="(Default)">5082,00</Value>
+    </Setting>
+    <Setting Name="InitialCh" Type="System.String" Scope="User">
+      <Value Profile="(Default)">17734,13</Value>
+    </Setting>
+    <Setting Name="InitialEi" Type="System.String" Scope="User">
+      <Value Profile="(Default)">630,05</Value>
+    </Setting>
+    <Setting Name="InitialWa" Type="System.String" Scope="User">
+      <Value Profile="(Default)">151,90</Value>
+    </Setting>
+    <Setting Name="InitialEn" Type="System.String" Scope="User">
+      <Value Profile="(Default)">17027,25</Value>
+    </Setting>
+    <Setting Name="BgFe" Type="System.String" Scope="User">
+      <Value Profile="(Default)">57</Value>
+    </Setting>
+    <Setting Name="BgSt" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="BgVV" Type="System.String" Scope="User">
+      <Value Profile="(Default)">11,67</Value>
+    </Setting>
+    <Setting Name="BgCh" Type="System.String" Scope="User">
+      <Value Profile="(Default)">49,83</Value>
+    </Setting>
+    <Setting Name="BgEi" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="BgWa" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="BgEn" Type="System.String" Scope="User">
+      <Value Profile="(Default)">-41,25</Value>
+    </Setting>
+    <Setting Name="SimUntil" Type="System.String" Scope="User">
+      <Value Profile="(Default)">110</Value>
+    </Setting>
+    <Setting Name="ZeusPlanis" Type="System.String" Scope="User">
+      <Value Profile="(Default)">4</Value>
+    </Setting>
+    <Setting Name="BgForFe" Type="System.String" Scope="User">
+      <Value Profile="(Default)">-23,33</Value>
+    </Setting>
+    <Setting Name="BgForSt" Type="System.String" Scope="User">
+      <Value Profile="(Default)">11,67</Value>
+    </Setting>
+    <Setting Name="BgVorVV" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="BgForCh" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="BgForEi" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="BgForWa" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="BgForEn" Type="System.String" Scope="User">
+      <Value Profile="(Default)">-11,67</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

@@ -1,3 +1,11 @@
 *.suo
 /Tester/obj
 /Tester/bin
+/php/tpl/dynamic/jquery-ui-1.8.23.custom/css/ui-lightness/jquery-ui-1.8.23.custom.css
+/AreaZeusRechner/obj/x86/Release/AreaZeusRechner.pdb
+/AreaZeusRechner/obj
+/AreaZeusRechner/bin/Debug
+/AreaZeusRechner/bin/Release/AreaZeusRechner.vshost.exe.manifest
+/AreaZeusRechner/bin/Release/AreaZeusRechner.pdb
+/AreaZeusRechner/bin/Release/AreaZeusRechner.vshost.exe
+/AreaZeusRechner/bin/Release/AreaZeusRechner.vshost.exe.config

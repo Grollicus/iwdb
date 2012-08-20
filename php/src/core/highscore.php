@@ -65,13 +65,14 @@ function HighScore() {
 }
 
 function Inactives() {
-	global $pre, $content;
+	global $pre, $content, $scripturl;
 	
 	$q = DBQuery("SELECT name, since, until, gebp FROM {$pre}highscore_inactive WHERE since<>until or 1=1 ORDER BY until-since DESC, gebp DESC LIMIT 0,100", __FILE__, __LINE__);
 	$content['inactives'] = array();
 	while($row = mysql_fetch_row($q)) {
 		$content['inactives'][] = array(
 			'name' => EscapeOU($row[0]),
+			'link' => $scripturl.'/index.php?action=uni_view&amp;gala_min=&amp;gala_max=&amp;sys_min=&amp;sys_max=&amp;pla_min=&amp;pla_max=&amp;spieler='.EscapeOU(rawurlencode($row[0])).'&amp;tag=&amp;objekttyp[]=Kolonie&amp;objekttyp[]=Sammelbasis&amp;objekttyp[]=Kampfbasis&amp;objekttyp[]=Artefaktbasis&amp;planiname=&amp;geo_ch_min=&amp;geo_ch_max=&amp;geo_fe_min=&amp;geo_fe_max=&amp;geo_ei_min=&amp;geo_ei_max=&amp;geo_gravi_min=&amp;geo_gravi_max=&amp;geo_lb_min=&amp;geo_lb_max=&amp;geo_fmod_min=&amp;geo_fmod_max=&amp;geo_gebd_min=&amp;geo_gebd_max=&amp;geo_gebk_min=&amp;geo_gebk_max=&amp;geo_schd_min=&amp;geo_schd_max=&amp;geo_schk_min=&amp;geo_schk_max=&amp;scan_geb=&amp;spalten[]=coords&amp;spalten[]=owner&amp;spalten[]=types&amp;spalten[]=planiname&amp;spalten[]=important_specials&amp;sortby[]=coords&amp;orders[]=0',
 			'span' => FormatTime($row[2]-$row[1]),
 			'age' => ActualityColor($row[2]),
 			'pts' => number_format($row[3], 2, ',', '.'),
