@@ -5,21 +5,21 @@ function TemplateRaidOverview() {
 	global $content;
 	TemplateHeader('<style type="text/css"><!--
 .kb_standard, .kb_standard td {
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-size: 10px;
-	color: #FFFFFF;
+	font-family: Verdana, Arial, Helvetica, sans-serif !important;
+	font-size: 10px !important;
+	color: #FFFFFF !important;
 }
 .kb_fett, .kb_fett td {
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-size: 10px;
-	font-weight: bold;
-	color: #FFFFFF;
+	font-family: Verdana, Arial, Helvetica, sans-serif !important;
+	font-size: 10px !important;
+	font-weight: bold !important;
+	color: #FFFFFF !important;
 }
 .kb_tab_trennung_unten, .kb_tab_trennung_unten td {
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-size: 9px;
-	font-style: normal;
-	font-weight: 900;
+	font-family: Verdana, Arial, Helvetica, sans-serif !important;
+	font-size: 9px !important;
+	font-style: normal !important;
+	font-weight: 900 !important;
 	border-bottom-style: solid !important;
 	border-bottom-width: 1px !important;
 	border-top-style: none !important;
@@ -28,16 +28,16 @@ function TemplateRaidOverview() {
 	border-bottom-color: #666666 !important;
 }
 .kb_tab_rand, .kb_tab_rand td {
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-size: 9px;
-	font-style: normal;
-	font-weight: 900;
+	font-family: Verdana, Arial, Helvetica, sans-serif !important;
+	font-size: 9px !important;
+	font-style: normal !important;
+	font-weight: 900 !important;
 	margin:0px;
 	color: #FFFFFF;
 }
 .kb_right, .kb_right td
 {
-	text-align:right;
+	text-align:right !important;
 }
 .kb_schiffe_start
 {
@@ -45,19 +45,19 @@ function TemplateRaidOverview() {
 }
 .kb_schiffe_zerstoert, .kb_schiffe_zerstoert td
 {
-	color:#FF0000;
+	color:#FF0000 !important;
 }
 .kb_schiffe_ueberlebt, .kb_schiffe_ueberlebt td
 {
-	color:#00FF00;
+	color:#00FF00 !important;
 }
 .kbtd table {
-	border-style: none;
-	font-size:smaller;
-	background-color: transparent;
+	border-style: none !important;
+	font-size:smaller !important;
+	background-color: transparent !important;
 }
 .kbtd td, .kbtd tr {
-	border-style: none;
+	border-style: none !important;
 }
 -->
 </style>');
