@@ -107,7 +107,7 @@
 
 			<table width="99%">
 				<tr><th>Bearbeiten von ', $content['Name'], '</th></tr>
-				<tr><td><textarea name="text" cols="50" rows="8">', $content['Text'], '</textarea></td></tr>
+				<tr><td><textarea name="text" cols="150" rows="16">', $content['Text'], '</textarea></td></tr>
 				<tr><td align="center"><input type="submit" name="submit" value="Absenden" /><input type="submit" name="preview" value="Vorschau" /></td></tr>
 			</table>
 		<input type="hidden" name="name" value="', $content['Name'], ' " />

@@ -92,7 +92,7 @@ function TemplateRaidOverview() {
 	// ]]></script>
 	<table cellpadding="0" cellspacing="0" border="0">
 		<tr align="center"><th>Zeit</th><th>Angreifer</th><th>Verteidiger</th><th colspan="8">Gewinn</th><th colspan="7">Zerstört</th></tr>
-		<tr><th colspan="3">&nbsp;</th><th>Pts</th><th>Eisen</th><th>Stahl</th><th>Chemie</th><th>VV4A</th><th>Eis</th><th>Wasser</th><th>Energie</th><th>Eisen</th><th>Stahl</th><th>Chemie</th><th>VV4A</th><th>Eis</th><th>Wasser</th><th>Energie</th>';
+		<tr><th colspan="3">&nbsp;</th><th>Pts</th><th>Eisen</th><th>Stahl</th><th>Chemie</th><th>VV4A</th><th>Eis</th><th>Wasser</th><th>Energie</th><th>Eisen</th><th>Stahl</th><th>Chemie</th><th>VV4A</th><th>Eis</th><th>Wasser</th><th>Energie</th></tr>';
 		
 	foreach($content['raids'] as $raid) {
 		echo '<tr><td><a href="', $raid['url'], '" onclick="return loadKB(\'', $raid['id'],'\', \'', $raid['hash'], '\');"> ', $raid['date'], '</a></td><td>', 

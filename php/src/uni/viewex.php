@@ -891,7 +891,7 @@
 		$qry .= " $ord LIMIT ".$limit_min.",".($limit_min+50);
 		
 		if($debug >= 1)
-			$sql_log[] = $qry;
+			$sql_log[] = EscapeOU($qry);
 		$q = mysql_query($qry, $con);
 		if($q === false)
 			DBError($qry, __FILE__, __LINE__-2, $con);

@@ -13,12 +13,12 @@
 		echo '<div class="content">';
 		foreach($content['problems'] as $problem) {
 			if(!empty($problem['link']))
-				echo '<br /><a href="', $problem['link'], '"><span style="font-size: large;" class="', $problem['class'], '">', $problem['text'], '</span></a>';
+				echo '<div style="font-size: large;" class="', $problem['class'], '"><a href="', $problem['link'], '">', $problem['text'], '</a></div>';
 			else
-				echo '<br /><span style="font-size: large;" class="', $problem['class'], '">', $problem['text'], '</span>';
+				echo '<div style="font-size: large;" class="', $problem['class'], '">', $problem['text'], '</div>';
 		}
 		echo GetText2('welcomepage');
-		echo '<br /><br /><table width="100%"><tr><th colspan="2">Neue Ereignisse</th></tr>';
+		echo '<br /><br /><table><tr><th colspan="2">Neue Ereignisse</th></tr>';
 		
 		foreach($content['events'] as $evt) {
 			echo '<tr><td style="width:150px;">', $evt['time'], '</td><td>', $evt['text'], '</td></tr>';
@@ -194,49 +194,55 @@
 	}
 	
 	function TemplateHighscore() {
-		global $content, $scripturl;
-		TemplateHeader();
+		global $content, $scripturl, $themeurl;
+		TemplateHeader('<script type="text/javascript" src="'.$themeurl.'/jquery-ui-1.8.23.custom.min.js"></script>
+			<link rel="stylesheet" type="text/css" href="'.$themeurl.'/jquery-ui-1.8.23.custom.css" />');
 		TemplateMenu();
 		echo '<div class="content">';
 		
-		$i = 0;
-		foreach($content['hs'] as $hs) {
-			switch ($i++) {
-				case 0:
-				case 3:
-				case 6:
-				case 9:
-				case 12:
-					echo '<table style="float:left; min-width:150px; margin-right:5px;">';
-					break;
-				case 1:
-				case 4:
-				case 7:
-				case 10:
-				case 13:
-					//if($i == 11 || $i == 5)
-					//	echo '<table style="margin-right: 5px; min-width:150px;">';
-					//else
-						echo '<table style="float:left; margin-right: 5px; min-width:150px;">';
-					break;
-				case 2:
-				case 5:
-				case 8:
-				case 11:
-					echo '<table style="min-width:150px;">';
-					break;
-			}
-			echo '<tr><th colspan="2">', $hs['title'], '</th></tr>';
-			foreach($hs['data'] as $line) {
-				echo '<tr><td>', $line['name'], '</td><td>', $line['value'], '</td></tr>';
-			}
-			echo '</table>';
-			if($i == 3 || $i == 6 || $i == 9) {
-				echo '<br />';
-			}
-		}
+		echo '<script type="text/javascript"><!-- // --><![CDATA[
+	$(function() {
+		$( ".column" ).sortable({
+			connectWith: ".column"
+		});
+	
+		$( ".portlet" ).addClass( "ui-widget ui-widget-content ui-helper-clearfix ui-corner-all" )
+			.find( ".portlet-header" )
+				.addClass( "ui-widget-header ui-corner-all" )
+				.prepend( "<span class=\"ui-icon ui-icon-minusthick\"><\/span>")
+				.end()
+			.find( ".portlet-content" );
+	
+		$( ".portlet-header" ).click(function() {
+			$( this ).toggleClass( "ui-icon-minusthick" ).toggleClass( "ui-icon-plusthick" );
+			$( this ).parents( ".portlet:first" ).find( ".portlet-content" ).toggle();
+		});
+	
+		$( ".column" ).disableSelection();
+	});
+		// ]]></script><div><form method="get" action="', $scripturl, '">Top <input type="hidden" name="action" value="hs" /><input type="text" name="cnt" value="', $content['cnt'], '" size="5" /><input type="submit" value="Anzeigen" /></form></div>';
 		
-		echo '<br /><form method="get" action="', $scripturl, '"><div>Top <input type="hidden" name="action" value="hs" /><input type="text" name="cnt" value="', $content['cnt'], '" size="5" /><input type="submit" value="Anzeigen" /></div></form></div>';
+		$j = 0;
+		for($i = 0; $i < 3; ++$i) {
+			echo '<div class="column">';
+			$max = count($content['hs'])*($i+1)/3;
+			for(; $j < $max; ++$j) {
+				$hs = $content['hs'][$j];
+				echo '<div class="portlet">
+					<div class="portlet-header">', $hs['title'], '</div>
+					<div class="portlet-content">
+						<table style="width:100%;">';
+				foreach($hs['data'] as $line) {
+					echo '<tr><td>', $line['name'], '</td><td>', $line['value'], '</td></tr>';
+				}
+				echo '	</table>
+					</div>';
+				
+				echo '</div>';
+			}
+			echo '</div>';
+		}
+		echo '</div>';
 		TemplateFooter();
 	}
 	function TemplateKbFormat() {

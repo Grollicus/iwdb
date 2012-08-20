@@ -1,8 +1,5 @@
 body {
-	background-color: #E5E5E8;
-	margin: 0px;
-	padding: 12px 30px 4px 30px;
-	/* text-align: center; /* zentrieren im ie */
+	background: none repeat scroll 0 0 #E5E5E8;
 }
 
 a:visited, a:active, a:hover, a:focus, a:link, a:hover { /*Alle Links erstmal blau */
@@ -12,86 +9,84 @@ a:active {
 	font-style: italic;
 }
 
-td, th {
-	empty-cells: show;
-}
-
 body, td, th, tr {
 	color: #000000;
 	font-size: 12px;
 	font-family: verdana, sans-serif;
 }
+table {
+	border-collapse: collapse;
+	border-spacing: 0px;
+	width: 99%;
+}
+
+td, th {
+	empty-cells: show;
+}
+
+img { border-width: 0px; }
 
 .header {
 	text-align: left;
 	padding-bottom: 10px;
 }
-.content {
+#content {
 	text-align: left;
 	margin-top: 5px;
-	padding-bottom: 10px;
-	padding-left: 1px;
-	padding-top: 1px;
-	margin-left: 160px;
-	/*border: solid 1px #88A6C0;*/
+	position:absolute;
+	left: 168px;
+	margin-left: 2em;
+	right: 2em;
+	background-color: #E5E5E8;
 }
 .footer {
-	margin-left: 160px;
 	text-align: left;
+	clear:both;
 }
 .menu {
 	background-color: #E9F0F6;
 	color: #FFFFDD;
-	margin: 5px;
-	margin-right: 0px;
-	padding: 1px;
+	margin: 5px 5px 0;
 	width: 150px;
-	float:left;
+	position:absolute;
 	border: solid 1px #88A6C0;
 	text-align: left;
 }
 
 .menu th {
-	background-color: #E9F0F6;
-	border-bottom: solid 1px #9BAEBF;
 	padding: 4px;
 }
 
 .menu td {
-	border-bottom: solid 1px #9BAEBF;
-	border-top: solid 1px #FFFFFF;
+	border-top: solid 1px #9BAEBF;
 	padding: 4px;
-	font-size: 12px;
 }
 
-.menu td a:visited, .menu td a:active, .menu td a:hover, .menu td a:focus, .menu td a:link { /*Alle Links im Menü erstmal blau */
+.menu a:visited, .menu a:focus, .menu a:link { /*Alle Links im Menü erstmal blau */
 	color: #0000FF;
 }
 
-.menu td a:hover {
+.menu a:hover {
 	color: #FF0000;
 }
 
-.menu td a:active {
+.menu a:active {
 	font-style: italic;
 }
 
-.content table {
+#content table {
 	background-color: #E9F0F6;
 	padding: 0px;
 	border: solid 1px #88A6C0;
 	text-align: left;
 }
 
-.content td {
-	border-right: solid 1px #9BAEBF;
-	border-bottom: solid 1px #9BAEBF;
-	border-left: solid 1px #FFFFFF;
-	border-top: solid 1px #FFFFFF;
+#content td {
+	border: solid 1px #9BAEBF;
 	padding: 4px;
 }
 
-.content .subtable .t, .content .subtable .st {
+#content .subtable .t, #content .subtable .st {
 	background-color: #E9F0F6;
 	padding: 0px;
 	border: solid 1px #88A6C0;
@@ -99,31 +94,48 @@ body, td, th, tr {
 	color: #FF0000;
 }
 
-.content .subtable .t td, .content .subtable .st td  {
-	border-right: solid 1px #9BAEBF;
-	border-bottom: solid 1px #9BAEBF;
-	border-left: solid 1px #FFFFFF;
-	border-top: solid 1px #FFFFFF;
+#content .subtable .t td, #content .subtable .st td  {
+	border: solid 1px #9BAEBF;
 	padding: 4px;
 }
 
-.content .subtable .st td {
+#content .subtable .st td {
 	padding: 2px;
 }
 
-.content .subtable table {
+#content .subtable table {
 	margin: 0px;
 	padding: 0px;
 	border: none 0px;
 }
 
-.content .subtable td {
+#content .subtable td {
 	border: none 0px;
 	font-size:smaller;
 }
 
+.column {
+	margin-top: 1em;
+	width: 240px;
+	float:left;
+	overflow: hidden;
+}
+.portlet {
+	margin: 0 1em 1em 0;
+}
+.portlet-header {
+	margin: 0.3em;
+}
+.portlet-header .ui-icon {
+	float: right;
+}
+.portlet-content {
+	padding: 0.4em;
+}
+
+
 /* Die Überschrift und Tabellenüberschriften im Menü*/
-.categoryheader, .menu th, .content th {
+.categoryheader, th, th {
 	background-color: #88A6C0;
 	padding-left: 10px;
 	padding-right: 10px;
@@ -131,7 +143,7 @@ body, td, th, tr {
 }
 
 /* Links in Tabellenüberschriften */
-.content th a:link, .content th a:visited, .content th a:hover, .content th a:active, .content th a:focus {
+#content th a:link, #content th a:visited, #content th a:hover, #content th a:active, #content th a:focus {
 	text-decoration: none;
 }
 
@@ -211,9 +223,6 @@ body, td, th, tr {
 .sitterjob_none {
 }
 
-/* Bilder sollen keinen Rand haben, sähe doof aus. Muss nach unten */
-img { border-width: 0px; }
-
 *.act_0, *.act_0 td { background-color: #00FF00 !important; }
 *.act_1, *.act_1 td { background-color: #80FF00 !important;}
 *.act_2, *.act_2 td { background-color: #C4FF00 !important; }
@@ -259,3 +268,5 @@ table.tablesorter thead tr .headerSortDown {
 table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
 background-color: #8dbdd8;
 }
+
+/* jquery ui  88A6C0 */

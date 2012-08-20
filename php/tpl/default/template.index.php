@@ -30,8 +30,8 @@ if (!defined("dddfd"))
 if(!function_exists('TemplateMenu')) {
 	function TemplateMenu() {
 		global $scripturl, $content, $user, $spiel, $uni_presets;
-		echo '
-		<table class="menu" cellspacing="0" cellpadding="0">
+		echo '<div class="menu">
+		<table>
 			<tr><th><a class="',$content['action'] == 'index' ? 'active' : 'item','" href="', $scripturl, '/?action=index">Index</a></th></tr>
 			<tr><td><a class="',$content['action'] == 'newscanex' ? 'active' : 'item','" href="', $scripturl, '/?action=newscanex">Neuer Bericht</a></td></tr>
 			', !$user['isRestricted'] ? '<tr><td><a class="'.($content['action'] == 'hs' ? 'active' : 'item').'" href="'.$scripturl.'/?action=hs">Top 5</a></td></tr>' : '','
@@ -86,7 +86,8 @@ if(!function_exists('TemplateMenu')) {
 				<tr><td><a class="',$content['action'] == 'util' ? 'active' : 'item','" href="', $scripturl, '/?action=util">Utils</a></td></tr>';
 echo '		<tr><th>&nbsp;</th></tr>
 			<tr><td><a class="item" href="'.$scripturl.'/?action=logout">Logout</a></td></tr>
-		</table>
+		</table></div>
+		<div id="content">
 ';
 	}
 }
@@ -131,8 +132,7 @@ if(!function_exists('TemplateHtmlHeader')) {
 
 if (!function_exists('TemplateHeader'))
 {
-	function TemplateHeader($html_header_add = '')
-	{
+	function TemplateHeader($html_header_add = '') {
 		global $themeurl, $user, $scripturl, $content, $spiel;
 		TemplateHtmlHeader($html_header_add);
 		echo '
@@ -194,19 +194,22 @@ if (!function_exists('TemplateFooter'))
 				ob_start();
 				var_dump($_REQUEST);
 				$ob = ob_get_clean();
-				echo str_replace(array("<pre class='xdebug-var-dump' dir='ltr'>", "</pre>"), array('<span style="font-family: courier, monospace;">', "</span>"), $ob);
+				//echo str_replace(array("<pre class='xdebug-var-dump' dir='ltr'>", "</pre>"), array('<span style="font-family: courier, monospace;">', "</span>"), $ob);
+				echo EscapeOU($ob);
 				echo '</span>';
 
 				echo '<br /><a href="javascript:toggleVisibility(getElById(\'footer_content\'));">Content</a><hr /><span style="display:none;" id="footer_content">';
 				ob_start();
 				var_dump($content);
 				$ob = ob_get_clean();
-				echo str_replace(array("<pre class='xdebug-var-dump' dir='ltr'>", "</pre>"), array('<span style="font-family: courier, monospace;">', "</span>"), $ob);
+				//echo str_replace(array("<pre class='xdebug-var-dump' dir='ltr'>", "</pre>"), array('<span style="font-family: courier, monospace;">', "</span>"), $ob);
+				echo EscapeOU($ob);
 				echo '</span>';				
 			}
 		}
 		echo '
 	</div>
+</div>
 </div>
 </body>
 ';

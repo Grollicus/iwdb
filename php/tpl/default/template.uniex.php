@@ -138,7 +138,7 @@
 					echo '<input type="text" size="3" name="', $filter['name'], '_min" value="', $filter['data']['min'], '" /> - <input type="text" size="3" name="', $filter['name'], '_max" value="', $filter['data']['max'], '" />';
 					break;
 				case 'geo_gesprengt':
-					echo '<input type="checkbox" name="', $filter['name'], '" ', $filter['data'] ? 'checked="checked"' : '', '"/>';
+					echo '<input type="checkbox" name="', $filter['name'], '" ', $filter['data'] ? 'checked="checked"' : '', '/>';
 					break;
 				case 'spieler':
 				case 'tag':

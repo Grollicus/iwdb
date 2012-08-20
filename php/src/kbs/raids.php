@@ -16,7 +16,7 @@ function RaidOverview() {
 		$content['raids'][] = array(
 			'id' => $row[0],
 			'hash' => $row[1],
-			'url' => 'http://www.icewars.de/portal/kb/de/kb.php?id='.$row[0].'&md_hash='.$row[1],
+			'url' => 'http://www.icewars.de/portal/kb/de/kb.php?id='.$row[0].'&amp;md_hash='.$row[1],
 			'date' => FormatDate($row[2]),
 			'angreiferName' => EscapeOU($row[3]),
 			'angreiferAlly' => EscapeOU($row[4]),

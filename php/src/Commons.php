@@ -79,7 +79,7 @@ function DBQuery($query,$file,$line, $flags = 0)
 		$q = mysql_query($query,$db_connection);
 	#some Logging
 		if($debug >= 1) {
-			$sql_log[] = $query;
+			$sql_log[] = EscapeOU($query);
 		}
 		if ($q === false && (($flags & 1) == 0))
 			DBError($query,$file,$line);
