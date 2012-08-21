@@ -216,18 +216,18 @@
 		
 		if(isset($_REQUEST['bauschleife'])) {
 			$coords = is_null($job[9]) ? 'all' : $job[9].':'.$job[10].':'.$job[11];
-			$bs = ParseIWBuildingQueue(Param('bauschleife'), $coords);
+			$bs = ParseIWBuildingQueue(Param('bauschleife'), $coords, $job[6]);
 			if($bs === false || count($bs) == 0) {
 				$content['msg'] = 'Konnte mit der Bauschleife nichts anfangen!';
 				SitterUtilJobView();
 				return;
 			}
-			$q = DBQuery("SELECT sitter.ID, sitter.usequeue FROM {$pre}sitter AS sitter WHERE FollowUpTo={$id}", __FILE__, __LINE__);
+			$q = DBQuery("SELECT sitter.ID, sitter.usequeue, sitter.type FROM {$pre}sitter AS sitter WHERE FollowUpTo={$id}", __FILE__, __LINE__);
 			while($row = mysql_fetch_row($q)) {
 				if(count($bs) == 0) {
 					$time = $job[5];
 				} else {
-					if($row[1] == '1') {
+					if($row[1] == '1' || $row[2] == 'Sch') {
 						$time = $bs[0];
 					} else {
 						$time = end($bs);
@@ -279,16 +279,16 @@
 				$time = ParseTime($_REQUEST['zeit1']);
 			}
 			if(!empty($_REQUEST['bauschleife'])) {
-				$c = DBQueryOne("SELECT sitter.time, sitter.usequeue, universum.gala, universum.sys, universum.pla, sitter.igmid
+				$c = DBQueryOne("SELECT sitter.time, sitter.usequeue, universum.gala, universum.sys, universum.pla, sitter.igmid, sitter.type
 	FROM ({$pre}sitter AS sitter LEFT JOIN {$pre}universum AS universum ON sitter.planID = universum.ID)
 	WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 				$coords = is_null($c[2]) ? 'all' : $c[2].':'.$c[3].':'.$c[4];
-				$bs = ParseIWBuildingQueue(Param('bauschleife'), $coords);
+				$bs = ParseIWBuildingQueue(Param('bauschleife'), $coords, $c[6]);
 				if(count($bs) == 0 || $bs === false) {
 					$time = $c[0];
 					$content['msg'] = 'Konnte mit der angegebenen Bauschleife nix anfangen!';
 				} else {
-					if($c[1] == '1') {
+					if($c[1] == '1' || $c[6] == 'Sch') {
 						$time = $bs[0];
 					} else {
 						$time = end($bs);

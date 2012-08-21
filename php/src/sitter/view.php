@@ -79,7 +79,19 @@
 		if($row[14] != 0) {
 			$item .= $row[14].'x ';
 		}
-		if($row[7] != null) {
+		if($row[7] == null) {
+			switch($row[6]) {
+				case 'Geb':
+					$item .= 'Gebäude nach Postit';
+					break;
+				case 'For':
+					$item .= 'Forschung nach Postit';
+					break;
+				case 'Sch':
+					$item .= 'SchiffbauAll';
+					break;
+			}
+		} else {
 			$item .= EscapeOU($row[7]);
 		}
 		if($row[8] != 0) {

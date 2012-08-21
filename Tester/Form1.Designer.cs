@@ -28,18 +28,22 @@
             this.tbScan = new System.Windows.Forms.TextBox();
             this.tbResp = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.tbID = new System.Windows.Forms.TextBox();
-            this.TbUID = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.cbUserAgent = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.cbWar = new System.Windows.Forms.CheckBox();
-            this.cbRestricted = new System.Windows.Forms.CheckBox();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.label4 = new System.Windows.Forms.Label();
             this.cbHandler = new System.Windows.Forms.ComboBox();
             this.BtPerfTest = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.cbBauschleifenTyp = new System.Windows.Forms.ComboBox();
+            this.TbCoords = new System.Windows.Forms.TextBox();
+            this.cbRestricted = new System.Windows.Forms.CheckBox();
+            this.cbWar = new System.Windows.Forms.CheckBox();
+            this.cbUserAgent = new System.Windows.Forms.ComboBox();
+            this.TbUID = new System.Windows.Forms.TextBox();
+            this.tbID = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -79,12 +83,15 @@
             // 
             // tbScan
             // 
+            this.tbScan.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::Tester.Properties.Settings.Default, "Scan", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.tbScan.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbScan.Location = new System.Drawing.Point(0, 0);
             this.tbScan.Multiline = true;
             this.tbScan.Name = "tbScan";
+            this.tbScan.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.tbScan.Size = new System.Drawing.Size(260, 78);
             this.tbScan.TabIndex = 0;
+            this.tbScan.Text = global::Tester.Properties.Settings.Default.Scan;
             // 
             // tbResp
             // 
@@ -93,6 +100,7 @@
             this.tbResp.Multiline = true;
             this.tbResp.Name = "tbResp";
             this.tbResp.ReadOnly = true;
+            this.tbResp.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.tbResp.Size = new System.Drawing.Size(260, 74);
             this.tbResp.TabIndex = 1;
             // 
@@ -106,22 +114,6 @@
             this.label1.TabIndex = 2;
             this.label1.Text = "ID";
             // 
-            // tbID
-            // 
-            this.tbID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbID.Location = new System.Drawing.Point(161, 12);
-            this.tbID.Name = "tbID";
-            this.tbID.Size = new System.Drawing.Size(34, 20);
-            this.tbID.TabIndex = 3;
-            // 
-            // TbUID
-            // 
-            this.TbUID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.TbUID.Location = new System.Drawing.Point(238, 12);
-            this.TbUID.Name = "TbUID";
-            this.TbUID.Size = new System.Drawing.Size(34, 20);
-            this.TbUID.TabIndex = 5;
-            // 
             // label2
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -132,20 +124,6 @@
             this.label2.TabIndex = 4;
             this.label2.Text = "UID";
             // 
-            // cbUserAgent
-            // 
-            this.cbUserAgent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbUserAgent.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbUserAgent.FormattingEnabled = true;
-            this.cbUserAgent.Items.AddRange(new object[] {
-            "Firefox",
-            "Opera"});
-            this.cbUserAgent.Location = new System.Drawing.Point(181, 38);
-            this.cbUserAgent.Name = "cbUserAgent";
-            this.cbUserAgent.Size = new System.Drawing.Size(91, 21);
-            this.cbUserAgent.TabIndex = 6;
-            // 
             // label3
             // 
             this.label3.AutoSize = true;
@@ -154,28 +132,6 @@
             this.label3.Size = new System.Drawing.Size(22, 13);
             this.label3.TabIndex = 7;
             this.label3.Text = "UA";
-            // 
-            // cbWar
-            // 
-            this.cbWar.AutoSize = true;
-            this.cbWar.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.cbWar.Location = new System.Drawing.Point(12, 42);
-            this.cbWar.Name = "cbWar";
-            this.cbWar.Size = new System.Drawing.Size(46, 17);
-            this.cbWar.TabIndex = 9;
-            this.cbWar.Text = "War";
-            this.cbWar.UseVisualStyleBackColor = true;
-            // 
-            // cbRestricted
-            // 
-            this.cbRestricted.AutoSize = true;
-            this.cbRestricted.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.cbRestricted.Location = new System.Drawing.Point(64, 42);
-            this.cbRestricted.Name = "cbRestricted";
-            this.cbRestricted.Size = new System.Drawing.Size(74, 17);
-            this.cbRestricted.TabIndex = 10;
-            this.cbRestricted.Text = "Restricted";
-            this.cbRestricted.UseVisualStyleBackColor = true;
             // 
             // backgroundWorker1
             // 
@@ -198,6 +154,7 @@
             // 
             this.cbHandler.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbHandler.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::Tester.Properties.Settings.Default, "Handler", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.cbHandler.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbHandler.FormattingEnabled = true;
             this.cbHandler.Items.AddRange(new object[] {
@@ -210,6 +167,8 @@
             this.cbHandler.Name = "cbHandler";
             this.cbHandler.Size = new System.Drawing.Size(98, 21);
             this.cbHandler.TabIndex = 11;
+            this.cbHandler.Text = global::Tester.Properties.Settings.Default.Handler;
+            this.cbHandler.SelectedIndexChanged += new System.EventHandler(this.cbHandler_SelectedIndexChanged);
             // 
             // BtPerfTest
             // 
@@ -228,11 +187,124 @@
             this.progressBar1.Size = new System.Drawing.Size(100, 23);
             this.progressBar1.TabIndex = 14;
             // 
+            // label5
+            // 
+            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(9, 43);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(40, 13);
+            this.label5.TabIndex = 15;
+            this.label5.Text = "Coords";
+            // 
+            // label6
+            // 
+            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(150, 43);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(25, 13);
+            this.label6.TabIndex = 17;
+            this.label6.Text = "Typ";
+            // 
+            // cbBauschleifenTyp
+            // 
+            this.cbBauschleifenTyp.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbBauschleifenTyp.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::Tester.Properties.Settings.Default, "BauschleifenTyp", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.cbBauschleifenTyp.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbBauschleifenTyp.FormattingEnabled = true;
+            this.cbBauschleifenTyp.Items.AddRange(new object[] {
+            "Geb",
+            "For",
+            "Sch"});
+            this.cbBauschleifenTyp.Location = new System.Drawing.Point(181, 35);
+            this.cbBauschleifenTyp.Name = "cbBauschleifenTyp";
+            this.cbBauschleifenTyp.Size = new System.Drawing.Size(91, 21);
+            this.cbBauschleifenTyp.TabIndex = 18;
+            this.cbBauschleifenTyp.Text = global::Tester.Properties.Settings.Default.BauschleifenTyp;
+            // 
+            // TbCoords
+            // 
+            this.TbCoords.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.TbCoords.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::Tester.Properties.Settings.Default, "Coords", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.TbCoords.Location = new System.Drawing.Point(55, 40);
+            this.TbCoords.Name = "TbCoords";
+            this.TbCoords.Size = new System.Drawing.Size(76, 20);
+            this.TbCoords.TabIndex = 16;
+            this.TbCoords.Text = global::Tester.Properties.Settings.Default.Coords;
+            // 
+            // cbRestricted
+            // 
+            this.cbRestricted.AutoSize = true;
+            this.cbRestricted.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.cbRestricted.Checked = global::Tester.Properties.Settings.Default.Restricted;
+            this.cbRestricted.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::Tester.Properties.Settings.Default, "Restricted", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.cbRestricted.Location = new System.Drawing.Point(64, 42);
+            this.cbRestricted.Name = "cbRestricted";
+            this.cbRestricted.Size = new System.Drawing.Size(74, 17);
+            this.cbRestricted.TabIndex = 10;
+            this.cbRestricted.Text = "Restricted";
+            this.cbRestricted.UseVisualStyleBackColor = true;
+            // 
+            // cbWar
+            // 
+            this.cbWar.AutoSize = true;
+            this.cbWar.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.cbWar.Checked = global::Tester.Properties.Settings.Default.War;
+            this.cbWar.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::Tester.Properties.Settings.Default, "War", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.cbWar.Location = new System.Drawing.Point(12, 42);
+            this.cbWar.Name = "cbWar";
+            this.cbWar.Size = new System.Drawing.Size(46, 17);
+            this.cbWar.TabIndex = 9;
+            this.cbWar.Text = "War";
+            this.cbWar.UseVisualStyleBackColor = true;
+            // 
+            // cbUserAgent
+            // 
+            this.cbUserAgent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbUserAgent.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::Tester.Properties.Settings.Default, "UserAgent", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.cbUserAgent.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbUserAgent.FormattingEnabled = true;
+            this.cbUserAgent.Items.AddRange(new object[] {
+            "Firefox",
+            "Opera"});
+            this.cbUserAgent.Location = new System.Drawing.Point(181, 38);
+            this.cbUserAgent.Name = "cbUserAgent";
+            this.cbUserAgent.Size = new System.Drawing.Size(91, 21);
+            this.cbUserAgent.TabIndex = 6;
+            this.cbUserAgent.Text = global::Tester.Properties.Settings.Default.UserAgent;
+            // 
+            // TbUID
+            // 
+            this.TbUID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.TbUID.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::Tester.Properties.Settings.Default, "UID", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.TbUID.Location = new System.Drawing.Point(238, 12);
+            this.TbUID.Name = "TbUID";
+            this.TbUID.Size = new System.Drawing.Size(34, 20);
+            this.TbUID.TabIndex = 5;
+            this.TbUID.Text = global::Tester.Properties.Settings.Default.UID;
+            // 
+            // tbID
+            // 
+            this.tbID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbID.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::Tester.Properties.Settings.Default, "ID", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.tbID.Location = new System.Drawing.Point(161, 12);
+            this.tbID.Name = "tbID";
+            this.tbID.Size = new System.Drawing.Size(34, 20);
+            this.tbID.TabIndex = 3;
+            this.tbID.Text = global::Tester.Properties.Settings.Default.ID;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 262);
+            this.Controls.Add(this.cbBauschleifenTyp);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.TbCoords);
+            this.Controls.Add(this.label5);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.BtPerfTest);
             this.Controls.Add(this.label4);
@@ -249,6 +321,7 @@
             this.Controls.Add(this.BtGo);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
@@ -280,6 +353,10 @@
         private System.Windows.Forms.ComboBox cbHandler;
         private System.Windows.Forms.Button BtPerfTest;
         private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.TextBox TbCoords;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.ComboBox cbBauschleifenTyp;
     }
 }
 

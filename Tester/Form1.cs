@@ -15,27 +15,37 @@ namespace Tester {
         }
 
         private void Go(uint count) {
-            progressBar1.Value = 0;
-            StringBuilder sb = new StringBuilder("newscan\0");
-            try {
-                sb.Append(int.Parse(tbID.Text));
-                sb.Append('\0');
-            } catch (Exception ex) {
-                tbResp.Text = "ID: " + ex.ToString();
-                return;
-            }
-            try {
-                sb.Append(int.Parse(TbUID.Text));
-                sb.Append('\0');
-            } catch (Exception ex) {
-                tbResp.Text = "ID: " + ex.ToString();
-                return;
-            }
-            sb.Append(cbUserAgent.Text); //haha das geht wirklich so
+            StringBuilder sb = new StringBuilder(cbHandler.Text);
             sb.Append('\0');
-            sb.Append(cbWar.Checked ? "1\0" : "0\0");
-            sb.Append(cbRestricted.Checked ? "1\0" : "0\0");
-            sb.Append(tbScan.Text.Replace("\r\n", "\n").Replace("\r", "\n").Replace(" \t", " ").Replace("\t", " "));
+            switch (cbHandler.Text) {
+                case "newscan":
+                    progressBar1.Value = 0;
+                    try {
+                        sb.Append(int.Parse(tbID.Text));
+                        sb.Append('\0');
+                    } catch (Exception ex) {
+                        tbResp.Text = "ID: " + ex.ToString();
+                        return;
+                    }
+                    try {
+                        sb.Append(int.Parse(TbUID.Text));
+                        sb.Append('\0');
+                    } catch (Exception ex) {
+                        tbResp.Text = "ID: " + ex.ToString();
+                        return;
+                    }
+                    sb.Append(cbUserAgent.Text); //haha das geht wirklich so
+                    sb.Append('\0');
+                    sb.Append(cbWar.Checked ? "1\0" : "0\0");
+                    sb.Append(cbRestricted.Checked ? "1\0" : "0\0");
+                    sb.Append(tbScan.Text.Replace("\r\n", "\n").Replace("\r", "\n").Replace(" \t", " ").Replace("\t", " "));
+                    break;
+                case "buildingqueue":
+                    sb.Append(TbCoords.Text).Append('\0');
+                    sb.Append(cbBauschleifenTyp.Text).Append('\0');
+                    sb.Append(tbScan.Text.Replace("\r\n", "\n").Replace("\r", "\n").Replace(" \t", " ").Replace("\t", " "));
+                    break;
+            }
             sb.Append("\0\0");
             backgroundWorker1.RunWorkerAsync(new Pair<string, uint>(sb.ToString(), count));
             BtGo.Text = "Running";
@@ -49,6 +59,17 @@ namespace Tester {
             BtPerfTest.Text = " - ";
             Go(1);
             progressBar1.Maximum = 1;
+        }
+
+        private void BtPerfTest_Click(object sender, EventArgs e) {
+            if (backgroundWorker1.IsBusy) {
+                backgroundWorker1.CancelAsync();
+                return;
+            }
+            Go(100);
+            BtPerfTest.Text = "Stop";
+            BtGo.Text = " - ";
+            progressBar1.Maximum = 100;
         }
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e) {
@@ -73,13 +94,6 @@ namespace Tester {
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e) {
-            cbHandler.SelectedIndex = 0;
-            cbUserAgent.SelectedIndex = 0;
-            tbID.Text = "2";
-            TbUID.Text = "1";
-        }
-
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
             BtGo.Text = "Go";
             BtPerfTest.Text = "PerfTest";
@@ -87,18 +101,30 @@ namespace Tester {
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e) {
-            tbResp.Text = (String)e.UserState;
+            tbResp.Text = ((String)e.UserState).Replace("\n", Environment.NewLine);
             progressBar1.Value = e.ProgressPercentage;
         }
 
-        private void BtPerfTest_Click(object sender, EventArgs e) {
-            if (backgroundWorker1.IsBusy) {
-                backgroundWorker1.CancelAsync();
+
+        private void cbHandler_SelectedIndexChanged(object sender, EventArgs e) {
+            switch(cbHandler.Text) {
+                case "newscan":
+                    tbID.Visible = TbUID.Visible = cbWar.Visible = cbRestricted.Visible = cbUserAgent.Visible = label1.Visible = label2.Visible = label3.Visible = true;
+                    TbCoords.Visible = label5.Visible = label6.Visible = cbBauschleifenTyp.Visible = false;
+                    break;
+                case "buildingqueue":
+                    tbID.Visible = TbUID.Visible = cbWar.Visible = cbRestricted.Visible = cbUserAgent.Visible = label1.Visible = label2.Visible = label3.Visible = false;
+                    TbCoords.Visible = label5.Visible = label6.Visible = cbBauschleifenTyp.Visible = true;
+                    break;
             }
-            Go(100);
-            BtPerfTest.Text = "Stop";
-            BtGo.Text = " - ";
-            progressBar1.Maximum = 100;
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e) {
+            Tester.Properties.Settings.Default.Save();
+        }
+
+        private void Form1_Load(object sender, EventArgs e) {
+            cbHandler.SelectedIndex = cbHandler.SelectedIndex;
         }
     }
 }

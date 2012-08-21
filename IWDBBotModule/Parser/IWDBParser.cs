@@ -570,34 +570,65 @@ class ParserRequestMessagePart {
 	class BauschleifenHandler : IWDBRegex, RequestHandler {
 		#region RequestHandler Member
 
-		public void HandleRequest(ParserRequestMessage msg) {
-			String req = msg[2].AsString;
-			List<uint> entries = new List<uint>();
-
-			Match planetenBauschleife = Regex.Match(req, @"aktuell im Bau auf diesem Planeten((?:\s+.*?bis\s+" + IWZeit + @"\n(?:1\sTag\s)?(?:\d+\sTage\s)?\d+:\d+:\d+)+)");
-			if (planetenBauschleife.Success) {
-				MatchCollection matches = Regex.Matches(planetenBauschleife.Groups[1].Value, @"\s+.*?bis\s+(" + IWZeit + @")\n(?:1\sTag\s)?(?:\d+\sTage\s)?\d+:\d+:\d+");
-				foreach (Match m in matches) {
-					entries.Add(IWDBUtils.parseIWTime(m.Groups[1].Value));
-				}
-			} else {
-				Match ausbaustatus = Regex.Match(req, @"Ausbaustatus((?:\s+" + KolonieName + @"\s+" + Koordinaten + @".*?bis\s+" + IWZeit + @"(?:\s+|\s-\s)\d+:\d+:\d+)+)");
-				if (ausbaustatus.Success) {
-					MatchCollection c = Regex.Matches(ausbaustatus.Groups[1].Value, KolonieName + @"\s+\(" + msg[1].AsString + @"\).*?bis\s+(" + IWZeit + @")(?:\n|\s-\s)");
-					foreach (Match m in c) {
-						entries.Add(IWDBUtils.parseIWTime(m.Groups[1].Value));
-					}
-				}
-			}
-			if (entries.Count == 0) {
-				msg.Answer("err");
-			} else {
-				foreach (uint entry in entries) {
-					msg.AnswerLine(entry.ToString());
-				}
-			}
-            msg.Handled();
-		}
+        public void HandleRequest(ParserRequestMessage msg) {
+            try {
+                String coords = msg[1].AsString;
+                String req = msg[3].AsString;
+                List<uint> entries = new List<uint>();
+                switch (msg[2].AsString) {
+                    case "Geb":
+                        Match planetenBauschleife = Regex.Match(req, @"aktuell im Bau auf diesem Planeten((?:\s+.*?bis\s+" + IWZeit + @"\n(?:1\sTag\s)?(?:\d+\sTage\s)?\d+:\d+:\d+)+)");
+                        if (planetenBauschleife.Success) {
+                            MatchCollection matches = Regex.Matches(planetenBauschleife.Groups[1].Value, @"\s+.*?bis\s+(" + IWZeit + @")\n(?:1\sTag\s)?(?:\d+\sTage\s)?\d+:\d+:\d+");
+                            foreach (Match m in matches) {
+                                entries.Add(IWDBUtils.parseIWTime(m.Groups[1].Value));
+                            }
+                        } else {
+                            Match ausbaustatus = Regex.Match(req, @"Ausbaustatus((?:\s+" + KolonieName + @"\s+" + Koordinaten + @".*?bis\s+" + IWZeit + @"(?:\s+|\s-\s)\d+:\d+:\d+)+)");
+                            if (ausbaustatus.Success) {
+                                MatchCollection c = coords == "all" ?
+                                    Regex.Matches(ausbaustatus.Groups[1].Value, KolonieName + @"\s+" + Koordinaten + @".*?bis\s+(" + IWZeit + @")(?:\n|\s-\s)") :
+                                    Regex.Matches(ausbaustatus.Groups[1].Value, KolonieName + @"\s+\(" + coords + @"\).*?bis\s+(" + IWZeit + @")(?:\n|\s-\s)");
+                                foreach (Match m in c) {
+                                    entries.Add(IWDBUtils.parseIWTime(m.Groups[1].Value));
+                                }
+                            }
+                        }
+                        break;
+                    case "For": {
+                            Match m = Regex.Match(req, @"Forschungsstatus\s+[^\n]+\s+(" + IWZeit + ")");
+                            if (m.Success)
+                                entries.Add(IWDBUtils.parseIWTime(m.Groups[1].Value));
+                        } break;
+                    case "Sch":
+                        Match outerMatch = Regex.Match(req, @"Schiffbau.{1,2}bersicht((?:\s+\[\d+:\d+:\d+\]\s+" + KolonieName + @"(?:\s+\d+.+?bis\s+" + PräziseIWZeit + @"\s+[\d:]+)+)+)");
+                        if (outerMatch.Success) {
+                            foreach (Match match in Regex.Matches(outerMatch.Groups[1].Value, @"\[(\d+:\d+:\d+)\]\s+" + KolonieName + @"((?:\s+\d+.+?bis\s+" + PräziseIWZeit + @"\s+[\d:]+)+)")) {
+                                if (coords != "all" && match.Groups[1].Value != coords)
+                                    continue;
+                                foreach (Match m in Regex.Matches(match.Groups[2].Value, @"bis\s+(" + PräziseIWZeit + ")")) {
+                                    entries.Add(IWDBUtils.parsePreciseIWTime(m.Groups[1].Value));
+                                }
+                            }
+                        }
+                        break;
+                }
+                if (entries.Count == 0) {
+                    msg.Answer("err");
+                } else {
+                    entries.Sort();
+                    foreach (uint entry in entries) {
+                        msg.AnswerLine(entry.ToString());
+                    }
+                }
+            } catch(Exception e) {
+                Log.WriteLine("Exception im BauschleifenHandler");
+                Log.WriteException(e);
+                msg.Answer("err");
+            } finally {
+                msg.Handled();
+            }
+        }
 
 		public string Name {
 			get { return "buildingqueue"; }

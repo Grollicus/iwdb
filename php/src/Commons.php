@@ -370,8 +370,8 @@ function ErrorHandler($errno, $errstr, $errfile, $errline) {
 	return false;
 }
 
-function ParseIWBuildingQueue($str, $koords) {
-	if(!QueryIWDBUtil('buildingqueue', array($koords, $str), $resp))
+function ParseIWBuildingQueue($str, $koords, $typ="Geb") {
+	if(!QueryIWDBUtil('buildingqueue', array($koords, $typ, $str), $resp))
 		return false;
 	$arr = explode("\n", $resp);
 	unset($arr[count($arr)-1]); //Da ist am Ende immer noch ein \n zu viel, das ein leeres Arrayelement produziert.

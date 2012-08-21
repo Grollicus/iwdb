@@ -301,9 +301,14 @@
 	function CbValidateBauschleife() {
 		global $bq, $pre, $valid_zeit1, $content;
 		$bq = false;
-		$c = DBQueryOne("SELECT gala, sys, pla FROM {$pre}universum WHERE ID=".intval($_REQUEST['planet']), __FILE__, __LINE__);
-		$coords = "$c[0]:$c[1]:$c[2]"; 
-		$bq = ParseIWBuildingQueue($_REQUEST['bauschleife'], $coords);
+		$p = intval($_REQUEST['planet']);
+		if($p == 0) {
+			$coords = "all";
+		} else {
+			$c = DBQueryOne("SELECT gala, sys, pla FROM {$pre}universum WHERE ID=".intval($_REQUEST['planet']), __FILE__, __LINE__);
+			$coords = "$c[0]:$c[1]:$c[2]";
+		}
+		$bq = ParseIWBuildingQueue(Param('bauschleife'), $coords, str_replace("\0", "", Param('page')));
 		if($bq === false && !$valid_zeit1) {
 			$content['errors'][] = 'Keine Zeit angegeben oder fehlerhaft formatiert!';
 		}
@@ -314,10 +319,10 @@
 		if($bq === false)
 			return;
 		if(count($bq) <= 1) {
-			$data['time'] = time();
-			return;
+			$bq[] = time();
+			sort($bq);
 		}
-		if(isset($_REQUEST['use_bauschleife'])) {
+		if(isset($_REQUEST['use_bauschleife']) || Param('page') == 'Sch') {
 			$data['time'] = $bq[0];
 		} else {
 			$data['time'] = end($bq);
@@ -365,7 +370,7 @@
 		} elseif($row !== false) {
 			$g = $row['itemid'];
 		} else {
-			$g = 0;
+			$g = -1;
 		}
 		if(isset($_REQUEST['stufe'])) {
 			$s = intval($_REQUEST['stufe']);
@@ -393,7 +398,7 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 	WHERE techtree_items.Type='geb' AND (techtree_items.MaxLevel = 0 OR IFNULL(techtree_useritems.count,0)+1 <= techtree_items.MaxLevel)
 	ORDER BY techtree_items.Name", __FILE__, __LINE__);
 			}
-			$content['gebaeude'] = array(array('name' => 'Gebäude auswählen!', 'id' => 0, 'selected' => false));
+			$content['gebaeude'] = array(array('name' => 'Gebäude auswählen!', 'id' => -1, 'selected' => false), array('name' => 'Gebäude nach Postit', 'id' => 0, 'selected' => false));
 			while($row = mysql_fetch_row($q)) {
 				$content['gebaeude'][] = array(
 					'name' => EscapeOU($row[1]),
@@ -401,7 +406,7 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 					'selected' => $row[0] == $g,
 				);
 			}
-			if($g != 0) {
+			if($g > 0) {
 				$q = DBQuery("SELECT Stufe, Dauer FROM {$pre}techtree_stufen WHERE ItemID={$g}", __FILE__, __LINE__);
 				if(mysql_num_rows($q) != 1)
 					$content['stufe'] = array(array('name' => 'Stufe auswählen!', 'id' => 0, 'selected' => false));
@@ -417,11 +422,11 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 			}
 		} else {
 			$content['stufe'] = array(array('name' => 'Stufe auswählen!', 'id' => 0, 'selected' => false));
-			$content['gebaeude'] = array(array('name' => 'Gebäude auswählen!', 'id' => 0, 'selected' => false));
+			$content['gebaeude'] = array(array('name' => 'Gebäude auswählen!', 'id' => -1, 'selected' => false));
 		}
 	}
 	function CbValidateForschung() {
-		if($_REQUEST['forschung'] == '0') {
+		if($_REQUEST['forschung'] == '-1') {
 			global $content;
 			$content['errors'][] = 'Keine Forschung ausgewählt!';
 			return false;
@@ -438,7 +443,7 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 		elseif($row !== false)
 			$f = $row['itemid'];
 		else
-			$f = 0;
+			$f = -1;
 		if(isset($_REQUEST['account'])) {
 			$uid = intval($_REQUEST['account']);
 		} else {
@@ -447,7 +452,10 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 		$q = DBQuery("SELECT techtree_items.ID, techtree_items.Name 
 FROM {$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems AS techtree_useritems ON techtree_useritems.uid={$uid} AND techtree_items.ID=techtree_useritems.itemid 
 WHERE techtree_items.type='For' AND techtree_useritems.count IS NULL OR techtree_useritems.count = 0 ORDER BY techtree_items.Name", __FILE__, __LINE__);
-		$content['forschung'] = array(array('name' => 'Forschung auswählen!', 'id' => 0, 'selected' => false));
+		$content['forschung'] = array(
+			array('name' => 'Forschung auswählen!', 'id' => -1, 'selected' => false),
+			array('name' => 'Forschung nach Postit', 'id' => 0, 'selected' => $f == 0)
+		);
 		while($row = mysql_fetch_row($q)) {
 			$content['forschung'][] = array(
 				'name' => EscapeOU($row[1]),
@@ -463,9 +471,12 @@ WHERE techtree_items.type='For' AND techtree_useritems.count IS NULL OR techtree
 		elseif($row !== false)
 			$s = $row['itemid'];
 		else
-			$s = 0;
+			$s = -1;
 		$q = DBQuery("SELECT ID, Name FROM {$pre}techtree_items WHERE Type='schiff'", __FILE__, __LINE__);
-		$content['schiff'] = array(array('name' => 'Schiff auswählen!', 'id' => 0, 'selected' => false));
+		$content['schiff'] = array(
+			array('name' => 'Schiff auswählen!', 'id' => -1, 'selected' => false),
+			array('name' => 'SchiffbauAll', 'id' => 0, 'selected' => $s == 0)
+		);
 		while($row = mysql_fetch_row($q)) {
 			$content['schiff'][] = array(
 				'name' => EscapeOU($row[1]),
@@ -478,7 +489,7 @@ WHERE techtree_items.type='For' AND techtree_useritems.count IS NULL OR techtree
 		$data['itemid'] = intval($_REQUEST['schiff']);
 	}
 	function CbValidateSchiff() {
-		if($_REQUEST['schiff'] == '0') {
+		if($_REQUEST['schiff'] == '-1') {
 			global $content;
 			$content['errors'][] = 'Kein Schiff ausgewählt!';
 			return false;
@@ -564,7 +575,7 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 	WHERE techtree_items.Type='geb' AND (techtree_items.MaxLevel = 0 OR IFNULL(techtree_useritems.count,0)+1 <= techtree_items.MaxLevel)
 	ORDER BY techtree_items.Name", __FILE__, __LINE__);
 		}
-		echo '<data><option><value>0</value><description>Gebäude auswählen!</description></option>';
+		echo '<data><option><value>-1</value><description>Gebäude auswählen!</description></option><option><value>0</value><description>Gebäude nach Postit</description></option>';
 		while($row = mysql_fetch_row($q)) {
 			echo '<option><value>', $row[0], '</value><description>', EscapeOU($row[1]), '</description></option>';
 		}
@@ -577,6 +588,10 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 		
 		$planid = intval($_REQUEST['planid']);
 		$itemid = intval($_REQUEST['itemid']);
+		if($itemid == 0) {
+			echo '<data><option><value>0</value><description>-</description></option><select>0</select></data>';
+			return;
+		}
 		
 		$q = DBQuery("SELECT Stufe, Dauer FROM {$pre}techtree_stufen WHERE ItemID={$itemid}", __FILE__, __LINE__);
 		echo '<data>';
@@ -606,7 +621,7 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 FROM {$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems AS techtree_useritems ON techtree_useritems.uid={$igmid} AND techtree_items.ID=techtree_useritems.itemid 
 WHERE techtree_items.type='For' AND techtree_useritems.count IS NULL OR techtree_useritems.count = 0", __FILE__, __LINE__);
 		$content['forschung'] = array();
-		echo '<data><option><value>0</value><description>Forschung auswählen!</description></option>';
+		echo '<data><option><value>-1</value><description>Forschung auswählen!</description></option><option><value>0</value><description>Forschung nach Postit</description></option>';
 		while($row = mysql_fetch_row($q)) {
 			echo '<option><value>', $row[0], '</value><description>', EscapeOU($row[1]), '</description></option>';
 		}
