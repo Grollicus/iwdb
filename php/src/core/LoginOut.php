@@ -31,10 +31,14 @@ function Login()
 	$url = $scripturl.'/index.php?';
 	$a = array();
 	SerializeReq($_GET, '', $a);
-	foreach($a as $k => $v) {
-		$url .= $k.'='.$v.'&amp;';
+	if(empty($a)) {
+		$content['submitUrl'] = substr($url, 0, -1);
+	} else {
+		foreach($a as $k => $v) {
+			$url .= $k.'='.$v.'&amp;';
+		}
+		$content['submitUrl'] = substr($url, 0, -5);
 	}
-	$content['submitUrl'] = substr($url, 0, -5);
 	
 	$p = array();
 //	foreach($_POST as $k => $v) {

@@ -7,6 +7,14 @@
 		global $pre, $ID_MEMBER, $user, $content, $scripturl, $user;
 		if($user['isRestricted'])
 			die("hacking attempt");
+		
+		if(isset($_REQUEST['del'])) {
+			$id = intval($_REQUEST['del']);
+			DBQuery("DELETE FROM {$pre}sitter WHERE ID=$id ".($user['isAdmin'] ? "" : "AND (done=0 AND (uid={$ID_MEMBER} OR igmid=".$user['igmuser']."))"), __FILE__, __LINE__);
+			if(mysql_affected_rows() > 0)
+				$content['msg'] = 'Auftrag gelöscht!';
+		}
+		
 		$types = array(
 			'Geb' => 'Bauauftrag',
 			'For' => 'Forschungsauftrag',
@@ -15,6 +23,8 @@
 		);
 		$msgs = array(
 			'sitter_racecondition' => 'Sorry, den Sitterauftrag hat schon jemand erledigt!',
+			'job_update' => 'Sitterauftrag erfolgreich aktualisiert!',
+			'job_insert' => 'Sitterauftrag erfolgreich eingetragen!',
 		);
 		if(isset($_REQUEST['msg']) && isset($msgs[$_REQUEST['msg']])) {
 			$content['msg'] = $msgs[$_REQUEST['msg']];
@@ -43,6 +53,11 @@
 				'coords' => is_null($row[9]) ? '' : ('['.$row[9]. ':'. $row[10]. ':'. $row[11].']'),
 				'planiName' => is_null($row[9]) ? 'Alle Planeten' : EscapeOU($row[12]),
 				'loginLink' => $scripturl.'/index.php?action=sitter_login&amp;from=sitter_view&amp;jobid='.$row[0],
+				'hasEditLinks' => $row[1] == $ID_MEMBER || $row[3] == $user['igmuser'] || $user['isAdmin'],
+				'editLink' => $scripturl.'/index.php?action=sitter_edit&amp;page='.$row[6].'&amp;ID='.$row[0],
+				'delLink' => $scripturl.'/index.php?action=sitter_view&amp;del='.$row[0],
+				'hasAppendLink' => $row[6] == 'Geb',
+				'appendLink' => $scripturl.'/index.php?action=sitter_edit&amp;page='.$row[6].'&amp;angehaengtAn='.$row[0],
 				'ownershipState' => $row[1] == $ID_MEMBER ? 'own' : ($row[3] == $user['igmuser'] ? 'account' : 'none'),
 			);
 		}
@@ -54,9 +69,15 @@
 		LEFT JOIN {$pre}igm_data AS igm_data ON sitter.igmid = igm_data.id)
 		LEFT JOIN ({$pre}universum AS universum) ON sitter.planID = universum.ID)
 		LEFT JOIN ({$pre}techtree_items AS techtree_items) ON sitter.itemid = techtree_items.ID
-	WHERE sitter.done=0 AND sitter.time > {$now} ORDER BY time LIMIT 0,10", __FILE__, __LINE__);
+	WHERE sitter.done=0 AND sitter.time > {$now} ORDER BY time", __FILE__, __LINE__, 2);
 		$content['sittersoon'] = array();
+		$foreign=0;
 		while($row = mysql_fetch_row($q)) {
+			if($row[1] != $ID_MEMBER && $row[3] != $user['igmuser']) {
+				if($foreign >= 10)
+					continue;
+				$foreign++;
+			}
 			$content['sittersoon'][] = array(
 				'time' => FormatDate($row[5]),
 				'typeLong' => $types[$row[6]],
@@ -67,9 +88,34 @@
 				'hasPlani' => !is_null($row[9]),
 				'coords' => is_null($row[9]) ? '' : ('['.$row[9]. ':'. $row[10]. ':'. $row[11].']'),
 				'planiName' => is_null($row[9]) ? 'Alle Planeten' : EscapeOU($row[12]),
-				'ownershipState' => $row[1] == $ID_MEMBER ? 'own' : ($row[3] == $user['igmuser'] ? 'account' : 'other'),
+				'hasEditLinks' => $row[1] == $ID_MEMBER || $row[3] == $user['igmuser'] || $user['isAdmin'],
+				'editLink' => $scripturl.'/index.php?action=sitter_edit&amp;page='.$row[6].'&amp;ID='.$row[0],
+				'delLink' => $scripturl.'/index.php?action=sitter_view&amp;del='.$row[0],
+				'hasAppendLink' => $row[6] == 'Geb',
+				'appendLink' => $scripturl.'/index.php?action=sitter_edit&amp;page='.$row[6].'&amp;angehaengtAn='.$row[0],
+				'ownershipState' => $row[1] == $ID_MEMBER ? 'own' : ($row[3] == $user['igmuser'] ? 'account' : 'none'),
 			);
 		}
+		
+		$content['pages'] = array(
+			array(
+				'link' => $scripturl.'/index.php?action=sitter_edit&amp;page=For',
+				'desc' => 'Neuer Forschungsauftrag',
+			),
+			array(
+				'link' => $scripturl.'/index.php?action=sitter_edit&amp;page=Geb',
+				'desc' => 'Neuer Gebäudeauftrag',
+			),
+			array(
+				'link' => $scripturl.'/index.php?action=sitter_edit&amp;page=Sch',
+				'desc' => 'Neuer Schiffbauauftrag',
+			),
+			array(
+				'link' => $scripturl.'/index.php?action=sitter_edit&amp;page=Sonst',
+				'desc' => 'Neuer sonstiger Auftrag',
+			),
+		);
+		
 		TemplateInit('sitter');
 		TemplateSitterTaskList();
 	}
@@ -171,73 +217,6 @@ ORDER BY flotten.ankunft ASC", __FILE__, __LINE__);
 		}
 		TemplateInit('sitter');
 		TemplateFeindlFlottenUebersicht();
-	}
-	function SitterOwn() {
-		global $content, $pre, $ID_MEMBER, $user, $scripturl;
-		if($user['isRestricted'])
-			die("hacking attempt");
-		if(isset($_REQUEST['del'])) {
-			$id = intval($_REQUEST['del']);
-			DBQuery("DELETE FROM {$pre}sitter WHERE ID=$id AND (done=0 AND (uid={$ID_MEMBER} OR igmid=".$user['igmuser']."))", __FILE__, __LINE__);
-			if(mysql_affected_rows() >0) {
-				$content['msg'] = 'Auftrag gelöscht!';
-			}
-		}
-		
-		$types = array(
-			'Geb' => 'Bauauftrag',
-			'For' => 'Forschungsauftrag',
-			'Sch' => 'Schiffbauauftrag',
-			'Sonst' => 'sonstiger Auftrag',
-		);
-		
-		$q = DBQuery("SELECT sitter.ID, sitter.uid, users.visibleName, sitter.igmid, igm_data.igmname, 
-		sitter.time, sitter.type, techtree_items.Name, sitter.stufe, universum.gala, universum.sys, universum.pla,
-		universum.planiname, sitter.usequeue, sitter.anzahl, sitter.notes
-	FROM (((({$pre}sitter AS sitter) INNER JOIN ({$pre}users AS users) ON sitter.uid = users.ID)
-		LEFT JOIN {$pre}igm_data AS igm_data ON sitter.igmid = igm_data.id)
-		LEFT JOIN ({$pre}universum AS universum) ON sitter.planID = universum.ID)
-		LEFT JOIN ({$pre}techtree_items AS techtree_items) ON sitter.itemid = techtree_items.ID
-	WHERE sitter.done=0 AND (sitter.uid={$ID_MEMBER} OR sitter.igmid=".$user['igmuser'].") ORDER BY time", __FILE__, __LINE__);
-		$content['jobs'] = array();
-		while($row = mysql_fetch_row($q)) {
-			$content['jobs'][] = array(
-				'time' => FormatDate($row[5]),
-				'typeLong' => $types[$row[6]],
-				'typeShort' => $row[6],
-				'text' => SitterText($row),
-				'igmName' => EscapeOU($row[4]),
-				'userName' => EscapeOU($row[2]),
-				'hasPlani' => !is_null($row[9]),
-				'coords' => is_null($row[9]) ? '' : ('['.$row[9]. ':'. $row[10]. ':'. $row[11].']'),
-				'planiName' => is_null($row[9]) ? 'Alle Planeten' : EscapeOU($row[12]),
-				'editLink' => $scripturl.'/index.php?action=sitter_edit&amp;page='.$row[6].'&amp;ID='.$row[0],
-				'delLink' => $scripturl.'/index.php?action=sitter_own&amp;del='.$row[0],
-				'hasAppendLink' => $row[6] == 'Geb',
-				'appendLink' => $scripturl.'/index.php?action=sitter_edit&amp;page='.$row[6].'&amp;angehaengtAn='.$row[0],
-				'ownershipState' => $row[1] == $ID_MEMBER ? 'own' : ($row[3] == $user['igmuser'] ? 'account' : 'none'),
-			);
-		}
-		$content['pages'] = array(
-			array(
-				'link' => $scripturl.'/index.php?action=sitter_edit&amp;page=For',
-				'desc' => 'Neuer Forschungsauftrag',
-			),
-			array(
-				'link' => $scripturl.'/index.php?action=sitter_edit&amp;page=Geb',
-				'desc' => 'Neuer Gebäudeauftrag',
-			),
-			array(
-				'link' => $scripturl.'/index.php?action=sitter_edit&amp;page=Sch',
-				'desc' => 'Neuer Schiffbauauftrag',
-			),
-			array(
-				'link' => $scripturl.'/index.php?action=sitter_edit&amp;page=Sonst',
-				'desc' => 'Neuer sonstiger Auftrag',
-			),
-		);
-		TemplateInit('sitter');
-		TemplateSitterOwn();
 	}
 	
 	function SitterScriptCnt() {

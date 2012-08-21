@@ -59,7 +59,6 @@ if(!function_exists('TemplateMenu')) {
 		echo '
 			<tr><td><a class="',$content['action'] == 'sitter_view' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_view">Sitterauftr&auml;ge <span id="sitter_job_cnt">', $content['sitter_job_cnt'] > 0 ? ' ('.$content['sitter_job_cnt'].')' : '', '</span></a></td></tr>
 			<tr><td><a class="',$content['action'] == 'sitter_list' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_list">Sitterlogins</a></td></tr>
-			<tr><td><a class="',$content['action'] == 'sitter_own' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_own">Meine Auftr&auml;ge</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'sitter_history' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_history">History</a></td></tr>';
 		echo '
 			<tr><td><a class="',$content['action'] == 'sitter_flotten' ? 'active' : 'item','" href="', $scripturl, '/?action=sitter_flotten">Flottenübersicht</a></td></tr>

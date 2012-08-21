@@ -10,25 +10,22 @@
 		echo '<div class="content">
 	<h2>', $content['heading'], '</h2>
 	<form action="', $content['submitAction'], '" method="post">
-	<table width="99%" cellpadding="0" cellspacing="0" border="0">
+	<table>
 				<tr>';
 		foreach($content['pages'] as $page) {
 			echo '<th', $page['active'] ? ' style="font-style: italic;"' : '', '><a href="', $page['link'], '">', $page['desc'], '</a></th>';
 		}
 		echo '</tr>
-	</table><br />
-	<table width="99%" cellpadding="0" cellspacing="0" border="0">
-		<tr><th>', $content['subHeading'], '</th><th>&nbsp;</th></tr>';
+	</table><br />';
 		if(!empty($content['errors'])) {
-			echo '<tr><td colspan="2" class="imp">';
+			echo '<div class="imp">';
 			foreach($content['errors'] as $err) {
 				echo $err.'<br />';
 			}
-			echo '</td></tr>';
+			echo '</div>';
 		}
-		if(!empty($content['successmsg'])) {
-			echo '<tr><td colspan="2" class="simp">', $content['successmsg'], '</td></tr>';
-		}
+		echo '<table>
+		<tr><th>', $content['subHeading'], '</th><th>&nbsp;</th></tr>';
 		foreach($content['mods'] as $n => $mod) {
 			if(!$mod['hidden']) {
 				echo '
@@ -74,7 +71,7 @@
 			}
 		}
 		echo '
-		<tr><td colspan="2"><input type="submit" name="submit" value="Absenden" /></td></tr>
+		<tr><td colspan="2"><button onclick="window.location=\'',$content['backLink'],'\';return false;" >Zurück</button><div style="float:right;"><input type="submit" name="submit" value="Absenden" /></div></td></tr>
 	</table>';
 		foreach($content['mods'] as $n => $mod) {
 			if($mod['hidden']) {

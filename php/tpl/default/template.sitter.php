@@ -10,10 +10,15 @@
 		echo '
 		<div class="content">
 			<h2>Sitterauftr&auml;ge</h2>
-			',isset($content['msg']) ? '<div class="imp">'.$content['msg'].'</div><br />' : '','
-			<table width="99%" cellpadding="0" cellspacing="0" border="0">
+			<table><tr>';
+		foreach($content['pages'] as $page) {
+			echo '<th><a href="', $page['link'], '">', $page['desc'], '</a></th>';
+		}
+		echo '</tr></table><br />
+		',isset($content['msg']) ? '<div class="simp">'.$content['msg'].'</div><br />' : '','
+			<table>
 				<tr><th colspan="5">Sitterauftr&auml;ge offen</th></tr>
-				<tr><th style="width:120px;">Zeit</th><th>Bei</th><th>Koordinaten</th><th>Auftrag</th></tr>';
+				<tr><th style="width:120px;">Zeit</th><th>Bei</th><th>Koordinaten</th><th>Auftrag</th><th></th></tr>';
 		foreach ($content['sitternow'] as $line) {
 			echo '
 				<tr class="sitterjob_', $line['ownershipState'], '">
@@ -21,10 +26,11 @@
 					<td><a href="', $line['loginLink'], '">[', $line['igmName'], ']</a><br /><i style="fonz-size:smaller;">(', $line['userName'], ')</i></td>
 					<td>', $line['coords'], ' ', $line['planiName'], '</td>
 					<td><b>', $line['typeLong'], '</b><br />', $line['text'], '</td>
+					<td>',$line['hasEditLinks'] ? '<a href="'.$line['editLink'].'">Edit</a>'.($line['hasAppendLink'] ? '<br /><a href="'.$line['appendLink'].'">Anhängen</a>' : '').'<br /><a href="'.$line['delLink'].'">Del</a>' : '&nbsp;', '</td>
 				</tr>';
 		}
 		echo '<tr><th colspan="5">Farbenlegende: <span class="sitterjob_own">Eigener Auftrag</span> <span class="sitterjob_account">Fremder Auftrag für eigenen Account</span></th></tr></table><br /><br /><br />
-			<table width="99%" cellpadding="0" cellspacing="0" border="0">
+			<table>
 				<tr><th colspan="5">Kommende Sitterauftr&auml;ge</th></tr>
 				<tr><th style="width:120px;">Zeit</th><th>Bei</th><th>Koordinaten</th><th>Auftrag</th><th>&nbsp;</th></tr>';
 		foreach ($content['sittersoon'] as $line) {
@@ -34,7 +40,7 @@
 					<td>', $line['igmName'], '<br /><i style="fonz-size:smaller;">(', $line['userName'], ')</i></td>
 					<td>', $line['coords'], ' ', $line['planiName'], '</td>
 					<td><b>', $line['typeLong'], '</b><br />', $line['text'], '</td>
-					<td>&nbsp;</td>
+					<td>',$line['hasEditLinks'] ? '<a href="'.$line['editLink'].'">Edit</a>'.($line['hasAppendLink'] ? '<br /><a href="'.$line['appendLink'].'">Anhängen</a>' : '').'<br /><a href="'.$line['delLink'].'">Del</a>' : '&nbsp;', '</td>
 				</tr>';
 		}
 		echo '<tr><th colspan="5">Farbenlegende: <span class="sitterjob_own">Eigener Auftrag</span> <span class="sitterjob_account">Fremder Auftrag für eigenen Account</span></th></tr>
@@ -437,38 +443,6 @@
 			}
 		}
 		echo '<tr><th colspan="5">Farbenlegende: <span class="danger_1">Angriff INC</span></th></tr></table></div>';
-		TemplateFooter();
-	}
-
-	function TemplateSitterOwn() {
-		global $content;
-		TemplateHeader();
-		TemplateMenu();
-		echo '<div class="content">
-			<h2>Eigene Sitteraufträge</h2>
-			<table width="99%" cellpadding="0" cellspacing="0" border="0"><tr>';
-		foreach($content['pages'] as $page) {
-			echo '
-				<th><a href="', $page['link'], '">', $page['desc'], '</a></th>';
-		}
-		echo '
-			</tr></table><br />
-			<table width="99%" cellpadding="0" cellspacing="0" border="0">
-				<tr><th style="width:120px;">Zeit</th><th>Bei</th><th>Koordinaten</th><th>Auftrag</th><th style="width:50px;"></th></tr>';
-		if(isset($content['msg'])) {
-			echo '<tr><td colspan="5" class="simp">', $content['msg'], '</td></tr>';
-		}
-			foreach ($content['jobs'] as $line) {
-			echo '
-				<tr class="sitterjob_', $line['ownershipState'], '">
-					<td>', $line['time'], '</td>
-					<td>', $line['igmName'], '<br /><i style="fonz-size:smaller;">(', $line['userName'], ')</i></td>
-					<td>', $line['coords'], ' ', $line['planiName'], '</td>
-					<td><b>', $line['typeLong'], '</b><br />', $line['text'], '</td>
-					<td align="center"><a href="', $line['editLink'], '">Edit</a>', $line['hasAppendLink'] ? '<br /><a href="'.$line['appendLink'].'">Anhängen</a>' : '', '<br /><a href="', $line['delLink'], '">Del</a></td>
-				</tr>';
-		}
-		echo '</table></div>';
 		TemplateFooter();
 	}
 ?>

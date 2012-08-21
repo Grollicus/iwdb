@@ -135,6 +135,7 @@
 			$modsActive[$n] = $modules[$n];
 		}
 		$content['errors'] = array();
+		$upd = isset($_REQUEST['ID']) && $_REQUEST['ID'] != '0';
 		
 		if(isset($_REQUEST['submit'])) {
 			$valid = true;
@@ -149,14 +150,14 @@
 					if(isset($mod['evaluate']))
 						call_user_func_array($mod['evaluate'], $p);
 				}
-				if(isset($_REQUEST['ID']) && $_REQUEST['ID'] != '0') {
+				if($upd) {
 					$upd = '';
 					foreach($data as $col => $val) {
 						$upd .= $col."='".$val."', ";
 					}
 					$upd = substr($upd, 0, -2);
 					DBQuery("UPDATE {$pre}sitter SET {$upd} WHERE ID=".intval($_REQUEST['ID']), __FILE__, __LINE__);
-					$content['successmsg'] = 'Sitterauftrag erfolgreich aktualisiert!';
+					Redirect($scripturl.'/index.php?action=sitter_view&msg=job_update');
 				} else {
 					$cols = '';
 					$vals = '';
@@ -167,7 +168,7 @@
 					$cols = substr($cols, 0, -2);
 					$vals = substr($vals, 0, -2);
 					DBQuery("INSERT INTO {$pre}sitter ($cols) VALUES ($vals)", __FILE__, __LINE__);
-					$content['successmsg'] = 'Sitterauftrag erfolgreich eingetragen!';
+					Redirect($scripturl.'/index.php?action=sitter_view&msg=job_insert');
 				}
 			}
 		}
@@ -194,15 +195,16 @@
 		$content['pages'] = array();
 		foreach($pages as $n => $p) {
 			$content['pages'][] = array(
-				'desc' => 'Neuer '.$p['name'],
-				'link' => $scripturl.'/index.php?action=sitter_edit&amp;page='.$n,
+				'desc' => $upd && ($n == $currentPage) ? $p['name'].' bearbeiten' : 'Neuer '.$p['name'],
+				'link' => ($n == $currentPage) ? $scripturl.'/index.php?action=sitter_view' : $scripturl.'/index.php?action=sitter_edit&amp;page='.$n,
 				'active' => ($n == $currentPage),
 			);
 		}
-		$content['heading'] = (isset($_REQUEST['ID']) && $_REQUEST['ID'] != '0') ? 'Sitterauftrag bearbeiten' : 'Neuer Sitterauftrag';
+		$content['heading'] = $upd ? $pages[$currentPage]['name'].' bearbeiten' : 'Neuer '.$pages[$currentPage]['name'];
 		$content['subHeading'] = $pages[$currentPage]['name'];
 		$content['submitAction'] = $scripturl.'/index.php?action=sitter_edit&amp;page='.EscapeO($currentPage);
-		$content['action'] = 'sitter_own';
+		$content['backLink'] = $scripturl.'/index.php?action=sitter_view';
+		$content['action'] = 'sitter_view';
 		TemplateInit('sitter_own');
 		TemplateSitterEdit();
 	}
@@ -398,7 +400,7 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 	WHERE techtree_items.Type='geb' AND (techtree_items.MaxLevel = 0 OR IFNULL(techtree_useritems.count,0)+1 <= techtree_items.MaxLevel)
 	ORDER BY techtree_items.Name", __FILE__, __LINE__);
 			}
-			$content['gebaeude'] = array(array('name' => 'Gebäude auswählen!', 'id' => -1, 'selected' => false), array('name' => 'Gebäude nach Postit', 'id' => 0, 'selected' => false));
+			$content['gebaeude'] = array(array('name' => 'Gebäude auswählen!', 'id' => -1, 'selected' => false), array('name' => 'Gebäude nach Postit', 'id' => 0, 'selected' => $g == 0));
 			while($row = mysql_fetch_row($q)) {
 				$content['gebaeude'][] = array(
 					'name' => EscapeOU($row[1]),
@@ -406,7 +408,9 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 					'selected' => $row[0] == $g,
 				);
 			}
-			if($g > 0) {
+			if($g == 0) {
+				$content['stufe'] = array(array('name' => '-', 'id' => 0, 'selected' => false));
+			} elseif($g > 0) {
 				$q = DBQuery("SELECT Stufe, Dauer FROM {$pre}techtree_stufen WHERE ItemID={$g}", __FILE__, __LINE__);
 				if(mysql_num_rows($q) != 1)
 					$content['stufe'] = array(array('name' => 'Stufe auswählen!', 'id' => 0, 'selected' => false));
