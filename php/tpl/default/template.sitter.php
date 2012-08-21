@@ -19,7 +19,7 @@
 				<tr class="sitterjob_', $line['ownershipState'], '">
 					<td>', $line['time'], '</td>
 					<td><a href="', $line['loginLink'], '">[', $line['igmName'], ']</a><br /><i style="fonz-size:smaller;">(', $line['userName'], ')</i></td>
-					<td>[', $line['coords'], '] ', $line['planiName'], '</td>
+					<td>', $line['coords'], ' ', $line['planiName'], '</td>
 					<td><b>', $line['typeLong'], '</b><br />', $line['text'], '</td>
 				</tr>';
 		}
@@ -32,7 +32,7 @@
 				<tr class="sitterjob_', $line['ownershipState'], '">
 					<td>', $line['time'], '</td>
 					<td>', $line['igmName'], '<br /><i style="fonz-size:smaller;">(', $line['userName'], ')</i></td>
-					<td>[', $line['coords'], '] ', $line['planiName'], '</td>
+					<td>', $line['coords'], ' ', $line['planiName'], '</td>
 					<td><b>', $line['typeLong'], '</b><br />', $line['text'], '</td>
 					<td>&nbsp;</td>
 				</tr>';
@@ -200,7 +200,7 @@
 		// ]]></script>
 		<form action="', $content['formAction'], '" method="post"><table border="1" align="center" width="100%">
 			<tr align="left"><th>Zeit:</th><td>', $content['time'], '</td></tr>
-			<tr align="left"><th>Planet:</th><td>[', $content['coords'], '] ', $content['planiName'], '</td></tr>
+			<tr align="left"><th>Planet:</th><td>', $content['coords'], ' ', $content['planiName'], '</td></tr>
 			<tr align="left"><th>Auftrag:</th><td><b>', $content['longType'], '</b><br />', $content['text'], '</td></tr>';
 			if($content['hasFollowUp']) {
 				echo '<tr><th>Bauschleife<br /><i style="font-size:smaller">Strg+a, Strg+c der Bauseite</i></th><td><textarea name="bauschleife" id="bauschleife"></textarea></td></tr>';
@@ -463,7 +463,7 @@
 				<tr class="sitterjob_', $line['ownershipState'], '">
 					<td>', $line['time'], '</td>
 					<td>', $line['igmName'], '<br /><i style="fonz-size:smaller;">(', $line['userName'], ')</i></td>
-					<td>[', $line['coords'], '] ', $line['planiName'], '</td>
+					<td>', $line['coords'], ' ', $line['planiName'], '</td>
 					<td><b>', $line['typeLong'], '</b><br />', $line['text'], '</td>
 					<td align="center"><a href="', $line['editLink'], '">Edit</a>', $line['hasAppendLink'] ? '<br /><a href="'.$line['appendLink'].'">Anhängen</a>' : '', '<br /><a href="', $line['delLink'], '">Del</a></td>
 				</tr>';

@@ -215,7 +215,7 @@
 		}
 		
 		if(isset($_REQUEST['bauschleife'])) {
-			$coords = $job[9].':'.$job[10].':'.$job[11];
+			$coords = is_null($job[9]) ? 'all' : $job[9].':'.$job[10].':'.$job[11];
 			$bs = ParseIWBuildingQueue(Param('bauschleife'), $coords);
 			if($bs === false || count($bs) == 0) {
 				$content['msg'] = 'Konnte mit der Bauschleife nichts anfangen!';
@@ -245,7 +245,7 @@
 		);
 		$text = '<b>Erledigt</b><br />';
 		$text .= FormatDate($job[5]).'<br />';
-		$text .= '['.$job[9]. ':'. $job[10]. ':'. $job[11].'] '.EscapeOU($job[12])."<br />";
+		$text .= is_null($job[9]) ? 'Alle Planeten<br />' : ('['.$job[9]. ':'. $job[10]. ':'. $job[11].'] '.EscapeOU($job[12])."<br />");
 		$text .= '<b>'.$types[$job[6]].'</b><br />';
 		$text .= EscapeDBU(SitterText($job));
 		
@@ -282,7 +282,7 @@
 				$c = DBQueryOne("SELECT sitter.time, sitter.usequeue, universum.gala, universum.sys, universum.pla, sitter.igmid
 	FROM ({$pre}sitter AS sitter LEFT JOIN {$pre}universum AS universum ON sitter.planID = universum.ID)
 	WHERE sitter.ID = {$id}", __FILE__, __LINE__);
-				$coords = $c[2].':'.$c[3].':'.$c[4];
+				$coords = is_null($c[2]) ? 'all' : $c[2].':'.$c[3].':'.$c[4];
 				$bs = ParseIWBuildingQueue(Param('bauschleife'), $coords);
 				if(count($bs) == 0 || $bs === false) {
 					$time = $c[0];
@@ -330,7 +330,7 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
                 		);
 				$text = '<b>Aktualisiert</b><br />';
 				$text .= FormatDate($job[5]).'<br />';
-				$text .= '['.$job[9]. ':'. $job[10]. ':'. $job[11].'] '.EscapeOU($job[12])."<br />";
+				$text .= is_null($job[9]) ? 'Alle Planeten<br />' : ('['.$job[9]. ':'. $job[10]. ':'. $job[11].'] '.EscapeOU($job[12])."<br />");
 				$text .= '<b>'.$types[$job[6]].'</b><br />';
 				$text .= EscapeDBU(SitterText($job));
 				LogAction($job[3], 'auftrag', $text);
@@ -387,8 +387,9 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 				$content['time'] = FormatDate($job[5]);
 				$content['text'] = SitterText($job);
 				$content['longType'] = $types[$job[6]];
-				$content['coords'] = $job[9]. ':'. $job[10]. ':'. $job[11];
-				$content['planiName'] = EscapeOU($job[12]);
+				$content['hasPlani'] = !is_null($job[9]);
+				$content['coords'] = is_null($job[9]) ? '' : ('['.$job[9]. ':'. $job[10]. ':'. $job[11].']');
+				$content['planiName'] = is_null($job[9]) ? 'Alle Planeten' : EscapeOU($job[12]);
 				
 				$content['formAction'] = $scripturl.'/index.php?action=sitterutil_job'.$params;
 				

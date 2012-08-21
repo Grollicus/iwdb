@@ -267,7 +267,7 @@
 		$data['igmid'] = intval($_REQUEST['account']);
 	}
 	function CbValidatePlanet() {
-		if($_REQUEST['planet'] == '0') {
+		if($_REQUEST['planet'] == '-1') {
 			global $content;
 			$content['errors'][] = 'Kein Planet ausgewählt!';
 			return false;
@@ -277,9 +277,9 @@
 	function CbPreparePlanet($row) {
 		global $pre, $content, $user;
 		if(isset($_REQUEST['planet'])) {
-			$active = $_REQUEST['planet'];
+			$active = intval($_REQUEST['planet']);
 		} else {
-			$active = $row === false ? 0 : $row['planID'];
+			$active = $row === false ? -1 : $row['planID'];
 		}
 		if(isset($_REQUEST['account'])) {
 			$uid = intval($_REQUEST['account']);
@@ -287,7 +287,10 @@
 			$uid = $row === false ? $user['igmuser'] : $row['igmid'];
 		}
 		$q = DBQuery("SELECT universum.id, universum.gala, universum.sys, universum.pla, planiname FROM {$pre}universum AS universum INNER JOIN {$pre}igm_data AS igm_data ON universum.ownername=igm_data.igmname WHERE igm_data.ID={$uid} ORDER BY CASE objekttyp WHEN 'Kolonie' THEN 1 ELSE 0 END, universum.gala, universum.sys, universum.pla", __FILE__, __LINE__);
-		$content['planet'] = array(array('id' => '0', 'name' => 'Plani auswählen!', 'selected' => false));
+		$content['planet'] = array(
+			array('id' => '-1', 'name' => 'Plani auswählen!', 'selected' => false), 
+			array('id' => '0', 'name' => 'Alle Planeten', 'selected' => $active == 0),
+		);
 		while($row = mysql_fetch_row($q)) {
 			$content['planet'][] = array('id' => $row[0], 'name' => "({$row[1]}:{$row[2]}:{$row[3]}) ".EscapeOU($row[4]), 'selected' => $row[0] == $active); 
 		}
@@ -371,24 +374,26 @@
 		} else {
 			$s = 0;
 		}
-		if(isset($_REQUEST['planet']) && $_REQUEST['planet'] != '0' || $row !== false ) {
-			if(isset($_REQUEST['planet']) && $_REQUEST['planet'] != '0') {
+		if(isset($_REQUEST['planet']) && $_REQUEST['planet'] != '-1' || $row !== false ) {
+			if(isset($_REQUEST['planet']) && $_REQUEST['planet'] != '-1') {
 				$planid = intval($_REQUEST['planet']);
 				$igmid = intval($_REQUEST['account']);
 			} else {
 				$planid = $row['planID'];
 				$igmid = $row['igmid'];
 			}
-			$c = DBQueryOne("SELECT gala, sys, pla FROM {$pre}universum WHERE ID={$planid}", __FILE__, __LINE__);
-			$plani = "{$c[0]}:{$c[1]}:{$c[2]}";
-
-			$content['gebaeude'] = array(array('name' => 'Gebäude auswählen!', 'id' => 0, 'selected' => false));
-			
-			$q = DBQuery("SELECT techtree_items.ID, techtree_items.Name
+			if($planid == 0) {
+				$q = DBQuery("SELECT techtree_items.ID, techtree_items.Name FROM {$pre}techtree_items AS techtree_items WHERE techtree_items.Type='geb' ORDER BY techtree_items.Name", __FILE__, __LINE__);
+			} else {
+				$c = DBQueryOne("SELECT gala, sys, pla FROM {$pre}universum WHERE ID={$planid}", __FILE__, __LINE__);
+				$plani = "{$c[0]}:{$c[1]}:{$c[2]}";
+				$q = DBQuery("SELECT techtree_items.ID, techtree_items.Name
 FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems AS techtree_useritems ON techtree_items.ID = techtree_useritems.ItemID AND techtree_useritems.uid={$igmid} AND techtree_useritems.coords = '{$plani}')
 	LEFT JOIN {$pre}techtree_stufen AS techtree_stufen ON techtree_items.ID = techtree_stufen.ItemID AND ((techtree_items.Class IN (1,2) AND (techtree_stufen.Stufe=IFNULL(techtree_useritems.count,0)+1)) OR (techtree_items.Class=0 AND techtree_stufen.Stufe=1))
 	WHERE techtree_items.Type='geb' AND (techtree_items.MaxLevel = 0 OR IFNULL(techtree_useritems.count,0)+1 <= techtree_items.MaxLevel)
 	ORDER BY techtree_items.Name", __FILE__, __LINE__);
+			}
+			$content['gebaeude'] = array(array('name' => 'Gebäude auswählen!', 'id' => 0, 'selected' => false));
 			while($row = mysql_fetch_row($q)) {
 				$content['gebaeude'][] = array(
 					'name' => EscapeOU($row[1]),
@@ -547,14 +552,18 @@ WHERE techtree_items.type='For' AND techtree_useritems.count IS NULL OR techtree
 			die("hacking attempt");
 		$planid = intval($_REQUEST['planid']);
 		$igmid = intval($_REQUEST['igmid']);
-		$c = DBQueryOne("SELECT gala, sys, pla FROM {$pre}universum WHERE ID={$planid}", __FILE__, __LINE__);
-		$plani = "{$c[0]}:{$c[1]}:{$c[2]}";
+		if($planid === 0) {
+			$q = DBQuery("SELECT techtree_items.ID, techtree_items.Name FROM {$pre}techtree_items AS techtree_items WHERE techtree_items.Type='geb' ORDER BY techtree_items.Name", __FILE__, __LINE__);
+		} else {
+			$c = DBQueryOne("SELECT gala, sys, pla FROM {$pre}universum WHERE ID={$planid}", __FILE__, __LINE__);
+			$plani = "{$c[0]}:{$c[1]}:{$c[2]}";
 		
-		$q = DBQuery("SELECT techtree_items.ID, techtree_items.Name
+			$q = DBQuery("SELECT techtree_items.ID, techtree_items.Name
 FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems AS techtree_useritems ON techtree_items.ID = techtree_useritems.ItemID AND techtree_useritems.uid={$igmid} AND techtree_useritems.coords = '{$plani}')
 	LEFT JOIN {$pre}techtree_stufen AS techtree_stufen ON techtree_items.ID = techtree_stufen.ItemID AND ((techtree_items.Class IN (1,2) AND (techtree_stufen.Stufe=IFNULL(techtree_useritems.count,0)+1)) OR (techtree_items.Class=0 AND techtree_stufen.Stufe=1))
 	WHERE techtree_items.Type='geb' AND (techtree_items.MaxLevel = 0 OR IFNULL(techtree_useritems.count,0)+1 <= techtree_items.MaxLevel)
 	ORDER BY techtree_items.Name", __FILE__, __LINE__);
+		}
 		echo '<data><option><value>0</value><description>Gebäude auswählen!</description></option>';
 		while($row = mysql_fetch_row($q)) {
 			echo '<option><value>', $row[0], '</value><description>', EscapeOU($row[1]), '</description></option>';
@@ -567,8 +576,6 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 			die("hacking attempt");
 		
 		$planid = intval($_REQUEST['planid']);
-		$c = DBQueryOne("SELECT gala, sys, pla FROM {$pre}universum WHERE ID={$planid}", __FILE__, __LINE__);
-		$plani = "{$c[0]}:{$c[1]}:{$c[2]}";
 		$itemid = intval($_REQUEST['itemid']);
 		
 		$q = DBQuery("SELECT Stufe, Dauer FROM {$pre}techtree_stufen WHERE ItemID={$itemid}", __FILE__, __LINE__);
@@ -579,8 +586,14 @@ FROM ({$pre}techtree_items AS techtree_items LEFT JOIN {$pre}techtree_useritems 
 			echo '<option><value>', $row[0], '</value><description>', sprintf("%02s", $row[0]), ' [', FormatTime($row[1]),']</description></option>';
 		}
 		echo '<select>';
-		$stufe = DBQueryOne("SELECT count FROM {$pre}techtree_useritems WHERE itemid={$itemid} AND coords='{$plani}'", __FILE__, __LINE__);
-		echo ($stufe === false) ? '0' : $stufe;
+		if($planid == 0) {
+			echo '0';
+		} else {
+			$c = DBQueryOne("SELECT gala, sys, pla FROM {$pre}universum WHERE ID={$planid}", __FILE__, __LINE__);
+			$plani = "{$c[0]}:{$c[1]}:{$c[2]}";
+			$stufe = DBQueryOne("SELECT count FROM {$pre}techtree_useritems WHERE itemid={$itemid} AND coords='{$plani}'", __FILE__, __LINE__);
+			echo ($stufe === false) ? '0' : $stufe;
+		}
 		echo '</select></data>';
 	}
 	function SitterScriptListForschungen() {
