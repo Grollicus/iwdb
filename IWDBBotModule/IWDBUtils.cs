@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Linq;
 
 namespace IWDB {
-	static class IWDBUtils {
+	public static class IWDBUtils {
 		public static uint parseIWTime(String toParse) {
 			//03.04.2008 11:27
 			return toUnixTimestamp(DateTime.ParseExact(toParse, "dd.MM.yyyy HH:mm", null, System.Globalization.DateTimeStyles.AssumeLocal|System.Globalization.DateTimeStyles.AdjustToUniversal));

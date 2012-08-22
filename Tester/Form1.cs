@@ -47,7 +47,7 @@ namespace Tester {
                     break;
             }
             sb.Append("\0\0");
-            backgroundWorker1.RunWorkerAsync(new Pair<string, uint>(sb.ToString(), count));
+            backgroundWorker1.RunWorkerAsync(new Tuple<string, uint, string>(sb.ToString(), count, cbHandler.Text));
             BtGo.Text = "Running";
         }
 
@@ -72,9 +72,18 @@ namespace Tester {
             progressBar1.Maximum = 100;
         }
 
+        private String FormatResponse(String resp, String handler) {
+            switch (handler) {
+                case "buildingqueue":
+                    return resp.Split('\n').Where(s=> s.Trim().Length > 0).Select(l => IWDB.IWDBUtils.fromUnixTimestamp(uint.Parse(l)).ToString()).Aggregate(new StringBuilder(), (sb, s) => sb.AppendLine(s)).ToString();
+                default:
+                    return resp;
+            }
+        }
+
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e) {
             try {
-                Pair<string, uint> req = (Pair<string, uint>)e.Argument;
+                Tuple<string, uint, string> req = (Tuple<string, uint, string>)e.Argument;
                 for (uint i = 0; i < req.Item2; ++i) {
                     if(e.Cancel)
                         break;
@@ -85,7 +94,7 @@ namespace Tester {
                     System.IO.StreamReader r = new System.IO.StreamReader(ns);
                     sw.Write(req.Item1);
                     sw.Flush();
-                    backgroundWorker1.ReportProgress((int)((100 * i) / req.Item2), r.ReadToEnd());
+                    backgroundWorker1.ReportProgress((int)((100 * i) / req.Item2), FormatResponse(r.ReadToEnd(), req.Item3));
                 }
             }
             catch (Exception ex) {
