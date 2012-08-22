@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Net.Sockets;
 using System.Net;
 using System.IO;
@@ -586,11 +587,14 @@ class ParserRequestMessagePart {
                         } else {
                             Match ausbaustatus = Regex.Match(req, @"Ausbaustatus((?:\s+" + KolonieName + @"\s+" + Koordinaten + @".*?bis\s+" + IWZeit + @"(?:\s+|\s-\s)\d+:\d+:\d+)+)");
                             if (ausbaustatus.Success) {
-                                MatchCollection c = coords == "all" ?
-                                    Regex.Matches(ausbaustatus.Groups[1].Value, KolonieName + @"\s+" + Koordinaten + @".*?bis\s+(" + IWZeit + @")(?:\n|\s-\s)") :
-                                    Regex.Matches(ausbaustatus.Groups[1].Value, KolonieName + @"\s+\(" + coords + @"\).*?bis\s+(" + IWZeit + @")(?:\n|\s-\s)");
-                                foreach (Match m in c) {
-                                    entries.Add(IWDBUtils.parseIWTime(m.Groups[1].Value));
+                                if (coords == "all") {
+                                    MatchCollection c = Regex.Matches(ausbaustatus.Groups[1].Value, KolonieName + @"\s+(" + Koordinaten + @").*?bis\s+(" + IWZeit + @")(?:\n|\s-\s)");
+                                    // jeez. Kleinste Zeit zu der die 1. / 2. / 3. Bauschleife (=Item3) ausläuft. Damit der PHP-Teil nicht vollkommen irre wird :/
+                                    entries.AddRange(c.OfType<Match>().Select(m => new Tuple<String, uint>(m.Groups[1].Value, IWDBUtils.parseIWTime(m.Groups[2].Value))).GroupBy(t => t.Item1).SelectMany((grp)=> grp.Select((el,i) => new Tuple<String, uint, int>(el.Item1, el.Item2, i))).GroupBy(el => el.Item3).Select(grp => grp.Select(el => el.Item2).Min()));
+                                } else {
+                                    foreach (Match m in Regex.Matches(ausbaustatus.Groups[1].Value, KolonieName + @"\s+\(" + coords + @"\).*?bis\s+(" + IWZeit + @")(?:\n|\s-\s)")) {
+                                        entries.Add(IWDBUtils.parseIWTime(m.Groups[1].Value));
+                                    }
                                 }
                             }
                         }
