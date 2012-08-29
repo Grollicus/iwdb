@@ -96,6 +96,7 @@
             this.label18 = new System.Windows.Forms.Label();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.listBox1 = new System.Windows.Forms.ListBox();
             this.label23 = new System.Windows.Forms.Label();
             this.TbZeusPlanis = new System.Windows.Forms.TextBox();
             this.TbSimUntil = new System.Windows.Forms.TextBox();
@@ -892,6 +893,7 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.listBox1);
             this.groupBox4.Controls.Add(this.label23);
             this.groupBox4.Controls.Add(this.TbZeusPlanis);
             this.groupBox4.Controls.Add(this.TbSimUntil);
@@ -903,6 +905,24 @@
             this.groupBox4.TabIndex = 36;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Simulatoreinstellungen";
+            // 
+            // listBox1
+            // 
+            this.listBox1.AllowDrop = true;
+            this.listBox1.FormattingEnabled = true;
+            this.listBox1.Items.AddRange(new object[] {
+            "Hallu",
+            "Hallu2",
+            "Hallu3",
+            "Blork",
+            "Moep"});
+            this.listBox1.Location = new System.Drawing.Point(6, 71);
+            this.listBox1.Name = "listBox1";
+            this.listBox1.Size = new System.Drawing.Size(130, 121);
+            this.listBox1.TabIndex = 38;
+            this.listBox1.DragDrop += new System.Windows.Forms.DragEventHandler(this.listBox1_DragDrop);
+            this.listBox1.DragOver += new System.Windows.Forms.DragEventHandler(this.listBox1_DragOver);
+            this.listBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listBox1_MouseDown);
             // 
             // label23
             // 
@@ -1080,6 +1100,7 @@
         private System.Windows.Forms.TextBox TbBgEi;
         private System.Windows.Forms.TextBox TbBgCh;
         private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.ListBox listBox1;
     }
 }
 

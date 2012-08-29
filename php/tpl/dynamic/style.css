@@ -1,0 +1,303 @@
+body {
+	background: none repeat scroll 0 0 #E5E5E8;
+}
+
+a:visited, a:active, a:hover, a:focus, a:link, a:hover { /*Alle Links erstmal blau */
+	color: #0000FF;
+}
+a:active {
+	font-style: italic;
+}
+
+body, td, th, tr {
+	color: #000000;
+	font-size: 12px;
+	font-family: verdana, sans-serif;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0px;
+	width: 99%;
+}
+
+td, th {
+	empty-cells: show;
+}
+
+img { border-width: 0px; }
+iframe {
+	width: 100%;
+	height: 100%;
+}
+
+.header {
+	text-align: left;
+	padding-bottom: 10px;
+}
+#content {
+	text-align: left;
+	margin-top: 5px;
+	position:absolute;
+	left: 168px;
+	margin-left: 2em;
+	right: 2em;
+	background-color: #E5E5E8;
+}
+.footer {
+	text-align: left;
+	clear:both;
+}
+.menu {
+	background-color: #E9F0F6;
+	color: #FFFFDD;
+	margin: 5px 5px 0;
+	width: 150px;
+	position:absolute;
+	border: solid 1px #88A6C0;
+	text-align: left;
+}
+
+.menu th {
+	padding: 4px;
+}
+
+.menu td {
+	border-top: solid 1px #9BAEBF;
+	padding: 4px;
+}
+
+.menu a:visited, .menu a:focus, .menu a:link { /*Alle Links im Menü erstmal blau */
+	color: #0000FF;
+}
+
+.menu a:hover {
+	color: #FF0000;
+}
+
+.menu a:active {
+	font-style: italic;
+}
+
+#content table {
+	background-color: #E9F0F6;
+	padding: 0px;
+	border: solid 1px #88A6C0;
+	text-align: left;
+}
+
+#content td {
+	border: solid 1px #9BAEBF;
+	padding: 4px;
+}
+
+#content .subtable .t, #content .subtable .st {
+	background-color: #E9F0F6;
+	padding: 0px;
+	border: solid 1px #88A6C0;
+	text-align: left;
+	color: #FF0000;
+}
+
+#content .subtable .t td, #content .subtable .st td  {
+	border: solid 1px #9BAEBF;
+	padding: 4px;
+}
+
+#content .subtable .st td {
+	padding: 2px;
+}
+
+#content .subtable table {
+	margin: 0px;
+	padding: 0px;
+	border: none 0px;
+}
+
+#content .subtable td {
+	border: none 0px;
+	font-size:smaller;
+}
+
+.column {
+	margin-top: 1em;
+	width: 250px;
+	float:left;
+	overflow: hidden;
+}
+.portlet {
+	margin: 0 1em 1em 0;
+}
+.portlet-header {
+	margin: 0.3em;
+}
+.portlet-header .ui-icon {
+	float: right;
+}
+.portlet-content {
+	padding: 0.4em;
+}
+
+#overlay {
+	display: none;
+	position: fixed;
+	left:0px;
+	top:0px;
+	bottom: 26px;
+	right: 0px;
+	z-index: -99;
+	padding: 0;
+	margin: 0;
+	background-color: transparent;
+}
+#iwframe {
+	position: fixed;
+	left:0px;
+	top:0px;
+	bottom: 26px;
+	right: 0px;
+	z-index: -100;
+	overflow:hidden;
+	padding: 0;
+	margin: 0;
+}
+#igmnav {
+	margin: 0;
+	padding: 0;
+	position: fixed;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	height: 26px;
+	overflow: hidden;
+	z-index: 2;
+	background-color: #88A6C0;
+}
+#lnav {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+}
+#mnav {
+	position: absolute;
+	left: 100px;
+	top: 0px;
+}
+#rnav {
+	position: absolute;
+	right: 0px;
+	top: 0px;
+}
+#act {
+	position: relative;
+	display: inline-block;
+	margin:0;
+	padding: 0.4em 1em;
+	top: 0px;
+	height: 26px;
+}
+.sitterutil_box * {
+	font-size:10px;
+}
+
+/* Die Überschrift und Tabellenüberschriften im Menü*/
+.categoryheader, th, th {
+	background-color: #88A6C0;
+	padding-left: 10px;
+	padding-right: 10px;
+	/* #355D80 */
+}
+
+/* Links in Tabellenüberschriften */
+#content th a:link, #content th a:visited, #content th a:hover, #content th a:active, #content th a:focus {
+	text-decoration: none;
+}
+
+.simp {
+	font-weight: bold;
+	color: #009900;
+}
+
+.imp {
+	font-weight: bold;
+	color: #FF0000;
+}
+
+.sub {
+	font-size: smaller;
+	font-style: italic;
+}
+
+/* Stargates in der Systemkarte */
+.systemmap_stargate,
+.systemmap_stargate td,
+.systemmap_stargate a:link,
+.systemmap_stargate a:visited,
+.systemmap_stargate a:focus,
+.systemmap_stargate a:hover		{ background-color: #000000; color: #FFFFFF; }
+
+.techtree_geb { color: #007700; font-style:italic; }
+.techtree_for { color: #BB6666; font-style:italic; }
+.techtree_for_done { color: #0000FF; }
+.techtree_geb_done { color: #6666BB; }
+
+.danger_0 {}
+.danger_1 { background-color:#FFFF00; }
+
+.sitterjob_own {
+	background-color: #E5C0E8;
+}
+.sitterjob_account {
+	background-color: #E5E5C4;
+}
+.sitterjob_none {
+}
+
+*.act_0, *.act_0 td { background-color: #00FF00 !important; }
+*.act_1, *.act_1 td { background-color: #80FF00 !important;}
+*.act_2, *.act_2 td { background-color: #C4FF00 !important; }
+*.act_3, *.act_3 td { background-color: #FFFF00 !important; }
+*.act_4, *.act_4 td { background-color: #FF8040 !important; }
+*.act_5, *.act_5 td { background-color: #FF0000 !important; }
+
+/* tablesorter */
+table.tablesorter {
+	/*background-color: #CDCDCD;*/
+	margin:10px 0pt 15px;
+	font-size: 8pt;
+	width: 100%;
+	text-align: left;
+}
+table.tablesorter thead tr th, table.tablesorter tfoot tr th {
+	/*background-color: #e6EEEE;
+	border: 1px solid #FFF;*/
+	font-size: 8pt;
+	padding: 4px;
+}
+table.tablesorter thead tr .header {
+	background-image: url('img/bg.gif');
+	background-repeat: no-repeat;
+	background-position: center right;
+	cursor: pointer;
+}
+table.tablesorter tbody td {
+	color: #3D3D3D;
+	padding: 4px;
+	background-color: #FFF;
+	vertical-align: top;
+}
+table.tablesorter tbody tr.odd td {
+	background-color:#F0F0F6;
+}
+table.tablesorter thead tr .headerSortUp {
+	background-image: url('img/asc.gif');
+}
+table.tablesorter thead tr .headerSortDown {
+	background-image: url("img/desc.gif");
+}
+table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+background-color: #8dbdd8;
+}
+
+/* jquery ui  88A6C0 */

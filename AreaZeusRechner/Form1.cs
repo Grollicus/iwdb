@@ -118,6 +118,28 @@ namespace AreaZeusRechner {
                 e.SuppressKeyPress = true;
             }
         }
+
+        private void listBox1_MouseDown(object sender, MouseEventArgs e) {
+            int index = listBox1.IndexFromPoint(e.X, e.Y);
+            if (index >= 0) {
+                listBox1.DoDragDrop(listBox1.Items[index].ToString(), DragDropEffects.Move);
+            }
+        }
+
+        private void listBox1_DragOver(object sender, DragEventArgs e) {
+            if (e.Data.GetDataPresent("Text"))
+                e.Effect = DragDropEffects.Move;
+        }
+
+        private void listBox1_DragDrop(object sender, DragEventArgs e) {
+            String val = e.Data.GetData(typeof(string)) as string;
+            Point p = PointToClient(new Point(e.X, e.Y));
+            int ind = listBox1.IndexFromPoint(p);
+            if (ind < 0)
+                ind = listBox1.Items.Count - 1;
+            listBox1.Items.Remove(val);
+            listBox1.Items.Insert(ind, val);
+        }
     }
 
     class AreaZeusSim:LazySim {

@@ -86,6 +86,15 @@ if(!function_exists('TemplateMenu')) {
 echo '		<tr><th>&nbsp;</th></tr>
 			<tr><td><a class="item" href="'.$scripturl.'/?action=logout">Logout</a></td></tr>
 		</table></div>
+		<script type="text/javascript"><!-- // --><![CDATA[
+			', $user['isGuest'] || $user['isRestricted'] ?  '' : '
+			function timerCallback() {
+				AjaxRequest("sitter_cnt");
+				window.setTimeout(timerCallback, 120000);
+			}
+			$(function() {window.setTimeout(timerCallback, 120000)});
+			', '
+		// ]]></script>
 		<div id="content">
 ';
 	}

@@ -205,7 +205,7 @@
 		$content['submitAction'] = $scripturl.'/index.php?action=sitter_edit&amp;page='.EscapeO($currentPage);
 		$content['backLink'] = $scripturl.'/index.php?action=sitter_view';
 		$content['action'] = 'sitter_view';
-		TemplateInit('sitter_own');
+		TemplateInit('sitter');
 		TemplateSitterEdit();
 	}
 
