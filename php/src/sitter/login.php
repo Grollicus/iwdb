@@ -55,9 +55,6 @@
 		if($user['isRestricted'])
 			die("Hacking Attempt");
 		
-		require_once($sourcedir.'/newscan/main.php');
-		$tmpid = ParseScansEx(true); //für fastpaste
-		
 		if(isset($_GET['jobid'])) {
 			$jid = intval($_GET['jobid']);
 			$now = time();
@@ -65,7 +62,6 @@
 			if($jobdata === false) { //race condition - andere hat den Auftrag als erledigt markiert während sich hier jemand grade für den Job einloggen will
 				Redirect($scripturl. '/index.php?action=sitter_view&msg=sitter_racecondition');
 			}
-			$content['job'] = $jid;
 			$id = $jobdata;
 			$params = '&id='.$jid.'&uid='.$id;
 		} elseif(isset($_GET['id'])) {
@@ -74,10 +70,11 @@
 			} elseif($_GET['id'] == 'idle') {
 				$now = time();
 				$id = DBQueryOne("SELECT building.uid AS uid FROM {$pre}building AS building INNER JOIN {$pre}igm_data AS igm_data ON building.uid=igm_data.ID WHERE igm_data.ikea=0 OR building.plani=0 GROUP BY building.plani, uid ORDER BY IF(MAX(building.end)<{$now}, 0, MAX(building.end)), igm_data.lastParsed LIMIT 0,1", __FILE__, __LINE__);
+				if($id === false)
+					$id = DBQueryOne("SELECT ID FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
 			} else {
 				$id = intval($_GET['id']);
 			}
-			$content['job'] = 0;
 			$params = '&uid='.$id;
 		} else {
 			return;
@@ -518,22 +515,27 @@ WHERE sitter.ID = {$id}", __FILE__, __LINE__);
 				$resp['err'] = $content['msg'];
 			if(isset($content['submsg']))
 				$resp['msg'] = $content['submsg'];
+			if(isset($_REQUEST['next'])) {
+				$resp['nextid'] = DBQueryOne("SELECT ID FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
+			}
+			if(isset($_REQUEST['idle'])) {
+				$id = DBQueryOne("SELECT ID FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
+				$resp['nextid'] = $id ? $id : DBQueryOne("SELECT ID FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
+			}
 			echo json_encode($resp, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
 			return;
 		}
+		$content['loginBase'] = $scripturl.'/index.php?action=sitter_dologin&sitter=1';
 		$content['submitUrl'] = $scripturl.'/index.php?action=sitterutil_newscan';
 		TemplateInit('sitter');
 		TemplateSitterUtilNewscan();
 	}
 
 	function SitterUtilTrade() {
-		global $content, $ID_MEMBER, $scripturl, $pre, $params, $user;
+		global $content, $ID_MEMBER, $scripturl, $pre, $user;
 
 		if($user['isRestricted'])
 			die("Hacking Attempt");
-		
-		SitterUtilPrepare();
-		$content['submitUrl'] = $scripturl. '/index.php?action=sitterutil_trade'.$params;
 		
 		if(isset($_REQUEST['ignore']) && CheckRequestID()) {
 			DBQuery("INSERT INTO {$pre}trade_ignores (id, uid, end) VALUES (".intval($_REQUEST['rid']).", {$ID_MEMBER}, ".(time()+604800).") ON DUPLICATE KEY UPDATE end=VALUES(end)", __FILE__, __LINE__);
@@ -592,6 +594,7 @@ FROM (({$pre}trade_reqs AS trade_reqs INNER JOIN {$pre}igm_data AS igm_data ON t
 				'comment' => EscapeOU($req[7]),
 			);
 		}
+		$content['submitUrl'] = $scripturl. '/index.php?action=sitterutil_trade';
 		GenRequestID();
 		TemplateInit('sitter');
 		TemplateSitterUtilTrade();
@@ -603,7 +606,6 @@ FROM (({$pre}trade_reqs AS trade_reqs INNER JOIN {$pre}igm_data AS igm_data ON t
 			die("Hacking Attempt");
 			
 		$uid = intval($_REQUEST['uid']);
-		SitterUtilPrepare();
 		
 		$q = DBQuery("SELECT users.visibleName, sitterlog.type, sitterlog.time, sitterlog.Text 
 FROM ({$pre}sitterlog AS sitterlog INNER JOIN {$pre}users AS users ON sitterlog.userid = users.ID)
@@ -631,10 +633,8 @@ WHERE sitterlog.victimid=".$uid." ORDER BY time DESC LIMIT 0, 6", __FILE__, __LI
 		if($user['isRestricted'])
 			die("Hacking Attempt");
 		
-		SitterUtilPrepare();
 		$uid = intval($_REQUEST['uid']);
-		$content['submitUrl'] = $scripturl.'/index.php?action=sitterutil_ress'.$params;
-		
+		$content['submitUrl'] = $scripturl.'/index.php?action=sitterutil_ress';
 		
 		$ress = array(
 			'fe' => 'Eisen',

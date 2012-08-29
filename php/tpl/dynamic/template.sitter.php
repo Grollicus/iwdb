@@ -254,7 +254,7 @@
 						close: function(evt, ui) { savestate();},
 					};
 					$.extend(opts, ext);
-					$("<div class=\"sitterutil sitterutil_box\"><\/div>").html("Loading..").data("url", url).data("title", text).load(url, {"uid": v.uid}).dialog(opts);
+					$("<div class=\"sitterutil sitterutil_box\"><\/div>").html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />").data("url", url).data("title", text).load(url, {"uid": v.uid}).dialog(opts);
 				}
 				function savestate() {
 					var state = $(".sitterutil:visible").map(function() {
@@ -452,13 +452,15 @@
 							showmove();
 							return false;
 						});
+					} else {
+						$(".sitterjob_info").text("Kein Sitterauftrag!");
 					}
 				}
 				$.data(document.body, "jobs", ',json_encode($content['jobs'], JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP),');
 				showjob();
 			});
 		// ]]></script>
-		<div class="sitterjob_info">Jobinfo - Hier ging was schief :(</div>
+		<div class="sitterjob_info"><img src="',$themeurl,'/img/load.gif" alt="Loading.." title="Loading.." /></div>
 		';
 	}
 	
@@ -531,13 +533,19 @@
 				$(".scans", ".sitter_newscan").change(function() {
 					var txt = $(this).val();
 					$(this).val(\'\');
+					var util = $(this).parent().parent();
 					$.post("', $content['submitUrl'], '",
-						{uid: v.uid, scans: txt, abs: 1,},
+						{uid: v.uid, scans: txt, abs: 1, next: $(".next:checked", util).val(), idle: $(".idle:checked", util).val()},
 						function(resp) {
 							if(resp.err)
 								$(".imp", ".sitter_newscan").append("<div>"+resp.err+"<div>");
 							if(resp.msg)
 								$(".simp", ".sitter_newscan").append("<div>"+resp.msg+"<div>");
+							if(resp.nextid) {
+								alert("next!");
+								v.uid = resp.nextid;
+								$("#iwframe").attr("src", "', $content['loginBase'], '&id="+resp.nextid);
+							}
 						},
 						"json");
 				});
@@ -545,31 +553,45 @@
 		// ]]></script>
 		<div class="sitter_newscan">
 			<div class="imp"></div>
-			<textarea name="scans" class="scans" rows="4" cols="60"></textarea><br/>
-			<button type="button" title="Den Scan einlesen und danach direkt weiter zu dem am längsten nicht gesitteten Account">Einl. & Nächster</button>
-			<button type="button" title="Den Scan einlesen und danach direkt weiter zum nächsten Account mit Leerlauf!">Einl. & N. + Leerlauf</button>
+			<div><textarea name="scans" class="scans" rows="4" cols="36"></textarea></div>
+			<div><span title="Den Scan einlesen und danach direkt weiter zu dem am längsten nicht gesitteten Account"><input type="checkbox" class="next" value="1" />Nächster Account</span><span title="Den Scan einlesen und danach direkt weiter zum nächsten Account mit Leerlauf!"><input type="checkbox" class="next" value="1" />Nächster Leerlauf-Account</span></div>
 		</form>
 		<div class="simp"></div>
 		</div>';
 	}
 	
 	function TemplateSitterUtilTrade() {
-		global $content;
-		echo '<script type="text/javascript"><!-- // --><![CDATA[
+		global $content, $themeurl;
+		echo '
+	<div class="sitter_trade">';
+		if($content['hasReq']) {
+			echo '
+		<script type="text/javascript"><!-- // --><![CDATA[
 			$(function() {
 				$(".done", ".sitter_trade").button().click(function() {
-					var frm = $(".frm", ".sitter_trade");
-					$("sitter_trade").load("', $content['submitUrl'], '", frm.serialize());
+					$(".sitter_trade")
+						.html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />")
+						.load("', $content['submitUrl'], '", {fullDone:1, rid: "',$content['req']['id'], '", reqid: "', $content['reqid'], '"});
+					return false;
+				});
+				$(".part_done", ".sitter_trade").button().click(function() {
+					var util = $(this).parent().parent().parent().parent().parent().parent();
+					$(".sitter_trade")
+						.load("', $content['submitUrl'], '", {partDone:1, rid: "',$content['req']['id'], '", reqid: "', $content['reqid'], '", cnt: $(".cnt", util).val()})
+						.html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />");
+					return false;
+				});
+				$(".ign", ".sitter_trade").button().click(function() {
+					$(".sitter_trade")
+						.html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />")
+						.load("', $content['submitUrl'], '", {ignore:1, rid: "',$content['req']['id'], '", reqid: "', $content['reqid'], '"});
 					return false;
 				});
 			});
 		// ]]></script>
-	<div class="sitter_trade">';
-		if($content['hasReq']) {
-			echo '
 		<form action="', $content['submitUrl'], '" class="frm" method="post">
 		<table border="1" width="100%">
-<tr><td colspan="2" align="center"><input value="Done" class="done" name="fullDone" type="submit" /> -- <input type="text" name="cnt" size="6" /><input type="submit" value="Teilw." name="partDone" /> -- <input type="submit" name="ignore" value="Ignorieren" /></td></tr>
+<tr><td colspan="2" align="center"><input value="Done" class="done" name="fullDone" type="submit" /> -- <input type="text" name="cnt" class="cnt" size="6" /><input type="submit" class="part_done" value="Teilw." name="partDone" /> -- <input type="submit" name="ignore" class="ign" value="Ignorieren" /></td></tr>
 			<tr><th>Zeit</th><td>', $content['req']['time'], '</td></tr>
 			<tr><th>Ziel</th><td>', $content['req']['ziel'], ' (bei ', $content['req']['user'], ')</td></tr>
 			<tr><th>Priorität</th><td>', $content['req']['priority'], '</td></tr>
@@ -588,11 +610,8 @@
 
 	function TemplateSitterUtilLog() {
 		global $content;
-		TemplateHtmlHeader();
 		echo '
-<body>
-	<div class="sitterutil_box">
-		<h2>Sitterlog</h2>
+	<div class="sitter_log">
 		<table width="99%" cellpadding="0" cellspacing="0" border="1">';
 		foreach($content['log'] as $line) {
 			echo '
@@ -605,34 +624,38 @@
 		}
 		echo '</table>
 	</div>';
-		TemplateSitterUtilLinks();
-		echo '
-</body>';
-		TemplateHtmlFooter();
 	}	
 
 	function TemplateSitterUtilRess() {
-		global $content;
-		TemplateHtmlHeader();
+		global $content, $themeurl;
 		echo '
-<body>
-	<div class="sitterutil_box">
-		<h2>Ressübersicht</h2>
+	<script type="text/javascript"><!-- // --><![CDATA[
+		$(function() {
+			$(".anz", ".sitter_ress").button().click(function() {
+				var util = $(this).parent().parent().parent();
+				$(util)
+					.load("', $content['submitUrl'], '", {uid:$(".uid", util).val(), ress:$(".ress", util).val()})
+					.html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />");
+					return false;
+			});
+		});
+	// ]]></script>
+	<div class="sitter_ress">
 		<form action="', $content['submitUrl'], '" method="post">
-			<select name="ress">';
+			<select class="ress" name="ress">';
 		foreach($content['ress'] as $r) {
 			echo '
 				<option value="', $r['value'], '"', $r['selected'] ? ' selected="selected"' : '', '>', $r['name'], '</option>';
 		}
 		echo '
-			</select>bei <select name="uid">';
+			</select>@<select class="uid" name="uid">';
 		foreach($content['users'] as $user) {
 			echo '
 				<option value="', $user['id'], '"', $user['selected'] ? ' selected="selected"' : '', '>', $user['name'], '</option>';
 		}
 		echo '
 			</select>
-			<input type="submit" name="submit" value="Anz." />
+			<input type="submit" name="submit" class="anz" value="Anz." />
 		</form>
 		<table width="99%" cellpadding="0" cellspacing="0" border="1"><tr align="center">';
 		echo '<th>&nbsp;</th>';
@@ -662,10 +685,6 @@
 		echo '</tr>
 		</table>
 	</div>';
-		TemplateSitterUtilLinks();
-		echo '
-</body>';
-		TemplateHtmlFooter();
 	}
 
 	function TemplateFeindlFlottenUebersicht() {
