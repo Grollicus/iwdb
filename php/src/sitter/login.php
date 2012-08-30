@@ -1,4 +1,5 @@
 <?php
+//TODO: Beim Login für Sitterauftrag: Sitterauftrag-Fenster anzeigen
 	if (!defined("dddfd"))
 		die("Hacking attempt");
 
@@ -123,6 +124,7 @@
 		);
 		$content['id'] = EscapeJS($id);
 		$content['jid'] = EscapeJS($jid);
+		$content['sitter'] = EscapeJS(!$fulllogin);
 		
 		$q = DBQuery("SELECT id, igmname FROM {$pre}igm_data ORDER BY igmname", __FILE__, __LINE__);
 		$content['users'] = array();
@@ -275,8 +277,6 @@
 			}
 			if(!empty($resp['msg']))
 				$resp['msg'] = implode("<br/>", $resp['msg']);
-			echo EscapeJSU($resp);
-			return;
 		}
 
 		
@@ -317,15 +317,19 @@
 				$specific_job = true;
 		}
 		if(isset($_REQUEST['json'])) {
+			if(isset($resp)) {
+				$resp['jobs'] = $content['jobs'];
+				echo EscapeJSU($resp);
+				return;
+			}
 			echo EscapeJSU($content['jobs']);
 			return;
-		} else {
-			$content['updateUrl'] = $scripturl.'/index.php?action=sitterutil_jobex&json=1';
-			$content['has_specific'] = $specific_job;
-			$content['specific_job'] = EscapeJS($jid);
-			TemplateInit('sitter');
-			TemplateSitterUtilJobEx();
 		}
+		$content['updateUrl'] = $scripturl.'/index.php?action=sitterutil_jobex&json=1';
+		$content['has_specific'] = $specific_job;
+		$content['specific_job'] = EscapeJS($jid);
+		TemplateInit('sitter');
+		TemplateSitterUtilJobEx();
 	}
 	
 	function SitterUtilNewscan() {

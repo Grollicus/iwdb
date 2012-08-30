@@ -234,14 +234,16 @@
 		echo '<body>
 		<script type="text/javascript"><!-- // --><![CDATA[
 			var v = {
-				uid: ', $content['id'], ',
-				jid: ', $content['jid'], '
+				"uid": ', $content['id'], ',
+				"jid": ', $content['jid'], ',
+				"sitter": ', $content['sitter'], '
 			};
 			function uid_change(uid, name, warning) {
 				if(!uid)
 					return;
 				v.uid = uid;
 				v.jid = 0;
+				v.sitter=true;
 				document.title = "IW - "+name+" - StonedSheep-DB";
 				$("iframe", "#iwframe").attr("src", "', $content['loginBase'], '&ID="+uid);
 				$(".sitterjob_info:visible").parent().each(function(i, el) {
@@ -286,19 +288,24 @@
 						title: el.data("title"),
 					};
 				});
-				$.cookie("state", JSON.stringify(state), {expires: 7});
+				$.cookie(v.sitter?"state":"fullstate", JSON.stringify(state), {expires: 7});
 			}
 			function loadstate() {
-				var state = JSON.parse($.cookie("state"));
+				var state = JSON.parse($.cookie(v.sitter?"state":"fullstate"));
 				if(!state)
 					return;
+				var has_sitter=false;
 				$.each(state, function() {
+					if(this.title=="Sitteraufträge")
+						has_sitter=true;
 					show_dialog(this.title, this.url, {
 						position: [this.pos.left, this.pos.top],
 						height: this.height,
 						width: this.width,
 					});
 				});
+				if(!has_sitter && v.jid != 0)
+					show_dialog("Sitteraufträge", "'.$scripturl.'/index.php?action=sitterutil_jobex", {open: function(evt, ui) { savestate();}});
 			}
 			function loginwarning(username) {
 				$("<div><strong>Achtung:<\/strong> "+($("<div/>").text(username).html())+" hat sich in den letzten 5 Minuten eingeloggt!<\/div>").dialog({modal:true, title:"Loginwarnung", Buttons: { Ok: function() { $(this).dialog("close");}}});
@@ -386,8 +393,8 @@
 			$(function() {
 				function showmove() {
 					$.data(document.body, "job_allow_update", false);
-					var v = $.data(document.body, "jobs")
-					if(v.length > 0) {
+					var jobs = $.data(document.body, "jobs");
+					if(jobs.length > 0) {
 						var f = $.data(document.body, "job_current");
 						$(".sitterjob_info").html(
 						"<div class=\"imp\"></div><table>"
@@ -408,10 +415,10 @@
 							$(".do_move", ".sitterjob_info").button("disable");
 							$(".show", ".sitterjob_info").button("disable");
 							$.post(f.url, 
-								{jid: f.id, move: 1, zeit: $("input[name=\"zeit\"]", util).val(), bauschleife: $("input[textarea=\"bauschleife\"]", util).val(), kommentar: $("input[name=\"kommentar\"]", util).val()}, 
+								{jid: f.id, uid: v.uid, move: 1, json: 1, zeit: $("input[name=\"zeit\"]", util).val(), bauschleife: $("input[textarea=\"bauschleife\"]", util).val(), kommentar: $("input[name=\"kommentar\"]", util).val()}, 
 								function(resp) {
 									if(resp.success) {
-										$.data(document.body, "jobs", $.grep(v, function(el, i) {return el.id == $.data(document.body, "job_current");}, true));
+										$.data(document.body, "jobs", resp.jobs);
 										showjob(resp.msg, false);
 									} else {
 										$(".imp", util).text(resp.msg);
@@ -427,14 +434,14 @@
 				}
 				function showjob(smsg, fmsg) {
 					$.data(document.body, "job_allow_update", true);
-					var v = $.data(document.body, "jobs")
-					if(v.length > 0) {
+					var jobs = $.data(document.body, "jobs");
+					if(jobs.length > 0) {
 						var f = false;
 						if($.data(document.body, "job_specific")) {
-							f = $.grep(v, function(el, i) {return el.id == $.data(document.body, "job_specific");});
-							f = !f ? v[0] : f[0];
+							f = $.grep(jobs, function(el, i) {return el.id == $.data(document.body, "job_specific");});
+							f = !f ? jobs[0] : f[0];
 						} else {
-							f = v[0];
+							f = jobs[0];
 						}
 						$.data(document.body, "job_current", f);
 						$.data(document.body, "job_specific", false);
