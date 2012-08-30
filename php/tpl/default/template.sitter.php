@@ -415,7 +415,7 @@
 							$(".do_move", ".sitterjob_info").button("disable");
 							$(".show", ".sitterjob_info").button("disable");
 							$.post(f.url, 
-								{jid: f.id, uid: v.uid, move: 1, json: 1, zeit: $("input[name=\"zeit\"]", util).val(), bauschleife: $("input[textarea=\"bauschleife\"]", util).val(), kommentar: $("input[name=\"kommentar\"]", util).val()}, 
+								{jid: f.id, uid: v.uid, move: 1, json: 1, zeit: $("input[name=\"zeit\"]", util).val(), bauschleife: $("textarea[name=\"bauschleife\"]", util).val(), kommentar: $("input[name=\"kommentar\"]", util).val()}, 
 								function(resp) {
 									if(resp.success) {
 										$.data(document.body, "jobs", resp.jobs);

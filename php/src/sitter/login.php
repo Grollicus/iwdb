@@ -155,7 +155,7 @@
 	function SitterUtilJobEx() {
 		global $content, $pre, $scripturl, $ID_MEMBER, $user;
 		
-			if(isset($_REQUEST['done'])) {
+		if(isset($_REQUEST['done'])) {
 			$resp = array('success' => false, 'msg' => array());
 			$id = $_REQUEST['jid'];
 			
