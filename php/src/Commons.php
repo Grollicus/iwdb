@@ -325,6 +325,19 @@ function EscapeO($text) {
 function EscapeOU($text) {
 	return str_replace(array('&', '<', '>', '"'), array('&amp;', '&lt;', '&gt;', '&quot;'), $text);
 }
+function arr_utf8_encode($arr) {
+	if(!is_array($arr))
+		return utf8_encode($arr);
+	foreach($arr as $k => $v)
+		$arr[$k] = arr_utf8($v);
+	return $arr;	
+}
+function EscapeJS($dta) {
+	return json_encode(arr_utf8_encode($dta), JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
+}
+function EscapeJSU($dta) {
+	return json_encode($dta, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
+}
 
 function EscapeDB($text) {
 	return mysql_real_escape_string(utf8_encode($text));

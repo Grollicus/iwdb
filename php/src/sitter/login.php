@@ -1,5 +1,4 @@
 <?php
-
 	if (!defined("dddfd"))
 		die("Hacking attempt");
 
@@ -20,7 +19,8 @@
 			die("noe.");
 		$now = time();
 		DBQuery("UPDATE {$pre}igm_data SET lastLogin={$now} WHERE ID={$id}", __FILE__, __LINE__);
-
+		if($sitter)
+			LogAction($id, 'login', '');
 		
 		if($spiel == 'iw')  {
 			$loginurl = 'http://176.9.83.213/index.php?action=login&submit=1';
@@ -49,40 +49,59 @@
 		Redirect($loginurl);
 	}
 		
-	function SitterLogin() {
+	function SitterLogin($fulllogin = false) {
 		global $ID_MEMBER, $pre, $content, $scripturl, $spiel, $sourcedir, $user;
 
 		if($user['isRestricted'])
 			die("Hacking Attempt");
+
+		$now = time();
+		if(isset($_REQUEST['nextid'])) {
+			$id = DBQueryOne("SELECT ID, igmname FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
+			$ll = DBQueryOne("SELECT users.visibleName FROM {$pre}sitterlog AS sitterlog INNER JOIN {$pre}users AS users ON users.ID=sitterlog.userid AND sitterlog.victimid={$id[0]} AND sitterlog.userid<>{$ID_MEMBER} AND sitterlog.type='login' AND sitterlog.time >= ".($now-300)." ORDER BY sitterlog.time DESC LIMIT 0,1", __FILE__, __LINE__);
+			echo EscapeJSU(array("uid" => $id[0], "name" => $id[1], "loginwarning" => $ll));
+			return;
+		}
+		if(isset($_REQUEST['idleid'])) {
+			$id = DBQueryOne("SELECT building.uid AS uid, igm_data.igmname FROM {$pre}building AS building INNER JOIN {$pre}igm_data AS igm_data ON building.uid=igm_data.ID WHERE igm_data.ikea=0 OR building.plani=0 GROUP BY building.plani, uid ORDER BY IF(MAX(building.end)<{$now}, 0, MAX(building.end)), igm_data.lastParsed LIMIT 0,1", __FILE__, __LINE__);
+			if($id === false)
+				$id = DBQueryOne("SELECT ID, igmname FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
+			$ll = DBQueryOne("SELECT users.visibleName FROM {$pre}sitterlog AS sitterlog INNER JOIN {$pre}users AS users ON users.ID=sitterlog.userid AND sitterlog.victimid={$id[0]} AND sitterlog.userid<>{$ID_MEMBER} AND sitterlog.type='login' AND sitterlog.time >= ".($now-300)." ORDER BY sitterlog.time DESC LIMIT 0,1", __FILE__, __LINE__);
+			echo EscapeJSU(array("uid" => $id[0], "name" => $id[1], "loginwarning" => $ll));
+			return;
+		}
+		if(isset($_REQUEST['idinfo'])) {
+			$id = DBQueryOne("SELECT ID, igmname FROM {$pre}igm_data WHERE ID=".intval($_REQUEST['idinfo']), __FILE__, __LINE__);
+			$ll = DBQueryOne("SELECT users.visibleName FROM {$pre}sitterlog AS sitterlog INNER JOIN {$pre}users AS users ON users.ID=sitterlog.userid AND sitterlog.victimid={$id[0]} AND sitterlog.userid<>{$ID_MEMBER} AND sitterlog.type='login' AND sitterlog.time >= ".($now-300)." ORDER BY sitterlog.time DESC LIMIT 0,1", __FILE__, __LINE__);
+			echo EscapeJSU(array("uid" => $id[0], "name" => $id[1], "loginwarning" => $ll));
+			return;
+		}
 		
+		$jid = 0;
 		if(isset($_GET['jobid'])) {
 			$jid = intval($_GET['jobid']);
-			$now = time();
 			$jobdata = DBQueryOne("SELECT igmid FROM {$pre}sitter WHERE ID={$jid} AND done=0 AND time<={$now}", __FILE__, __LINE__);
 			if($jobdata === false) { //race condition - andere hat den Auftrag als erledigt markiert während sich hier jemand grade für den Job einloggen will
 				Redirect($scripturl. '/index.php?action=sitter_view&msg=sitter_racecondition');
 			}
 			$id = $jobdata;
-			$params = '&id='.$jid.'&uid='.$id;
 		} elseif(isset($_GET['id'])) {
 			if($_GET['id'] == 'next') {
 				$id = DBQueryOne("SELECT ID FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
 			} elseif($_GET['id'] == 'idle') {
-				$now = time();
 				$id = DBQueryOne("SELECT building.uid AS uid FROM {$pre}building AS building INNER JOIN {$pre}igm_data AS igm_data ON building.uid=igm_data.ID WHERE igm_data.ikea=0 OR building.plani=0 GROUP BY building.plani, uid ORDER BY IF(MAX(building.end)<{$now}, 0, MAX(building.end)), igm_data.lastParsed LIMIT 0,1", __FILE__, __LINE__);
 				if($id === false)
 					$id = DBQueryOne("SELECT ID FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
 			} else {
 				$id = intval($_GET['id']);
 			}
-			$params = '&uid='.$id;
+		} elseif($fulllogin) {
+			$id = $user['igmuser'];
 		} else {
 			return;
 		}
-		$now = time();
 		$lastloginid = DBQueryOne("SELECT userid FROM {$pre}sitterlog WHERE victimid={$id} AND userid<>{$ID_MEMBER} AND type='login' AND time >= ".(time()-300), __FILE__, __LINE__);
 		
-		LogAction($id, 'login', '');
 		$victim = DBQueryOne("SELECT igmname, lastParsed, accounttyp, ikea, mdp, iwsa FROM {$pre}igm_data WHERE ID=".$id, __FILE__, __LINE__);
 		if($victim === false)
 			return;
@@ -102,70 +121,107 @@
 			'mdp' => $victim[4] !=0,
 			'iwsa' => $victim[5] != 0,
 		);
-		$content['id'] = $id;
+		$content['id'] = EscapeJS($id);
+		$content['jid'] = EscapeJS($jid);
 		
 		$q = DBQuery("SELECT id, igmname FROM {$pre}igm_data ORDER BY igmname", __FILE__, __LINE__);
 		$content['users'] = array();
 		while($row = mysql_fetch_row($q)) {
 			$content['userLogins'][] = array(
 				'name' => EscapeOU($row[1]),
-				'value' => $scripturl."/index.php?action=sitter_login&amp;id=".$row[0],
-				'isSelected' => $row[0] == $id, 
+				'value' => $row[0],
+				'isSelected' => $row[0] == $id,
 			);
 		}
 		
-		$from=EscapeO(Param('from'));
-		$content['exitLink'] = $scripturl. '/index.php?action='.$from;
-		$content['nextLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;id=next&amp;from={$from}";
-		$content['idleLoginLink'] = $scripturl."/index.php?action=sitter_login&amp;id=idle&amp;from={$from}";
+		$content['exitLink'] = $scripturl. '/index.php?action='.EscapeO(Param('from'));
+		$content['jsonLink'] = $scripturl."/index.php?action=sitter_login&nextid=1";
 		
-		$content['paramsl'] = str_replace("&", "&amp;", $params);
-		$loginurl = $scripturl.'/index.php?action=sitter_dologin&amp;sitter=1&amp;ID='.$id;
-
-		$content['loginUrl'] = $loginurl;
+		$content['loginBase'] = $scripturl.'/index.php?action=sitter_dologin&sitter=1';
+		$content['loginUrl'] = $scripturl.'/index.php?action=sitter_dologin&amp;ID='.$id.($fulllogin ? '' : '&amp;sitter=1');
 		$content['loginWarning'] = $lastloginid !== false;
-		$content['loginLastUser'] = $lastloginid === false ? '' : DBQueryOne("SELECT visibleName FROM {$pre}users WHERE ID=".$lastloginid, __FILE__, __LINE__);
+		$content['loginLastUser'] = $lastloginid === false ? '' : EscapeJS(DBQueryOne("SELECT visibleName FROM {$pre}users WHERE ID=".$lastloginid, __FILE__, __LINE__));
 		
 		TemplateInit('sitter');
 		TemplateSitterLogin();
 	}
 	
 	function MainLogin() {
-		global $content, $pre, $ID_MEMBER, $scripturl, $user, $spiel, $sourcedir;
-		
-		if($user['isRestricted'])
-			die("Hacking Attempt");
-		
-		$dta = DBQueryOne("SELECT igmname, lastParsed FROM {$pre}igm_data WHERE ID=".$user['igmuser'], __FILE__, __LINE__);
-		$params = '&id=0&uid='.$user['igmuser'].'&from='.EscapeO(Param('from')).'&lastLogin='.$dta[1];
-		
-		$content['accName'] = EscapeOU($dta[0]);
-		$content['leftUtil'] = $scripturl.'/index.php?action=sitterutil_trade'.$params.'&pos=left';
-		$content['rightUtil'] = $scripturl.'/index.php?action=sitterutil_newscan'.$params.'&pos=right';
-		$content['loginUrl'] = $scripturl.'/index.php?action=sitter_dologin&amp;ID='.$user['igmuser'];
-		$content['loginWarning'] = false;
-		
-		TemplateInit('sitter');
-		TemplateSitterLogin();
-	}
-	
-	function SitterUtilPrepare() {
-		global $content, $scripturl, $params, $user;
-		
-		
-		if($user['isRestricted'])
-			die("Hacking Attempt");
-		
-		$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-		$uid = intval($_REQUEST['uid']);
-		$content['uid'] = $uid;
-		$params = "&amp;id={$id}&amp;uid={$uid}";
-		$content['params'] = $params;
-		
+		SitterLogin(true);
 	}
 	
 	function SitterUtilJobEx() {
 		global $content, $pre, $scripturl, $ID_MEMBER, $user;
+		
+			if(isset($_REQUEST['done'])) {
+			$resp = array('success' => false, 'msg' => array());
+			$id = $_REQUEST['jid'];
+			
+			$job = DBQueryOne("SELECT sitter.ID, sitter.done, users.visibleName, sitter.igmid, igm_data.igmname, 
+		sitter.time, sitter.type, techtree_items.Name, sitter.stufe, universum.gala, universum.sys, universum.pla,
+		universum.planiname, sitter.usequeue, sitter.anzahl, sitter.notes
+	FROM (((({$pre}sitter AS sitter) INNER JOIN ({$pre}users AS users) ON sitter.uid = users.ID)
+		LEFT JOIN {$pre}igm_data AS igm_data ON sitter.igmid = igm_data.id)
+		LEFT JOIN ({$pre}universum AS universum) ON sitter.planID = universum.ID)
+		LEFT JOIN ({$pre}techtree_items AS techtree_items) ON sitter.itemid = techtree_items.ID
+	WHERE sitter.ID={$id}", __FILE__, __LINE__);
+			if($job[1] != 0) { //Auftrag schon erledigt, Formular nur nochmal aufgerufen - warum auch immer
+				$resp['success'] = true;
+				$resp['msg'][] = 'Den Auftrag hat schon jemand erledigt!';
+				if(!empty($resp['msg']))
+					$resp['msg'] = implode("<br/>", $resp['msg']);
+				echo EscapeJSU($resp);
+				return;
+			}
+			if(isset($_REQUEST['bauschleife'])) {
+				$coords = is_null($job[9]) ? 'all' : $job[9].':'.$job[10].':'.$job[11];
+				$bs = ParseIWBuildingQueue(Param('bauschleife'), $coords, $job[6]);
+				if($bs === false || count($bs) == 0) {
+					$resp['msg'][] = 'Konnte mit der Bauschleife nichts anfangen!';
+					if(!empty($resp['msg']))
+						$resp['msg'] = implode("<br/>", $resp['msg']);
+					echo EscapeJSU($resp);
+					return;
+				}
+				$q = DBQuery("SELECT sitter.ID, sitter.usequeue, sitter.type FROM {$pre}sitter AS sitter WHERE FollowUpTo={$id}", __FILE__, __LINE__);
+				while($row = mysql_fetch_row($q)) {
+					if(count($bs) == 0) {
+						$time = $job[5];
+					} else {
+						if($row[1] == '1' || $row[2] == 'Sch') {
+							$time = $bs[0];
+						} else {
+							$time = end($bs);
+						}
+					}
+					DBQuery("UPDATE {$pre}sitter SET time={$time}, FollowUpTo=0 WHERE ID=".$row[0], __FILE__, __LINE__);
+				}
+			}
+			require_once dirname(__FILE__)."/view.php"; // SitterText
+			$types = array(
+				'Geb' => 'Bauauftrag',
+				'For' => 'Forschungsauftrag',
+				'Sch' => 'Schiffbauauftrag',
+				'Sonst' => 'sonstiger Auftrag',
+			);
+			$text = '<b>Erledigt</b><br />';
+			$text .= FormatDate($job[5]).'<br />';
+			$text .= is_null($job[9]) ? 'Alle Planeten<br />' : ('['.$job[9]. ':'. $job[10]. ':'. $job[11].'] '.EscapeOU($job[12])."<br />");
+			$text .= '<b>'.$types[$job[6]].'</b><br />';
+			$text .= EscapeDBU(SitterText($job));
+			
+			DBQuery("UPDATE {$pre}sitter SET done=1 WHERE id=".$id, __FILE__, __LINE__);
+			LogAction($job[3], 'auftrag', $text);
+			if($job[3] != $user['igmuser']) {
+				DBQuery("UPDATE {$pre}users SET sitterpts=sitterpts+1 WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
+				$resp['msg'][] = "[+1]";
+			}
+			$resp['success'] = true;
+			if(!empty($resp['msg']))
+				$resp['msg'] = implode("<br/>", $resp['msg']);
+			echo EscapeJSU($resp);
+			return;
+		}
 		
 		if(isset($_REQUEST['move'])) {
 			$id = intval($_REQUEST['jid']);
@@ -219,79 +275,12 @@
 			}
 			if(!empty($resp['msg']))
 				$resp['msg'] = implode("<br/>", $resp['msg']);
-			echo json_encode($resp, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
+			echo EscapeJSU($resp);
 			return;
 		}
-		if(isset($_REQUEST['done'])) {
-			$resp = array('success' => false, 'msg' => array());
-			$id = $_REQUEST['jid'];
-			
-			$job = DBQueryOne("SELECT sitter.ID, sitter.done, users.visibleName, sitter.igmid, igm_data.igmname, 
-		sitter.time, sitter.type, techtree_items.Name, sitter.stufe, universum.gala, universum.sys, universum.pla,
-		universum.planiname, sitter.usequeue, sitter.anzahl, sitter.notes
-	FROM (((({$pre}sitter AS sitter) INNER JOIN ({$pre}users AS users) ON sitter.uid = users.ID)
-		LEFT JOIN {$pre}igm_data AS igm_data ON sitter.igmid = igm_data.id)
-		LEFT JOIN ({$pre}universum AS universum) ON sitter.planID = universum.ID)
-		LEFT JOIN ({$pre}techtree_items AS techtree_items) ON sitter.itemid = techtree_items.ID
-	WHERE sitter.ID={$id}", __FILE__, __LINE__);
-			if($job[1] != 0) { //Auftrag schon erledigt, Formular nur nochmal aufgerufen - warum auch immer
-				$resp['success'] = true;
-				$resp['msg'][] = 'Den Auftrag hat schon jemand erledigt!';
-				if(!empty($resp['msg']))
-					$resp['msg'] = implode("<br/>", $resp['msg']);
-				echo json_encode($resp, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
-				return;
-			}
-			if(isset($_REQUEST['bauschleife'])) {
-				$coords = is_null($job[9]) ? 'all' : $job[9].':'.$job[10].':'.$job[11];
-				$bs = ParseIWBuildingQueue(Param('bauschleife'), $coords, $job[6]);
-				if($bs === false || count($bs) == 0) {
-					$resp['msg'][] = 'Konnte mit der Bauschleife nichts anfangen!';
-					if(!empty($resp['msg']))
-						$resp['msg'] = implode("<br/>", $resp['msg']);
-					echo json_encode($resp, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
-					return;
-				}
-				$q = DBQuery("SELECT sitter.ID, sitter.usequeue, sitter.type FROM {$pre}sitter AS sitter WHERE FollowUpTo={$id}", __FILE__, __LINE__);
-				while($row = mysql_fetch_row($q)) {
-					if(count($bs) == 0) {
-						$time = $job[5];
-					} else {
-						if($row[1] == '1' || $row[2] == 'Sch') {
-							$time = $bs[0];
-						} else {
-							$time = end($bs);
-						}
-					}
-					DBQuery("UPDATE {$pre}sitter SET time={$time}, FollowUpTo=0 WHERE ID=".$row[0], __FILE__, __LINE__);
-				}
-			}
-			require_once dirname(__FILE__)."/view.php"; // SitterText
-			$types = array(
-				'Geb' => 'Bauauftrag',
-				'For' => 'Forschungsauftrag',
-				'Sch' => 'Schiffbauauftrag',
-				'Sonst' => 'sonstiger Auftrag',
-			);
-			$text = '<b>Erledigt</b><br />';
-			$text .= FormatDate($job[5]).'<br />';
-			$text .= is_null($job[9]) ? 'Alle Planeten<br />' : ('['.$job[9]. ':'. $job[10]. ':'. $job[11].'] '.EscapeOU($job[12])."<br />");
-			$text .= '<b>'.$types[$job[6]].'</b><br />';
-			$text .= EscapeDBU(SitterText($job));
-			
-			DBQuery("UPDATE {$pre}sitter SET done=1 WHERE id=".$id, __FILE__, __LINE__);
-			LogAction($job[3], 'auftrag', $text);
-			if($job[3] != $user['igmuser']) {
-				DBQuery("UPDATE {$pre}users SET sitterpts=sitterpts+1 WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
-				$resp['msg'][] = "[+1]";
-			}
-			$resp['success'] = true;
-			if(!empty($resp['msg']))
-				$resp['msg'] = implode("<br/>", $resp['msg']);
-			echo json_encode($resp, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
-			return;
-		}
+
 		
+		$jid = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : 0;
 		$uid = intval($_REQUEST['uid']);
 		$now = time();
 		$q = DBQuery("SELECT sitter.ID, sitter.uid, users.visibleName, sitter.igmid, igm_data.igmname, 
@@ -311,6 +300,7 @@
 			'Sonst' => 'sonstiger Auftrag',
 		);
 		$content['jobs'] = array();
+		$specific_job = false;
 		while($row = mysql_fetch_row($q)) {
 			$content['jobs'][] = array(
 				'id' => $row[0],
@@ -323,209 +313,50 @@
 				'hasFollowUp' => (DBQueryOne("SELECT COUNT(*) FROM {$pre}sitter WHERE FollowUpTo={$row[0]}", __FILE__, __LINE__) > 0),
 				'url' => $scripturl.'/index.php?action=sitterutil_jobex',
 			);
+			if($jid == $row[0])
+				$specific_job = true;
 		}
-		TemplateInit('sitter');
-		TemplateSitterUtilJobEx();
-	}
-	
-	function SitterUtilJob() {
-		global $user;
-		if($user['isRestricted'])
-			die("Hacking Attempt");
-		
-		if(isset($_REQUEST['done'])) {
-			SitterUtilJobDone();
+		if(isset($_REQUEST['json'])) {
+			echo EscapeJSU($content['jobs']);
 			return;
+		} else {
+			$content['updateUrl'] = $scripturl.'/index.php?action=sitterutil_jobex&json=1';
+			$content['has_specific'] = $specific_job;
+			$content['specific_job'] = EscapeJS($jid);
+			TemplateInit('sitter');
+			TemplateSitterUtilJobEx();
 		}
-		if(isset($_REQUEST['move'])) {
-			SitterUtilJobMove();
-			return;
-		}
-		SitterUtilJobView();
-	}
-	
-	function SitterUtilJobDone() {
-		global $pre, $ID_MEMBER, $content, $user;
-		
-		if($user['isRestricted'])
-			die("Hacking Attempt");
-		
-		$id = intval($_REQUEST['id']);
-		
-		
-		$_GET['id'] = 0;
-		SitterUtilJobView();
-	}
-	
-	function SitterUtilJobMove() {
-		global $pre, $user, $scripturl, $content, $user, $ID_MEMBER;
-		if($user['isRestricted'])
-			die("Hacking Attempt");
-		$id = intval($_REQUEST['id']);
-		$uid = intval($_REQUEST['uid']);
-		$from = EscapeO(Param('from'));
-		$pos = $_GET['pos'] == 'left' ? 'left' : 'right';
-		$lastLogin = intval($_REQUEST['lastLogin']);
-		$params = "&amp;id={$id}&amp;uid={$uid}&amp;from={$from}&amp;pos={$pos}&amp;lastLogin={$lastLogin}";
-		$content['params'] = $params;
-		$content['position'] = $pos;
-		
-		if(isset($_REQUEST['abs']) && CheckRequestID()) {
-			$update = '';
-			$time = false;
-			if(!empty($_REQUEST['zeit1'])) {
-				$time = ParseTime($_REQUEST['zeit1']);
-			}
-			if(!empty($_REQUEST['bauschleife'])) {
-				$c = DBQueryOne("SELECT sitter.time, sitter.usequeue, universum.gala, universum.sys, universum.pla, sitter.igmid, sitter.type
-	FROM ({$pre}sitter AS sitter LEFT JOIN {$pre}universum AS universum ON sitter.planID = universum.ID)
-	WHERE sitter.ID = {$id}", __FILE__, __LINE__);
-				$coords = is_null($c[2]) ? 'all' : $c[2].':'.$c[3].':'.$c[4];
-				$bs = ParseIWBuildingQueue(Param('bauschleife'), $coords, $c[6]);
-				if(count($bs) == 0 || $bs === false) {
-					$time = $c[0];
-					$content['msg'] = 'Konnte mit der angegebenen Bauschleife nix anfangen!';
-				} else {
-					if($c[1] == '1' || $c[6] == 'Sch') {
-						$time = $bs[0];
-					} else {
-						$time = end($bs);
-					}
-				}
-			}
-			if($time !== false) {
-				$dta = DBQueryOne("SELECT sitter.time, sitter.igmid
-FROM ({$pre}sitter AS sitter LEFT JOIN {$pre}universum AS universum ON sitter.planID = universum.ID)
-WHERE sitter.ID = {$id}", __FILE__, __LINE__);
-				if(($time-$dta[0]) > 300 && $dta[1] != $user['igmuser'] && $time > time()) {
-					DBQuery("UPDATE {$pre}users SET sitterpts=sitterpts+1 WHERE ID={$ID_MEMBER}", __FILE__, __LINE__);
-				}
-				
-				$update .= "time={$time}, ";
-			}
-			if(!empty($_REQUEST['kommentar'])) {
-				$text = "\nKommentar von ".$user['visibleName'].": ".EscapeDB($_REQUEST['kommentar']);
-				$update .= "notes=CONCAT(notes,'{$text}'), ";
-			}
-			if(strlen($update) > 0) {
-				$update = substr($update, 0, -2);
-				DBQuery("UPDATE {$pre}sitter SET {$update} WHERE ID={$id}", __FILE__, __LINE__);
-				
-				$job = DBQueryOne("SELECT sitter.ID, sitter.done, users.visibleName, sitter.igmid, igm_data.igmname, 
-		sitter.time, sitter.type, techtree_items.Name, sitter.stufe, universum.gala, universum.sys, universum.pla,
-		universum.planiname, sitter.usequeue, sitter.anzahl, sitter.notes
-	FROM (((({$pre}sitter AS sitter) INNER JOIN ({$pre}users AS users) ON sitter.uid = users.ID)
-		LEFT JOIN {$pre}igm_data AS igm_data ON sitter.igmid = igm_data.id)
-		LEFT JOIN ({$pre}universum AS universum) ON sitter.planID = universum.ID)
-		LEFT JOIN ({$pre}techtree_items AS techtree_items) ON sitter.itemid = techtree_items.ID
-	WHERE sitter.ID={$id}", __FILE__, __LINE__);
-				require_once dirname(__FILE__)."/view.php";//need: SitterText
-				$types = array(
-                  		      'Geb' => 'Bauauftrag',
-                        		'For' => 'Forschungsauftrag',
-                        		'Sch' => 'Schiffbauauftrag',
-                        		'Sonst' => 'sonstiger Auftrag',
-                		);
-				$text = '<b>Aktualisiert</b><br />';
-				$text .= FormatDate($job[5]).'<br />';
-				$text .= is_null($job[9]) ? 'Alle Planeten<br />' : ('['.$job[9]. ':'. $job[10]. ':'. $job[11].'] '.EscapeOU($job[12])."<br />");
-				$text .= '<b>'.$types[$job[6]].'</b><br />';
-				$text .= EscapeDBU(SitterText($job));
-				LogAction($job[3], 'auftrag', $text);
-				
-				$_GET['id']=0;
-				SitterUtilJobView();
-				StopExecution();
-			}
-		}
-		
-		$content['zeit1'] = FormatDate(DBQueryOne("SELECT time FROM {$pre}sitter WHERE ID={$id}", __FILE__, __LINE__));
-		$content['submitLink'] = $scripturl.'/index.php?action=sitterutil_job&amp;sub=move'.$params;
-		$content['backLink'] = $scripturl.'/index.php?action=sitterutil_job&amp;sub=view'.$params;
-		GenRequestID();
-		TemplateInit('sitter');
-		TemplateSitterUtilJobMove();
-	}
-	
-	function SitterUtilJobView() {
-		global $content, $ID_MEMBER, $pre, $scripturl, $params, $user;
-		if($user['isRestricted'])
-			die("Hacking Attempt");
-		var_dump($_REQUEST);
-		$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-		if($id == 0) {
-			$uid = intval($_REQUEST['uid']);
-			$id = DBQueryOne("SELECT ID FROM {$pre}sitter WHERE igmid={$uid} AND done=0 AND time <= ".time()." ORDER BY time ASC LIMIT 1", __FILE__, __LINE__);
-			if($id === false) {
-				$id = 0;
-			} else {
-				$_GET['id'] = $id; //Ekliger Hack, um die Auftrags-ID in den Prepare() rein zu kriegen
-			}
-		}
-		SitterUtilPrepare();
-		
-		if($id != 0) { //Benutzer bearbeitet grade einen Sitterauftrag
-			$job = DBQueryOne("SELECT sitter.ID, sitter.uid, users.visibleName, sitter.igmid, igm_data.igmname, 
-		sitter.time, sitter.type, techtree_items.Name, sitter.stufe, universum.gala, universum.sys, universum.pla,
-		universum.planiname, sitter.usequeue, sitter.anzahl, sitter.notes
-	FROM (((({$pre}sitter AS sitter) LEFT JOIN ({$pre}users AS users) ON sitter.uid = users.ID)
-		LEFT JOIN {$pre}igm_data AS igm_data ON sitter.igmid = igm_data.id)
-		LEFT JOIN ({$pre}universum AS universum) ON sitter.planID = universum.ID)
-		LEFT JOIN ({$pre}techtree_items AS techtree_items) ON sitter.itemid = techtree_items.ID
-	WHERE sitter.ID={$id}", __FILE__, __LINE__);
-			if($job !== false) {
-				require_once dirname(__FILE__)."/view.php";//need: SitterText
-				$types = array(
-					'Geb' => 'Bauauftrag',
-					'For' => 'Forschungsauftrag',
-					'Sch' => 'Schiffbauauftrag',
-					'Sonst' => 'sonstiger Auftrag',
-				);
-				$content['jobid'] = $id;
-				$content['time'] = FormatDate($job[5]);
-				$content['text'] = SitterText($job);
-				$content['longType'] = $types[$job[6]];
-				$content['hasPlani'] = !is_null($job[9]);
-				$content['coords'] = is_null($job[9]) ? '' : ('['.$job[9]. ':'. $job[10]. ':'. $job[11].']');
-				$content['planiName'] = is_null($job[9]) ? 'Alle Planeten' : EscapeOU($job[12]);
-				
-				$content['formAction'] = $scripturl.'/index.php?action=sitterutil_job'.$params;
-				
-				$followUps = DBQueryOne("SELECT COUNT(*) FROM {$pre}sitter WHERE FollowUpTo={$id}", __FILE__, __LINE__);
-				$content['hasFollowUp'] = ($followUps > 0);
-			}
-		}
-		
-		$content['hasjob'] = $id != 0;
-		
-		TemplateInit('sitter');
-		TemplateSitterUtilJobView();
 	}
 	
 	function SitterUtilNewscan() {
-		global $content, $sourcedir, $scripturl, $pre, $params, $user;
+		global $content, $sourcedir, $scripturl, $pre, $user, $ID_MEMBER;
 		if($user['isRestricted'])
 			die("Hacking Attempt");
 		
 		if(isset($_POST['abs'])) {
 			require($sourcedir.'/newscan/main.php');
 			ParseScansEx(false, false);
+			$now = time();
 			$resp = array();
 			if(isset($content['msg']))
 				$resp['err'] = $content['msg'];
 			if(isset($content['submsg']))
 				$resp['msg'] = $content['submsg'];
 			if(isset($_REQUEST['next'])) {
-				$resp['nextid'] = DBQueryOne("SELECT ID FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
+				$id = DBQueryOne("SELECT ID, igmname FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
+				$ll = DBQueryOne("SELECT users.visibleName FROM {$pre}sitterlog AS sitterlog INNER JOIN {$pre}users AS users ON users.ID=sitterlog.userid AND sitterlog.victimid={$id[0]} AND sitterlog.userid<>{$ID_MEMBER} AND sitterlog.type='login' AND sitterlog.time >= ".($now-300)." ORDER BY sitterlog.time DESC LIMIT 0,1", __FILE__, __LINE__);
+				$resp['nextid'] = array("uid" => $id[0], "name" => $id[1], "loginwarning" => $ll);
 			}
 			if(isset($_REQUEST['idle'])) {
-				$id = DBQueryOne("SELECT ID FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
-				$resp['nextid'] = $id ? $id : DBQueryOne("SELECT ID FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
+				$id = DBQueryOne("SELECT building.uid AS uid, igm_data.igmname FROM {$pre}building AS building INNER JOIN {$pre}igm_data AS igm_data ON building.uid=igm_data.ID WHERE igm_data.ikea=0 OR building.plani=0 GROUP BY building.plani, uid ORDER BY IF(MAX(building.end)<{$now}, 0, MAX(building.end)), igm_data.lastParsed LIMIT 0,1", __FILE__, __LINE__);
+				if($id === false)
+					$id = DBQueryOne("SELECT ID, igmname FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
+				$ll = DBQueryOne("SELECT users.visibleName FROM {$pre}sitterlog AS sitterlog INNER JOIN {$pre}users AS users ON users.ID=sitterlog.userid AND sitterlog.victimid={$id[0]} AND sitterlog.userid<>{$ID_MEMBER} AND sitterlog.type='login' AND sitterlog.time >= ".($now-300)." ORDER BY sitterlog.time DESC LIMIT 0,1", __FILE__, __LINE__);
+				$resp['nextid'] = array("uid" => $id[0], "name" => $id[1], "loginwarning" => $ll);
 			}
-			echo json_encode($resp, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
+			echo EscapeJSU($resp);
 			return;
 		}
-		$content['loginBase'] = $scripturl.'/index.php?action=sitter_dologin&sitter=1';
 		$content['submitUrl'] = $scripturl.'/index.php?action=sitterutil_newscan';
 		TemplateInit('sitter');
 		TemplateSitterUtilNewscan();
@@ -628,7 +459,7 @@ WHERE sitterlog.victimid=".$uid." ORDER BY time DESC LIMIT 0, 6", __FILE__, __LI
 	}
 	
 	function SitterUtilRess() {
-		global $content, $pre, $scripturl, $user, $params;
+		global $content, $pre, $scripturl, $user;
 		
 		if($user['isRestricted'])
 			die("Hacking Attempt");
