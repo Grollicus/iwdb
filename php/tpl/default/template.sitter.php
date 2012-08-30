@@ -228,33 +228,128 @@
 	}
 	
 	function TemplateSitterLogin() {
-		global $scripturl, $content, $spiel;
-		echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<meta name="description" content="StonedSheep - IWDB" />
-	<link rel="icon" href="favicon.png" type="image/png" />
-	<title>', $spiel == 'iw' ? 'IW' : 'CW', ' - ', $content['accName'], ' - StonedSheep-DB</title>
-</head>
-';
+		global $scripturl, $content, $spiel, $themeurl;
+		TemplateHtmlHeader();
 		
-		if($content['loginWarning'])
-			echo '
-			<script type="text/javascript"><!-- // --><![CDATA[
-				alert("Achtung, in diesem Account hat sich innerhalb der letzten Minuten schon ', $content['loginLastUser'], ' eingeloggt!");
-			// ]]></script>';
-		echo '
-		<frameset rows="*,150" onload="document.getElementById(\'iwframe\').focus()">
-			<frame src="', $content['loginUrl'], '" name="IW-Frame" id="iwframe"/>
-			<frameset cols="50%, 50%">
-				<frame src="', $content['leftUtil'], '" name="LeftUtil" />
-				<frame src="', $content['rightUtil'], '" name="RightUtil" />
-			</frameset>
-		</frameset>
-		<noframes>
-			<body>Tsjoa, du hast ein Problem - dein Browser unterst&uuml;tzt keine Frames.</body> 
-		</noframes>';
+		echo '<body>
+		<script type="text/javascript"><!-- // --><![CDATA[
+			var v = {
+				uid: ', $content['id'], ',
+				jid: ', $content['jid'], '
+			};
+			function uid_change(uid, name, warning) {
+				if(!uid)
+					return;
+				v.uid = uid;
+				v.jid = 0;
+				document.title = "IW - "+name+" - StonedSheep-DB";
+				$("iframe", "#iwframe").attr("src", "', $content['loginBase'], '&ID="+uid);
+				$(".sitterjob_info:visible").parent().each(function(i, el) {
+					$(el).html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />").load($(el).data("url"), {"uid": v.uid, "id": v.jid});
+				});
+				$(".sitter_log:visible").parent().each(function(i, el) {
+					$(el).html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />").load($(el).data("url"), {"uid": v.uid, "id": v.jid});
+				});
+				$(".uid", ".sitter_ress").each(function(i,el) {$(el).val(v.uid);});
+				$(".anz", ".sitter_ress").click();
+				$("#loginSelect").val(uid);
+				if(warning)
+					loginwarning(warning);
+			}
+			function show_dialog(text, url, ext) {
+				var opts = {
+					title: text,
+					width: 325,
+					stack: {group: "*", min: 50},
+					dragStart: function(evt, ui) { $("#overlay").css("display", "block"); },
+					dragStop: function(evt, ui) { savestate(); $("#overlay").css("display", "none"); },
+					resizeStart: function(evt, ui) { $("#overlay").css("display", "block"); },
+					resizeStop: function(evt, ui) { savestate(); $("#overlay").css("display", "none"); },
+					close: function(evt, ui) { savestate();},
+				};
+				$.extend(opts, ext);
+				$("<div class=\"sitterutil sitterutil_box\"><\/div>")
+					.html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />")
+					.data("url", url)
+					.data("title", text)
+					.load(url, {"uid": v.uid, "id": v.jid})
+					.dialog(opts);
+			}
+			function savestate() {
+				var state = $.map($(".sitterutil:visible"), function(elem, i) {
+					var el = $(elem);
+					return {
+						pos: el.parent().offset(),
+						width: el.parent().width(),
+						height: el.parent().height(),
+						url: el.data("url"),
+						title: el.data("title"),
+					};
+				});
+				$.cookie("state", JSON.stringify(state), {expires: 7});
+			}
+			function loadstate() {
+				var state = JSON.parse($.cookie("state"));
+				if(!state)
+					return;
+				$.each(state, function() {
+					show_dialog(this.title, this.url, {
+						position: [this.pos.left, this.pos.top],
+						height: this.height,
+						width: this.width,
+					});
+				});
+			}
+			function loginwarning(username) {
+				$("<div><strong>Achtung:<\/strong> "+($("<div/>").text(username).html())+" hat sich in den letzten 5 Minuten eingeloggt!<\/div>").dialog({modal:true, title:"Loginwarnung", Buttons: { Ok: function() { $(this).dialog("close");}}});
+			}
+			$(document).ready(function() {
+				$("a", "#igmnav").button();
+				$("a", "#mnav").click(function(e) {
+					e.preventDefault();
+					show_dialog(this.text, this.href, {open: function(evt, ui) { savestate();}});
+					return false;
+				});
+				$("#nextLogin").click(function(e) {e.preventDefault();$.get("',$content['jsonLink'],'", {next:1}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning);}, "json");});
+				$("#idleLogin").click(function(e) {e.preventDefault();$.get("',$content['jsonLink'],'", {idle:1}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning);}, "json");});
+				$("#loginSelect").change(function() {$.get("',$content['jsonLink'],'", {idinfo:$(this).val()}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning);}, "json");});
+				loadstate();
+				document.title = "IW - ', $content['accName'], ' - StonedSheep-DB";
+				', $content['loginWarning'] ? 'loginwarning('.$content['loginLastUser'].')' : '', '
+			});
+		// ]]></script>
+		<div id="overlay"></div>
+		<div id="iwframe">
+			<iframe src="', $content['loginUrl'], '">Dein Browser unterstützt keine Frames :(</iframe>
+		</div>
+		<div id="igmnav">
+			<div id="lnav">
+				<a target="_top" href="'.$content['exitLink'].'">Zur&uuml;ck</a>
+			</div>
+			<div id="mnav">
+				<a href="'.$scripturl.'/index.php?action=sitterutil_jobex">Sitteraufträge</a>
+				<a href="'.$scripturl.'/index.php?action=sitterutil_newscan">Scans einlesen</a>
+				<a href="'.$scripturl.'/index.php?action=sitterutil_trade">Handel</a>
+				<a href="'.$scripturl.'/index.php?action=sitterutil_log">Log</a>
+				<a href="'.$scripturl.'/index.php?action=sitterutil_ress">Ress</a>
+				<div id="act" title="Wie lange der Account nicht mehr gesittet wurde" class="', $content['actuality_color'], ' .ui-widget-content">
+					<span title="'.$content['accountInfo']['typeDesc'].'">'.$content['accountInfo']['type'].'</span>'
+					.($content['accountInfo']['iwsa'] ? '&nbsp;<span title="Supporter-Account">IWSA</span>':'')
+					.($content['accountInfo']['ikea'] ? '&nbsp;<span title="Ikea-Account">I</span>':'')
+					.($content['accountInfo']['mdp'] ? '&nbsp;<span title="Meister der Peitschen-Account">M</span>':''), '
+				</div> <select id="loginSelect">';
+			foreach($content['userLogins'] as $user) {
+				echo '<option value="', $user['value'], '" ', $user['isSelected'] ? 'selected="selected"' : '', '>', $user['name'], '</option>';
+			}
+			echo '</select>
+			</div>
+			<div id="rnav">
+				<a title="In den nächsten Account mit Leerlauf einloggen" href="#" id="idleLogin">LeerlfAcc</a>
+				<a title="In den Account einloggen, der am längsten nicht mehr gesittet wurde" href="#" id="nextLogin">NxtAcc</a>
+			</div>
+		</div>
+	</body>
+';
 		TemplateHtmlFooter();
 	}
 	
@@ -285,150 +380,194 @@
 		TemplateFooter();
 	}
 
-	function TemplateSitterUtilLinks() {
-		global $content, $scripturl;
-		echo '
-			<div class="sitterutil_links" style="text-align: ', $content['position'] ,';">';
-			if(!$content['hasExitLink']) {
-				echo '<div style="bottom:0px; left: 35px; position:absolute;"><select size="1" style="font-size:smaller;" id="loginSelect">';
-				foreach($content['userLogins'] as $user) {
-					echo '<option value="', $user['value'], '" ', $user['isSelected'] ? 'selected="selected"' : '', '>', $user['name'], '</option>';
-				}
-				echo '</select><button onclick="var s = getElById(\'loginSelect\');parent.location.href=s.options[s.selectedIndex].value;" style="font-size:smaller;">Login</button></div>';
-			}
-			echo $content['hasExitLink'] ? '<a target="_top" href="'.$content['exitLink'].'">Zur&uuml;ck</a> --' : ' <span title="Wie lange der Account nicht mehr gesittet wurde" class="'.$content['nextLoginColor'].'" style="left:0px; width:30px; position:absolute;">&nbsp;</span>', '
-				<a href="'.$scripturl.'/index.php?action=sitterutil_job'.$content['params'].'">Sitteraufträge</a> --
-				<a href="'.$scripturl.'/index.php?action=sitterutil_newscan'.$content['params'].'">Scans einlesen</a> --
-				<a href="'.$scripturl.'/index.php?action=sitterutil_trade'.$content['params'].'">Handel</a> -- 
-				<a href="'.$scripturl.'/index.php?action=sitterutil_log'.$content['params'].'">Log</a> --
-				<a href="'.$scripturl.'/index.php?action=sitterutil_ress'.$content['params'].'">Ress</a>
-				', !$content['hasExitLink'] 
-					? ' -- <a title="In den nächsten Account mit Leerlauf einloggen" target="_top" href="'.$content['idleLoginLink'].'">LeerlfAcc</a> -- <a title="In den Account einloggen, der am längsten nicht mehr gesittet wurde" target="_top" href="'.$content['nextLoginLink'].'">NxtAcc</a>' 
-					: ' <span title="Wie lange der Account nicht mehr gesittet wurde" class="'.$content['nextLoginColor'].'" style="left:480px; right:0px; position:absolute;text-align:right;">&nbsp;<span title="'.$content['accountInfo']['typeDesc'].'">'.$content['accountInfo']['type'].'</span>'.($content['accountInfo']['iwsa'] ? '&nbsp;<span title="Supporter-Account">IWSA</span>':'').($content['accountInfo']['ikea'] ? '&nbsp;<span title="Ikea-Account">I</span>':'').($content['accountInfo']['mdp'] ? '&nbsp;<span title="Meister der Peitschen-Account">M</span>':'').'</span>',
-				 '
-			</div>';
-	}
-	
-	function TemplateSitterUtilJobView() {
-		global $content;
-		
-		TemplateHtmlHeader();
-		echo '<body><div class="sitterutil_box">';
-		if(isset($content['msg'])) {
-			echo '<div class="imp">', $content['msg'], '</div>';
-		}
-		if(isset($content['smsg'])) {
-			echo '<div class="simp">', $content['smsg'], '</div>';
-		}
-		if($content['hasjob']) {
-			echo '
-		<script type="text/javascript"><!-- // --><![CDATA[
-			function checkSubmit() {
-				var bs = getElById("bauschleife");
-				if(bs) {
-					if(bs.value == "") {
-						alert("Für den Sitterauftrag gibt es einen Folgeauftrag, gib deshalb bitte die aktuelle Bauschleife an, damit die Zeit für den Folgeauftrag berechnet werden kann!");
-						return false;
+	function TemplateSitterUtilJobEx() {
+		global $content, $themeurl;
+		echo '<script type="text/javascript"><!-- // --><![CDATA[
+			$(function() {
+				function showmove() {
+					$.data(document.body, "job_allow_update", false);
+					var v = $.data(document.body, "jobs")
+					if(v.length > 0) {
+						var f = $.data(document.body, "job_current");
+						$(".sitterjob_info").html(
+						"<div class=\"imp\"></div><table>"
+							+ "<tr><th>Zeit</th><td><input type=\"text\" name=\"zeit\" value=\""+f.time+"\" /></td></tr>"
+							+ "<tr><th>oder Bauschleife</th><td><textarea name=\"bauschleife\" cols=\"24\" rows=\"1\"></textarea></td></tr>"
+							+ "<tr><th>Kommentar</th><td><textarea name=\"kommentar\" cols=\"24\" rows=\"1\"></textarea></td></tr>"
+							+ "<tr><td colspan=\"2\" align=\"center\"><a href=\"#\" class=\"do_move\">Verschieben!</a><a href=\"#\" class=\"show\">Zurück</a></td></tr>"
+						+ "</table>"
+						);
+						$(".show", ".sitterjob_info").button().click(function(e) {
+							e.preventDefault();
+							showjob();
+							return false;
+						});
+						$(".do_move", ".sitterjob_info").button().click(function(e) {
+							e.preventDefault();
+							var util = $(this).parent().parent().parent().parent().parent();
+							$(".do_move", ".sitterjob_info").button("disable");
+							$(".show", ".sitterjob_info").button("disable");
+							$.post(f.url, 
+								{jid: f.id, move: 1, zeit: $("input[name=\"zeit\"]", util).val(), bauschleife: $("input[textarea=\"bauschleife\"]", util).val(), kommentar: $("input[name=\"kommentar\"]", util).val()}, 
+								function(resp) {
+									if(resp.success) {
+										$.data(document.body, "jobs", $.grep(v, function(el, i) {return el.id == $.data(document.body, "job_current");}, true));
+										showjob(resp.msg, false);
+									} else {
+										$(".imp", util).text(resp.msg);
+										$(".do_move", ".sitterjob_info").button("enable");
+										$(".show", ".sitterjob_info").button("enable");
+									}
+								},
+								"json"
+							);
+							return false;
+						});
 					}
 				}
-				return confirm("Sitterauftrag wirklich erledigt?");
-			}
+				function showjob(smsg, fmsg) {
+					$.data(document.body, "job_allow_update", true);
+					var v = $.data(document.body, "jobs")
+					if(v.length > 0) {
+						var f = false;
+						if($.data(document.body, "job_specific")) {
+							f = $.grep(v, function(el, i) {return el.id == $.data(document.body, "job_specific");});
+							f = !f ? v[0] : f[0];
+						} else {
+							f = v[0];
+						}
+						$.data(document.body, "job_current", f);
+						$.data(document.body, "job_specific", false);
+						$(".sitterjob_info").html("<div class=\"imp\">"+(fmsg?fmsg:"")+"</div><div class=\"simp\">"+(smsg?smsg:"")+"</div>"
+						+ "<table>"
+							+ "<tr><th> Zeit:</th><td>"+ f.time +"</td></tr>"
+							+ "<tr><th>Planet:</th><td>"+(f.hasPlani ? f.coords : "")+f.planiName+"</td></tr>"
+							+ "<tr><th>Auftrag:</th><td>"+f.text+"</td></tr>"
+							+ (f.hasFollowUp ? "<tr><th>Bauschleife<br /><i style=\"font-size:smaller\">Strg+a, Strg+c der Bauseite</i></th><td><textarea name=\"bauschleife\"></textarea></td></tr>" : "")
+							+ "<tr><td colspan=\"2\" align=\"center\"><a href=\"#\" class=\"done\">Erledigt</a><a href=\"#\" class=\"move\">Verschieben</a></td></tr>"
+						+ "</table>");
+						$(".done", ".sitterjob_info").button().click(function(e) {
+							e.preventDefault();
+							var util = $(this).parent().parent().parent().parent().parent();
+							$(".done", ".sitterjob_info").button("disable");
+							$(".move", ".sitterjob_info").button("disable");
+							$.post(f.url,
+								{jid: f.id, done: 1, bauschleife: $("input[textarea=\"bauschleife\"]", util).val()},
+								function(resp) {
+									if(resp.success) {
+										$.data(document.body, "jobs", $.grep(v, function(el, i) {return el.id == $.data(document.body, "job_current");}, true));
+										showjob(resp.msg, false);
+									} else {
+										$(".imp", util).text(resp.msg);
+										$(".done", ".sitterjob_info").button("enable");
+										$(".move", ".sitterjob_info").button("enable");
+									}
+								},
+								"json");
+							return false;
+						});
+						$(".move", ".sitterjob_info").button().click(function(e) {
+							e.preventDefault();
+							showmove();
+							return false;
+						});
+					} else {
+						$(".sitterjob_info").text("Kein Sitterauftrag!");
+					}
+				}
+				if(!$.data(document.body, "job_update")) {
+					$.data(document.body, "job_update", true);
+					$.data(document.body, "job_allow_update", true);
+					function job_update() {
+						$.get("', $content['updateUrl'], '", {uid: v.uid}, function(dta) {$.data(document.body, "jobs", dta);}, "json");
+						if($.data(document.body, "job_allow_update"))
+							showjob();
+						window.setTimeout(job_update, 120000);
+					}
+					window.setTimeout(job_update, 120000);
+				}
+				$.data(document.body, "jobs", ',EscapeJSU($content['jobs']),');
+				$.data(document.body, "job_specific", ', $content['has_specific'] ? $content['specific_job'] : 'false', ');
+				showjob();
+			});
 		// ]]></script>
-		<form action="', $content['formAction'], '" method="post"><table border="1" align="center" width="100%">
-			<tr align="left"><th>Zeit:</th><td>', $content['time'], '</td></tr>
-			<tr align="left"><th>Planet:</th><td>', $content['coords'], ' ', $content['planiName'], '</td></tr>
-			<tr align="left"><th>Auftrag:</th><td><b>', $content['longType'], '</b><br />', $content['text'], '</td></tr>';
-			if($content['hasFollowUp']) {
-				echo '<tr><th>Bauschleife<br /><i style="font-size:smaller">Strg+a, Strg+c der Bauseite</i></th><td><textarea name="bauschleife" id="bauschleife"></textarea></td></tr>';
-			}
-			echo '
-				<tr><td colspan="2" align="center">
-					<input type="submit" name="done" value="Erledigt"  onclick="return checkSubmit();" /> -- 
-					<input type="submit" name="move" value="Verschieben" />
-				</td></tr>
-			</table></form>';
-		} else {
-			echo '<h2 style="vertical-align:middle;">Kein Sitterauftrag!</h2>';
-		}
-		echo '</div>';
-		TemplateSitterUtilLinks();
-		echo '</body>';
-		TemplateHtmlFooter();
-	}
-	
-	function TemplateSitterUtilJobMove() {
-		global $content;
-		
-		TemplateHtmlHeader();
-		echo '
-	<body><div class="sitterutil_box"><form action="', $content['submitLink'], '" method="post">
-		<table border="1" align="center">
-			<tr><th>Zeit</th><td><input type="text" name="zeit1" value="', $content['zeit1'], '" /></td></tr>
-			<tr><th>oder Bauschleife</th><td><textarea name="bauschleife" cols="36" rows="1"></textarea></td></tr>
-			<tr><th>Kommentar</th><td><textarea name="kommentar" cols="36" rows="1"></textarea></td></tr>
-			<tr><td colspan="2" align="center"><input type="submit" name="abs" value="Verschieben!" /> <button type="button" onclick="window.location.href = \'', $content['backLink'], '\';">Zurück</button></td></tr>
-		</table>
-	<input type="hidden" name="move" value="1" />
-	', ReqID(), '
-	</form></div></body>';
-		TemplateHtmlFooter();
+		<div class="sitterjob_info"><img src="',$themeurl,'/img/load.gif" alt="Loading.." title="Loading.." /></div>
+		';
 	}
 	
 	function TemplateSitterUtilNewscan() {
 		global $content, $scripturl;
-		TemplateHtmlHeader();
-		
-		echo '
-<body>
-	<script type="text/javascript"><!-- // --><![CDATA[
-		function FastPasteSubmit() {
-			var frm = getElById("newscan");
-			frm.target="_parent";
-			frm.action="', $content['fastPasteTarget'],'";
-			var btn = getElById("newscan_submit");
-			frm.submit();
-		}
-		function IdlePasteSubmit() {
-			var frm = getElById("newscan");
-			frm.target="_parent";
-			frm.action="', $content['idlePasteTarget'],'";
-			var btn = getElById("newscan_submit");
-			frm.submit();
-		}
-	// ]]></script>
-	<div class="sitterutil_box">
-		', !empty($content['submsg']) ? '' : '<h2>Neuer Bericht</h2>', 
-		!empty($content['msg']) ? '<div class="imp">'.$content['msg'].'</div>' : '', '
-		<div><form id="newscan" method="post" action="', $scripturl, '/index.php?action=sitterutil_newscan', $content['params'], '">
-			<textarea name="scans" rows="4" cols="60">', $content['scans'], '</textarea><br/>
-			<input type="hidden" name="uid" value="', $content['uid'], '" />
-			', ReqID(), '
-			<input type="hidden" name="abs" value="Einlesen" />
-			<input type="submit" value="Einlesen" id="newscan_submit" />
-			<button type="button" onclick="FastPasteSubmit();" title="Den Scan einlesen und danach direkt weiter zu dem am längsten nicht gesitteten Account">Einl. & Nächster</button>
-			<button type="button" onclick="IdlePasteSubmit();" title="Den Scan einlesen und danach direkt weiter zum nächsten Account mit Leerlauf!">Einl. & N. + Leerlauf</button>
-		</form></div>
-		', !empty($content['submsg']) ? '<div class="simp">'.$content['submsg'].'</div>' : '', '
-	</div>';
-		TemplateSitterUtilLinks();
-		echo '
-</body>';
-		
-		TemplateHtmlFooter();
+		echo '<script type="text/javascript"><!-- // --><![CDATA[
+			$(function() {
+				$(".scans", ".sitter_newscan").keyup(function() {
+					var txt = $(this).val();
+					if(txt.length==0)
+						return;
+					$(this).val(\'\');
+					var util = $(this).parent().parent();
+					$.post("', $content['submitUrl'], '",
+						{uid: v.uid, scans: txt, abs: 1, next: $(".next:checked", util).val(), idle: $(".idle:checked", util).val()},
+						function(resp) {
+							if(resp.err)
+								$(".imp", ".sitter_newscan").html("<div>"+resp.err+"<div>");
+							if(resp.msg)
+								$(".simp", ".sitter_newscan").html("<div>"+resp.msg+"<div>");
+							if(resp.nextid) {
+								var v = resp.nextid;
+								uid_change(v.uid, v.name, v.loginwarning);
+							}
+						},
+						"json");
+						if($(".next:checked", util).val() || $(".idle:checked", util).val()) {
+							$("iframe", "#iwframe").attr("src", "about:blank");
+						}
+				});
+			});
+		// ]]></script>
+		<div class="sitter_newscan">
+			<div class="imp"></div>
+			<div><textarea name="scans" class="scans" rows="4" cols="36"></textarea></div>
+			<div><label><input type="checkbox" class="next" value="1" title="Den Scan einlesen und danach direkt weiter zu dem am längsten nicht gesitteten Account" />Nächster</label><label><input type="checkbox" class="next" value="1"  title="Den Scan einlesen und danach direkt weiter zum nächsten Account mit Leerlauf!" />Nächster+Leerlauf</label></div>
+		</form>
+		<div class="simp"></div>
+		</div>';
 	}
 	
 	function TemplateSitterUtilTrade() {
-		global $content;
-		TemplateHtmlHeader();
+		global $content, $themeurl;
 		echo '
-<body>
-	<div class="sitterutil_box">
-		<h2>Handel</h2>';
+	<div class="sitter_trade">';
 		if($content['hasReq']) {
 			echo '
-		<form action="', $content['submitUrl'], '" method="post">
+		<script type="text/javascript"><!-- // --><![CDATA[
+			$(function() {
+				$(".done", ".sitter_trade").button().click(function(e) {
+					e.preventDefault();
+					$(".sitter_trade")
+						.html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />")
+						.load("', $content['submitUrl'], '", {fullDone:1, rid: "',$content['req']['id'], '", reqid: "', $content['reqid'], '"});
+					return false;
+				});
+				$(".part_done", ".sitter_trade").button().click(function(e) {
+					e.preventDefault();
+					var util = $(this).parent().parent().parent().parent().parent().parent();
+					$(".sitter_trade")
+						.load("', $content['submitUrl'], '", {partDone:1, rid: "',$content['req']['id'], '", reqid: "', $content['reqid'], '", cnt: $(".cnt", util).val()})
+						.html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />");
+					return false;
+				});
+				$(".ign", ".sitter_trade").button().click(function(e) {
+					e.preventDefault();
+					$(".sitter_trade")
+						.html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />")
+						.load("', $content['submitUrl'], '", {ignore:1, rid: "',$content['req']['id'], '", reqid: "', $content['reqid'], '"});
+					return false;
+				});
+			});
+		// ]]></script>
+		<form action="', $content['submitUrl'], '" class="frm" method="post">
 		<table border="1" width="100%">
-<tr><td colspan="2" align="center"><input value="Done" name="fullDone" type="submit" /> -- <input type="text" name="cnt" size="6" /><input type="submit" value="Teilw." name="partDone" /> -- <input type="submit" name="ignore" value="Ignorieren" /></td></tr>
+<tr><td colspan="2" align="center"><input value="Done" class="done" name="fullDone" type="submit" /> <input type="text" name="cnt" class="cnt" size="6" /> <input type="submit" class="part_done" value="Teilw." name="partDone" /> <input type="submit" name="ignore" class="ign" value="Ignorieren" /></td></tr>
 			<tr><th>Zeit</th><td>', $content['req']['time'], '</td></tr>
 			<tr><th>Ziel</th><td>', $content['req']['ziel'], ' (bei ', $content['req']['user'], ')</td></tr>
 			<tr><th>Priorität</th><td>', $content['req']['priority'], '</td></tr>
@@ -443,19 +582,12 @@
 		}
 		echo '
 	</div>';
-		TemplateSitterUtilLinks();
-		echo '
-</body>';
-		TemplateHtmlFooter();
 	}
 
 	function TemplateSitterUtilLog() {
 		global $content;
-		TemplateHtmlHeader();
 		echo '
-<body>
-	<div class="sitterutil_box">
-		<h2>Sitterlog</h2>
+	<div class="sitter_log">
 		<table width="99%" cellpadding="0" cellspacing="0" border="1">';
 		foreach($content['log'] as $line) {
 			echo '
@@ -468,34 +600,39 @@
 		}
 		echo '</table>
 	</div>';
-		TemplateSitterUtilLinks();
-		echo '
-</body>';
-		TemplateHtmlFooter();
 	}	
 
 	function TemplateSitterUtilRess() {
-		global $content;
-		TemplateHtmlHeader();
+		global $content, $themeurl;
 		echo '
-<body>
-	<div class="sitterutil_box">
-		<h2>Ressübersicht</h2>
+	<script type="text/javascript"><!-- // --><![CDATA[
+		$(function() {
+			$(".anz", ".sitter_ress").button().click(function(e) {
+				e.preventDefault();
+				var util = $(this).parent().parent().parent();
+				$(util)
+					.load("', $content['submitUrl'], '", {uid:$(".uid", util).val(), ress:$(".ress", util).val()})
+					.html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />");
+					return false;
+			});
+		});
+	// ]]></script>
+	<div class="sitter_ress">
 		<form action="', $content['submitUrl'], '" method="post">
-			<select name="ress">';
+			<select class="ress" name="ress">';
 		foreach($content['ress'] as $r) {
 			echo '
 				<option value="', $r['value'], '"', $r['selected'] ? ' selected="selected"' : '', '>', $r['name'], '</option>';
 		}
 		echo '
-			</select>bei <select name="uid">';
+			</select>@<select class="uid" name="uid">';
 		foreach($content['users'] as $user) {
 			echo '
 				<option value="', $user['id'], '"', $user['selected'] ? ' selected="selected"' : '', '>', $user['name'], '</option>';
 		}
 		echo '
 			</select>
-			<input type="submit" name="submit" value="Anz." />
+			<input type="submit" name="submit" class="anz" value="Anz." />
 		</form>
 		<table width="99%" cellpadding="0" cellspacing="0" border="1"><tr align="center">';
 		echo '<th>&nbsp;</th>';
@@ -525,10 +662,6 @@
 		echo '</tr>
 		</table>
 	</div>';
-		TemplateSitterUtilLinks();
-		echo '
-</body>';
-		TemplateHtmlFooter();
 	}
 
 	function TemplateFeindlFlottenUebersicht() {

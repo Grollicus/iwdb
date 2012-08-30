@@ -111,6 +111,7 @@ if(!function_exists('TemplateHtmlHeader')) {
 	<meta name="description" content="StonedSheep - IWDB" />
 	<title>StonedSheep-DB</title>
 	<link rel="stylesheet" type="text/css" href="'.$themeurl.'/style.css" />
+	<link rel="stylesheet" type="text/css" href="'.$themeurl.'/jquery-ui-1.8.23.custom.css" />
 	<link rel="icon" href="favicon.png" type="image/png" />
 	<script type="text/javascript"><!-- // --><![CDATA[
 		var themeurl = "', $themeurl, '";
@@ -121,16 +122,11 @@ if(!function_exists('TemplateHtmlHeader')) {
 			fenster.focus();
 			return false;
 		}
-		', $user['isGuest'] || $user['isRestricted'] ?  '' : '
-		function timerCallback() {
-			AjaxRequest("sitter_cnt");
-			window.setTimeout(timerCallback, 120000);
-		}
-		window.setTimeout(timerCallback, 120000);
-		', '
 	// ]]></script>
 	<script type="text/javascript" src="', $themeurl, '/jquery-1.8.0.min.js"></script>
 	<script type="text/javascript" src="', $themeurl, '/jquery.tablesorter.min.js"></script>
+	<script type="text/javascript" src="', $themeurl, '/jquery.cookie.js"></script>
+	<script type="text/javascript" src="', $themeurl, '/jquery-ui-1.8.23.custom.min.js"></script>
 	<script type="text/javascript" src="', $themeurl, '/dhtml.js"></script>', $html_header_add, '
 </head>
 ';

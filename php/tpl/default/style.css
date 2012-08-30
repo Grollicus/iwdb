@@ -25,6 +25,10 @@ td, th {
 }
 
 img { border-width: 0px; }
+iframe {
+	width: 100%;
+	height: 100%;
+}
 
 .header {
 	text-align: left;
@@ -133,6 +137,69 @@ img { border-width: 0px; }
 	padding: 0.4em;
 }
 
+#overlay {
+	display: none;
+	position: fixed;
+	left:0px;
+	top:0px;
+	bottom: 26px;
+	right: 0px;
+	z-index: -99;
+	padding: 0;
+	margin: 0;
+	background-color: transparent;
+}
+#iwframe {
+	position: fixed;
+	left:0px;
+	top:0px;
+	bottom: 26px;
+	right: 0px;
+	z-index: -100;
+	overflow:hidden;
+	padding: 0;
+	margin: 0;
+}
+#igmnav {
+	margin: 0;
+	padding: 0;
+	position: fixed;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	height: 26px;
+	overflow: hidden;
+	z-index: 2;
+	background-color: #88A6C0;
+}
+#lnav {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+}
+#mnav {
+	position: absolute;
+	left: 100px;
+	top: 0px;
+}
+#rnav {
+	position: absolute;
+	right: 0px;
+	top: 0px;
+}
+#act {
+	position: relative;
+	display: inline-block;
+	margin:0;
+	padding: 0.4em 1em;
+	top: 0px;
+	height: 26px;
+}
+.sitterutil_box * {
+	font-size:10px;
+}
 
 /* Die Überschrift und Tabellenüberschriften im Menü*/
 .categoryheader, th, th {
@@ -145,42 +212,6 @@ img { border-width: 0px; }
 /* Links in Tabellenüberschriften */
 #content th a:link, #content th a:visited, #content th a:hover, #content th a:active, #content th a:focus {
 	text-decoration: none;
-}
-
-/* Die Boxen innerhalb der Frames, die beim Sitterlogin angezeigt werden */
-.sitterutil_box {
-	position:fixed;
-	top:0px;
-	bottom:15px;
-	left:0px;
-	right:0px;
-	margin:0px;
-	overflow:auto;
-}
-.sitterutil_box > div,
-.sitterutil_box > table,
-.sitterutil_box > h2 {
-	margin-left:5px;
-	margin-right:5px;
-	margin-top: 3px;
-	margin-bottom: 0px;
-	text-align:center;
-}
-.sitterutil_links {
-	position:fixed;
-	left:0px;
-	right:0px;
-	bottom:0px;
-	background-color: #88A6C0;
-	height:15px;
-}
-
-.sitterutil_box * {
-	font-size:10px;
-}
-
-.sitterutil_box > h2 {
-	font-size: 12px;
 }
 
 .simp {
