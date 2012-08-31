@@ -245,7 +245,7 @@
 				v.jid = 0;
 				v.sitter=true;
 				document.title = "IW - "+name+" - StonedSheep-DB";
-				$("iframe", "#iwframe").attr("src", ', $content['loginBase'], '+"&ID="+uid);
+				$("iframe", "#iwframe").attr("src", ', $content['loginBase'], '+"&ID="+uid).focus();
 				$(".sitterjob_info:visible").parent().each(function(i, el) {
 					$(el).html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />").load($(el).data("url"), {"uid": v.uid, "id": v.jid});
 				});
