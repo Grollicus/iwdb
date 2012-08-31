@@ -245,7 +245,7 @@
 				v.jid = 0;
 				v.sitter=true;
 				document.title = "IW - "+name+" - StonedSheep-DB";
-				$("iframe", "#iwframe").attr("src", "', $content['loginBase'], '&ID="+uid);
+				$("iframe", "#iwframe").attr("src", ', $content['loginBase'], '+"&ID="+uid);
 				$(".sitterjob_info:visible").parent().each(function(i, el) {
 					$(el).html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />").load($(el).data("url"), {"uid": v.uid, "id": v.jid});
 				});
@@ -317,9 +317,10 @@
 					show_dialog(this.text, this.href, {open: function(evt, ui) { savestate();}});
 					return false;
 				});
-				$("#nextLogin").click(function(e) {e.preventDefault();$.get("',$content['jsonLink'],'", {next:1}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning);}, "json");});
-				$("#idleLogin").click(function(e) {e.preventDefault();$.get("',$content['jsonLink'],'", {idle:1}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning);}, "json");});
-				$("#loginSelect").change(function() {$.get("',$content['jsonLink'],'", {idinfo:$(this).val()}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning);}, "json");});
+				$("#nextLogin").click(function(e) {e.preventDefault();$.get(',$content['jsonLink'],', {nextid:1}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning);}, "json");});
+				$("#idleLogin").click(function(e) {e.preventDefault();$.get(',$content['jsonLink'],', {idleid:1}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning);}, "json");});
+				$("#loginSelect").change(function() {$.get(',$content['jsonLink'],', {idinfo:$("#loginSelect").val()}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning);}, "json");});
+				$("#reLogin").click(function(e) {e.preventDefault();$("iframe", "#iwframe").attr("src", ', $content['loginBase'], '+"&ID="+v.uid);});
 				loadstate();
 				document.title = "IW - ', $content['accName'], ' - StonedSheep-DB";
 				', $content['loginWarning'] ? 'loginwarning('.$content['loginLastUser'].')' : '', '
@@ -348,7 +349,7 @@
 			foreach($content['userLogins'] as $user) {
 				echo '<option value="', $user['value'], '" ', $user['isSelected'] ? 'selected="selected"' : '', '>', $user['name'], '</option>';
 			}
-			echo '</select>
+			echo '</select> <button id="reLogin"><div class="ui-icon ui-icon-arrowrefresh-1-s"></div></button>
 			</div>
 			<div id="rnav">
 				<a title="In den nächsten Account mit Leerlauf einloggen" href="#" id="idleLogin">LeerlfAcc</a>

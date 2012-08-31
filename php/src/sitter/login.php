@@ -137,9 +137,9 @@
 		}
 		
 		$content['exitLink'] = $scripturl. '/index.php?action='.EscapeO(Param('from'));
-		$content['jsonLink'] = $scripturl."/index.php?action=sitter_login&nextid=1";
+		$content['jsonLink'] = EscapeJS($scripturl."/index.php?action=sitter_login");
 		
-		$content['loginBase'] = $scripturl.'/index.php?action=sitter_dologin&sitter=1';
+		$content['loginBase'] = EscapeJS($scripturl.'/index.php?action=sitter_dologin&sitter=1');
 		$content['loginUrl'] = $scripturl.'/index.php?action=sitter_dologin&amp;ID='.$id.($fulllogin ? '' : '&amp;sitter=1');
 		$content['loginWarning'] = $lastloginid !== false;
 		$content['loginLastUser'] = $lastloginid === false ? '' : EscapeJS(DBQueryOne("SELECT visibleName FROM {$pre}users WHERE ID=".$lastloginid, __FILE__, __LINE__));
