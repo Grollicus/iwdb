@@ -238,7 +238,7 @@
 				"jid": ', $content['jid'], ',
 				"sitter": ', $content['sitter'], '
 			};
-			function uid_change(uid, name, warning) {
+			function uid_change(uid, name, warning, act, acc) {
 				if(!uid)
 					return;
 				v.uid = uid;
@@ -255,6 +255,14 @@
 				$(".uid", ".sitter_ress").each(function(i,el) {$(el).val(v.uid);});
 				$(".anz", ".sitter_ress").click();
 				$("#loginSelect").val(uid);
+				$("#act").removeClass("act_0 act_1 act_2 act_3 act_4 act_5").addClass(act);
+				$("#act").html(
+					"<span title=\""+acc.typeDesc+"\">"+acc.type+"<\/span>"
+					+ (acc.iwsa ? "&nbsp;<span title=\"Supporter-Account\">IWSA<\/span>":"")
+					+ (acc.ikea ? "&nbsp;<span title=\"Ikea-Account\">I<\/span>":"")
+					+ (acc.mdp ? "&nbsp;<span title=\"Meister der Peitschen-Account\">M<\/span>":"")
+					+ "<\/div>"
+				);
 				if(warning)
 					loginwarning(warning);
 			}
@@ -317,9 +325,9 @@
 					show_dialog(this.text, this.href, {open: function(evt, ui) { savestate();}});
 					return false;
 				});
-				$("#nextLogin").click(function(e) {e.preventDefault();$.get(',$content['jsonLink'],', {nextid:1}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning);}, "json");});
-				$("#idleLogin").click(function(e) {e.preventDefault();$.get(',$content['jsonLink'],', {idleid:1}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning);}, "json");});
-				$("#loginSelect").change(function() {$.get(',$content['jsonLink'],', {idinfo:$("#loginSelect").val()}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning);}, "json");});
+				$("#nextLogin").click(function(e) {e.preventDefault();$.get(',$content['jsonLink'],', {nextid:1}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning, dta.act, dta.acc);}, "json");});
+				$("#idleLogin").click(function(e) {e.preventDefault();$.get(',$content['jsonLink'],', {idleid:1}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning, dta.act, dta.acc);}, "json");});
+				$("#loginSelect").change(function() {$.get(',$content['jsonLink'],', {idinfo:$("#loginSelect").val()}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning, dta.act, dta.acc);}, "json");});
 				$("#reLogin").click(function(e) {e.preventDefault();$("iframe", "#iwframe").attr("src", ', $content['loginBase'], '+"&ID="+v.uid);});
 				loadstate();
 				document.title = "IW - ', $content['accName'], ' - StonedSheep-DB";
@@ -480,7 +488,7 @@
 							return false;
 						});
 					} else {
-						$(".sitterjob_info").text("Kein Sitterauftrag!");
+						$(".sitterjob_info").html("<div class=\"imp\">"+(fmsg?fmsg:"")+"</div><div class=\"simp\">"+(smsg?smsg:"")+"</div>Kein Sitterauftrag!");
 					}
 				}
 				if(!$.data(document.body, "job_update")) {
