@@ -530,7 +530,7 @@
 								$(".simp", ".sitter_newscan").html("<div>"+resp.msg+"<div>");
 							if(resp.nextid) {
 								var v = resp.nextid;
-								uid_change(v.uid, v.name, v.loginwarning);
+								uid_change(v.uid, v.name, v.loginwarning, v.act, v.acc);
 							}
 						},
 						"json");

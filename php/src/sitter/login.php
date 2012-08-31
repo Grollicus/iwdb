@@ -363,22 +363,42 @@
 			require($sourcedir.'/newscan/main.php');
 			ParseScansEx(false, false);
 			$now = time();
+			$accTypes = array(
+				'fle' => array('<b>F</b>', 'Dieser Account ist ein Fleeter-Account'),
+				'bud' => array('B', 'Dieser Account ist ein Buddler-Account'),
+				'mon' => array('M', 'Dieser Account ist ein Monarch-Account'),
+				'all' => array('A', 'Dieser Account ist ein Allrounder-Account'),
+			);
 			$resp = array();
 			if(isset($content['msg']))
 				$resp['err'] = $content['msg'];
 			if(isset($content['submsg']))
 				$resp['msg'] = $content['submsg'];
 			if(isset($_REQUEST['next'])) {
-				$id = DBQueryOne("SELECT ID, igmname FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
-				$ll = DBQueryOne("SELECT users.visibleName FROM {$pre}sitterlog AS sitterlog INNER JOIN {$pre}users AS users ON users.ID=sitterlog.userid AND sitterlog.victimid={$id[0]} AND sitterlog.userid<>{$ID_MEMBER} AND sitterlog.type='login' AND sitterlog.time >= ".($now-300)." ORDER BY sitterlog.time DESC LIMIT 0,1", __FILE__, __LINE__);
-				$resp['nextid'] = array("uid" => $id[0], "name" => $id[1], "loginwarning" => $ll);
+				$acc = DBQueryOne("SELECT ID, igmname, lastParsed, accounttyp, ikea, mdp, iwsa FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
+				$ll = DBQueryOne("SELECT users.visibleName FROM {$pre}sitterlog AS sitterlog INNER JOIN {$pre}users AS users ON users.ID=sitterlog.userid AND sitterlog.victimid={$acc[0]} AND sitterlog.userid<>{$ID_MEMBER} AND sitterlog.type='login' AND sitterlog.time >= ".($now-300)." ORDER BY sitterlog.time DESC LIMIT 0,1", __FILE__, __LINE__);
+				$resp['nextid'] = array("uid" => $acc[0], "name" => $acc[1], "loginwarning" => $ll, "act" => LastLoginColor($acc[2]), "acc" => array(
+					'rawType' => $acc[3],
+					'type' => $accTypes[$acc[3]][0],
+					'typeDesc' => $accTypes[$acc[3]][1],
+					'ikea' => $acc[4] != 0,
+					'mdp' => $acc[5] !=0,
+					'iwsa' => $acc[6] != 0,
+				));
 			}
 			if(isset($_REQUEST['idle'])) {
-				$id = DBQueryOne("SELECT building.uid AS uid, igm_data.igmname FROM {$pre}building AS building INNER JOIN {$pre}igm_data AS igm_data ON building.uid=igm_data.ID WHERE igm_data.ikea=0 OR building.plani=0 GROUP BY building.plani, uid ORDER BY IF(MAX(building.end)<{$now}, 0, MAX(building.end)), igm_data.lastParsed LIMIT 0,1", __FILE__, __LINE__);
-				if($id === false)
-					$id = DBQueryOne("SELECT ID, igmname FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
-				$ll = DBQueryOne("SELECT users.visibleName FROM {$pre}sitterlog AS sitterlog INNER JOIN {$pre}users AS users ON users.ID=sitterlog.userid AND sitterlog.victimid={$id[0]} AND sitterlog.userid<>{$ID_MEMBER} AND sitterlog.type='login' AND sitterlog.time >= ".($now-300)." ORDER BY sitterlog.time DESC LIMIT 0,1", __FILE__, __LINE__);
-				$resp['nextid'] = array("uid" => $id[0], "name" => $id[1], "loginwarning" => $ll);
+				$acc = DBQueryOne("SELECT building.uid AS uid, igm_data.igmname, igm_data.lastParsed, igm_data.accounttyp, igm_data.ikea, igm_data.mdp, igm_data.iwsa FROM {$pre}building AS building INNER JOIN {$pre}igm_data AS igm_data ON building.uid=igm_data.ID WHERE igm_data.ikea=0 OR building.plani=0 GROUP BY building.plani, uid ORDER BY IF(MAX(building.end)<{$now}, 0, MAX(building.end)), igm_data.lastParsed LIMIT 0,1", __FILE__, __LINE__);
+				if($acc === false)
+					$acc = DBQueryOne("SELECT ID, igmname, lastParsed, accounttyp, ikea, mdp, iwsa FROM {$pre}igm_data ORDER BY lastLogin LIMIT 0,1", __FILE__, __LINE__);
+				$ll = DBQueryOne("SELECT users.visibleName FROM {$pre}sitterlog AS sitterlog INNER JOIN {$pre}users AS users ON users.ID=sitterlog.userid AND sitterlog.victimid={$acc[0]} AND sitterlog.userid<>{$ID_MEMBER} AND sitterlog.type='login' AND sitterlog.time >= ".($now-300)." ORDER BY sitterlog.time DESC LIMIT 0,1", __FILE__, __LINE__);
+				$resp['nextid'] = array("uid" => $acc[0], "name" => $acc[1], "loginwarning" => $ll, "act" => LastLoginColor($acc[2]), "acc" => array(
+					'rawType' => $acc[3],
+					'type' => $accTypes[$acc[3]][0],
+					'typeDesc' => $accTypes[$acc[3]][1],
+					'ikea' => $acc[4] != 0,
+					'mdp' => $acc[5] !=0,
+					'iwsa' => $acc[6] != 0,
+				));
 			}
 			echo EscapeJSU($resp);
 			return;
