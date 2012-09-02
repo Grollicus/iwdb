@@ -331,7 +331,8 @@
 				$("#reLogin").click(function(e) {e.preventDefault();$("iframe", "#iwframe").attr("src", ', $content['loginBase'], '+"&ID="+v.uid);});
 				loadstate();
 				document.title = "IW - ', $content['accName'], ' - StonedSheep-DB";
-				', $content['loginWarning'] ? 'loginwarning('.$content['loginLastUser'].')' : '', '
+				', $content['loginWarning'] ? 'loginwarning('.$content['loginLastUser'].');' : '', '
+				$("iframe", "#iwframe").focus();
 			});
 		// ]]></script>
 		<div id="overlay"></div>
@@ -458,7 +459,7 @@
 						+ "<table>"
 							+ "<tr><th> Zeit:</th><td>"+ f.time +"</td></tr>"
 							+ "<tr><th>Planet:</th><td>"+(f.hasPlani ? f.coords : "")+f.planiName+"</td></tr>"
-							+ "<tr><th>Auftrag:</th><td>"+f.text+"</td></tr>"
+							+ "<tr><th>Auftrag:</th><td><b>"+f.longType+"</b><br />"+f.text+"</td></tr>"
 							+ (f.hasFollowUp ? "<tr><th>Bauschleife<br /><i style=\"font-size:smaller\">Strg+a, Strg+c der Bauseite</i></th><td><textarea name=\"bauschleife\"></textarea></td></tr>" : "")
 							+ "<tr><td colspan=\"2\" align=\"center\"><a href=\"#\" class=\"done\">Erledigt</a><a href=\"#\" class=\"move\">Verschieben</a></td></tr>"
 						+ "</table>");
