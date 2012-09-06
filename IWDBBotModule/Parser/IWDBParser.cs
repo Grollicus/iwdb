@@ -354,14 +354,17 @@ AND action IN('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/R
 			}
         }
         public void LogEvent(String evt) {
-            mysql.Open();
+            bool already_open = (mysql.State & System.Data.ConnectionState.Open) != 0;
+            if(!already_open)
+                mysql.Open();
             try {
                 MySqlCommand cmd = new MySqlCommand("INSERT INTO "+DBPrefix+"events (time, event) VALUES (?time, ?evt)", mysql);
                 cmd.Parameters.Add("?time", MySqlDbType.UInt32).Value = IWDBUtils.toUnixTimestamp(DateTime.Now);
                 cmd.Parameters.Add("?evt", MySqlDbType.String).Value = evt;
                 cmd.ExecuteNonQuery();
             } finally {
-                mysql.Close();
+                if(!already_open)
+                    mysql.Close();
             }
         }
         #endregion
