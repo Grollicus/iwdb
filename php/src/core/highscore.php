@@ -67,8 +67,14 @@ function HighScore() {
 function Inactives() {
 	global $pre, $content, $scripturl;
 	
+	if(isset($_REQUEST['del'])) {
+		DBQuery("DELETE FROM {$pre}sitter_inactive WHERE name='".EscapeDB(Param('del'))."'", __FILE__, __LINE__);
+		return;
+	}
+	
 	$q = DBQuery("SELECT name, since, until, gebp FROM {$pre}highscore_inactive WHERE since<>until or 1=1 ORDER BY until-since DESC, gebp DESC LIMIT 0,100", __FILE__, __LINE__);
 	$content['inactives'] = array();
+	$i = 0;
 	while($row = mysql_fetch_row($q)) {
 		$content['inactives'][] = array(
 			'name' => EscapeOU($row[0]),
@@ -76,8 +82,11 @@ function Inactives() {
 			'span' => FormatTime($row[2]-$row[1]),
 			'age' => ActualityColor($row[2]),
 			'pts' => number_format($row[3], 2, ',', '.'),
+			'num' => ++$i,
+			'delid' => EscapeJSU($row[0]),
 		);
 	}
+	$content['dellink'] = EscapeJS($scripturl.'/index.php?action=highscore_inactives');
 	
 	TemplateInit('main');
 	TemplateInactives();

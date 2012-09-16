@@ -283,7 +283,26 @@ echo '
 		<table border="0" class="tablesorter" id="inactives_table">
 		<thead><tr><th>Name</th><th>&nbsp;</th><th>Gebpts</th></tr></thead><tbody>';
 		foreach($content['inactives'] as $line) {
-			echo '<tr class="',$line['age'],'"><td><a href="', $line['link'], '">', $line['name'], '</a></td><td>', $line['span'], '</td><td>', $line['pts'], '</td></tr>';
+			echo '<tr class="',$line['age'],'">
+				<td><a href="', $line['link'], '">', $line['name'], '</a></td>
+				<td>', $line['span'], '</td>
+				<td>', $line['pts'], '</td>
+				<td>
+					<a href="#" id="del',$line['num'],'">Del</a>
+					<script type="text/javascript">
+						$(document).ready(function() {
+							$("#del',$line['num'],'").button().click(
+								function(e) {
+									e.preventDefault();
+									$("#del',$line['num'],'").button("disable");
+									$.get(',$content['dellink'],', {"del": ', $line['delid'], '}); 
+									return false;
+								}
+							);
+						});
+					</script>
+				</td>
+			</tr>';
 		}
 		echo '</tbody></table></div>';
 		TemplateFooter();
