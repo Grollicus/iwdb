@@ -68,7 +68,7 @@ function Inactives() {
 	global $pre, $content, $scripturl;
 	
 	if(isset($_REQUEST['del'])) {
-		DBQuery("DELETE FROM {$pre}sitter_inactive WHERE name='".EscapeDB(Param('del'))."'", __FILE__, __LINE__);
+		DBQuery("DELETE FROM {$pre}highscore_inactive WHERE name='".EscapeDB(Param('del'))."'", __FILE__, __LINE__);
 		return;
 	}
 	

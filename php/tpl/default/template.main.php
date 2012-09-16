@@ -281,7 +281,7 @@ echo '
 			});
 		</script>
 		<table border="0" class="tablesorter" id="inactives_table">
-		<thead><tr><th>Name</th><th>&nbsp;</th><th>Gebpts</th></tr></thead><tbody>';
+		<thead><tr><th>Name</th><th>&nbsp;</th><th>Gebpts</th><th></th></tr></thead><tbody>';
 		foreach($content['inactives'] as $line) {
 			echo '<tr class="',$line['age'],'">
 				<td><a href="', $line['link'], '">', $line['name'], '</a></td>
