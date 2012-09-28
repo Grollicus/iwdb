@@ -305,7 +305,7 @@
 		<h2>Sittereinteilung</h2>';
 
 		foreach($content['schedule'] as $day) {
-			echo '<table  cellpadding="0" cellspacing="0" border="0" ', $day['last'] ? '' : 'style="float:left;margin-right:5px;"', '><tr><th colspan="2">', $day['date'], '</th></tr>';
+			echo '<table  cellpadding="0" cellspacing="0" border="0" ', $day['last'] ? 'style="width:150px;"' : 'style="width:150px;float:left;margin-right:5px;"', '><tr><th colspan="2">', $day['date'], '</th></tr>';
 			foreach($day['times'] as $time) {
 				echo '<tr><td style="height:24px;">', $time['time'], '</td><td>';
 				foreach($time['usedSlots'] as $slot) {
