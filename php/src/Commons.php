@@ -328,9 +328,10 @@ function EscapeOU($text) {
 function arr_utf8_encode($arr) {
 	if(!is_array($arr))
 		return utf8_encode($arr);
+	$ret = array();
 	foreach($arr as $k => $v)
-		$arr[$k] = arr_utf8($v);
-	return $arr;	
+		$ret[$k] = arr_utf8_encode($v);
+	return $ret;	
 }
 function EscapeJS($dta) {
 	return json_encode(arr_utf8_encode($dta), JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);

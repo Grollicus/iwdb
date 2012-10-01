@@ -542,6 +542,56 @@ namespace IWDB.Parser {
 		}
 	}
 
+    class FremderScanParser : ReportParser {
+        public FremderScanParser(NewscanHandler newscanHandler)
+            : base(newscanHandler) {
+                this.AddPattern(@"Eigener\sPlanet\swurde\ssondiert\s" + KoordinatenMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+Sondierung\s\((Schiffe/Def/Ress|Gebäude/Ress|Geologie)\)\s+([^\n]+)");
+        }
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+            MySqlCommand cmd = new MySqlCommand("INSERT IGNORE INTO " + DBPrefix + "feind_scans (dst, time, type, start, sender, ally ) VALUES (?dst, ?time, ?type, ?start, ?sender, ?ally)", con);
+            cmd.Parameters.Add("?dst", MySqlDbType.VarChar);
+            cmd.Parameters.Add("?time", MySqlDbType.UInt32);
+            cmd.Parameters.Add("?type", MySqlDbType.VarChar);
+            cmd.Parameters.Add("?start", MySqlDbType.VarChar);
+            cmd.Parameters.Add("?sender", MySqlDbType.VarChar);
+            cmd.Parameters.Add("?ally", MySqlDbType.VarChar);
+            cmd.Prepare();
+            List<String> innerPatterns = new List<string>() {
+                @"Ok,\sder\sPlanet\s"+Koordinaten+@"\swurde\sausspioniert\.\sUnd\sauch\serfolgreich\.\sNämlich\svon\s("+SpielerName+@")\s("+AllyTag+@")\s"+KoordinatenMatch,
+                @"Planet\s"+Koordinaten+@"\svon\sdem\sbösen\s("+SpielerName+@")\s("+AllyTag+@")\s"+KoordinatenMatch+@"\sausspioniert!",
+                @"Planet\s"+Koordinaten+@"\swurde\sausspioniert\.\sVon\s("+SpielerName+@")\s("+AllyTag+@")\s"+KoordinatenMatch,
+                @"MEEEEP\sMEEEP\s("+SpielerName+@")\s("+AllyTag+@")\s"+KoordinatenMatch+@"\shat",
+                @"Der/Die/Das\s\(unzutreffendes\sbitte\sstreichen\)\s("+SpielerName+@")\s("+AllyTag+@")\s"+KoordinatenMatch,
+                @"Planeten\s"+Koordinaten+@"\svon\s("+SpielerName+@")\s("+AllyTag+@")\sausspioniert\.\sDiese\sunerhörte\sArt\sder\sAggression\sging\svom\sPlaneten\s"+KoordinatenMatch+@"\saus",
+                @"Heute\shat\ses\sder\sfiese\s("+SpielerName+@")\s("+AllyTag+@")\s"+KoordinatenMatch+@"\sgewagt", 
+            };
+            foreach (Match m in matches) {
+                cmd.Parameters["?dst"].Value = m.Groups[1].Value;
+                cmd.Parameters["?time"].Value = IWDBUtils.parsePreciseIWTime(m.Groups[2].Value);
+                cmd.Parameters["?type"].Value = m.Groups[3].Value == "Schiffe/Def/Ress" ? "sch" : m.Groups[3].Value == "Geologie" ? "geo": "geb";
+
+                bool found = false;
+                foreach (String pattern in innerPatterns) {
+                    Match innerMatch = Regex.Match(m.Groups[4].Value, pattern, RegexOptions.IgnorePatternWhitespace);
+                    if (innerMatch.Success) {
+                        cmd.Parameters["?start"].Value = innerMatch.Groups[3].Value;
+                        cmd.Parameters["?sender"].Value = innerMatch.Groups[1].Value;
+                        cmd.Parameters["?ally"].Value = innerMatch.Groups[2].Value;
+                        if (cmd.ExecuteNonQuery() > 0)
+                            resp.Respond("Feindlichen Scan eingelesen");
+                        else
+                            resp.Respond("Feindlichen Scan übersprungen");
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                    resp.RespondError("Unbekannte Scanbeschreibung: " + ConfigUtils.XmlEscape(m.Groups[4].Value));
+            }
+        }
+    }
+
+
 	static class WarStats {
 		static void EvaluateKb(Kb kb, uint warid) {
 			//Es gibt eine Tabelle db_war_stats wo die Stats rein sollen. HF -_-

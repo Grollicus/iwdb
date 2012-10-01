@@ -325,4 +325,63 @@
 		
 		TemplateFooter();
 	}
+	
+	function TemplateWarTiming() {
+		global $content;
+		TemplateHeader();
+		TemplateMenu();
+		echo '<div class="content">
+		<script type="text/javascript"><!-- // --><![CDATA[
+			function calcTimes(scans, schiff) {
+				var hins = $("#hins").val()
+				var ruecks = $("#ruecks").val()
+				for(var i=0; i < scans.length; i++) {
+					var scan = scans[i];
+					var fz = flugzeit(scan.dst_g, scan.dst_s, scan.dst_p, scan.src_g, scan.src_s, scan.src_p, schiff.sol*hins, schiff.gal*hins);
+					scan.start = fz ? formatdate(scan.time - fz) : "-";
+					fz = flugzeit(scan.dst_g, scan.dst_s, scan.dst_p, scan.src_g, scan.src_s, scan.src_p, schiff.sol*ruecks, schiff.gal*ruecks);
+					scan.ret = fz ? formatdate(scan.time + fz) : "-";
+					scans[i] = scan;
+				}
+				scans.sort(function(a,b) {return a.start=="-" ? (b.start == "-" ? a.time-b.time : 1) : b.start == "-" ? -1 : a.start-b.start;});
+				
+				var tbl = $("#timingtab");
+				tbl.empty();
+				tbl.append("<tr><th>Ziel<\/th><th>Start<\/th><th><\/th><th>Typi<\/th><th>Start<\/th><th>Ankunft<\/th><th>Rück<\/th><\/tr>");
+				for(var i=0; i < scans.length; i++) {
+					var scan = scans[i];
+					var arrivaltime = formatdate(scan.time);
+					tbl.append("<tr" + (scan.origin=="hs" ? " style=\"font-style:italic;\"" : "") + "><td>"+scan.dst+"<\/td><td>"+scan.src+"<\/td><td>"+scan.type+"<\/td><td>"+scan.ally+" "+scan.sender+"<\/td><td>"+scan.start+"<\/td><td>"+arrivaltime+"<\/td><td>"+scan.ret+"<\/td><\/tr>");
+				}
+			}
+			var scans = ',$content['scans'],';
+			var kbs = ',$content['kbs'],';
+			var schiffe = ', $content['schiffe'], ';
+			$(function() {
+				$("#ship").empty();
+				for(var i=0; i < schiffe.length; ++i) {
+					var sch=schiffe[i];
+					$("#ship").append("<option value=\""+i+"\">"+sch.name+"<\/option>");
+				}
+				$("#hins").empty();
+				$("#ruecks").empty();
+				for(var i=5; i <= 130; i += 5) {
+					$("#hins").append("<option value=\""+(i*0.01)+"\""+(i==100?" selected=\"selected\"" : "")+">"+i+" %<\/option>");
+					$("#ruecks").append("<option value=\""+(i*0.01)+"\""+(i==100?" selected=\"selected\"" : "")+">"+i+" %<\/option>");
+				}
+				var h = function() {
+					var sch = schiffe[$("#ship").val()];
+					calcTimes(sch.type=="sonde" ? scans : kbs, sch);
+				};
+				$("#ship").change(h).keyup(h);
+				$("#hins").change(h).keyup(h);
+				$("#ruecks").change(h).keyup(h);
+				calcTimes(scans, schiffe[0]);
+			});
+		// ]]></script>
+		<select id="ship"><option>JS fail! :(</option></select>Hin: <select id="hins"><option>JS fail! :(</option></select>Rück: <select id="ruecks"><option>JS fail! :(</option></select>
+		<table id="timingtab"><tr><td>JS fail! :(</td></tr></table>
+		</div>';
+		TemplateFooter();
+	}
 ?>

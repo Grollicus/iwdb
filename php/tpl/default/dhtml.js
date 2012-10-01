@@ -4,6 +4,27 @@ var Selects = new Object();
 var AjaxRequests = 0;
 var CollapseGroups = new Object();
 
+function flugzeit(g1, s1, p1, g2, s2, p2, solspeed, galaspeed) {
+	if(p1 == false && p2 == false) //Flug zwischen Stargates
+		return 600;
+	if(g1 == g2 && s1 == s2) { //gleiches System
+		return 1500000*Math.log(Math.abs(p1-p2)+6)/solspeed;
+	}
+	if(!galaspeed)
+		return false;
+	var mod = g1 != g2 ? 100 : 5;
+	var gal = Math.abs(g1-g2);
+	var sol = Math.abs(s1-s2);
+	var pla = Math.abs(p1-p2);
+	return (15000000/galaspeed)*Math.pow((3000*gal*gal/Math.log(gal+50)+mod*sol*Math.max(3, sol)/Math.log(sol+2)+pla), 0.25);
+}
+function flugspeed(g1, s1, p1, g2, s2, p2, fz) {
+	return flugzeit(g1, s1, p1, g2, s2, p2, fz, fz); //selbstinvers o.o
+}
+function formatdate(ts) {
+	return moment.unix(ts).format("DD.MM.YYYY HH:mm:ss");
+}
+
 function getElById(id) {
 	if(document.all) {
 		return document.all[id];

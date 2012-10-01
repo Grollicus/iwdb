@@ -47,7 +47,7 @@ DBQuery("SET NAMES utf8", __FILE__, __LINE__);
 
 set_error_handler("ErrorHandler");
 
-if(mt_rand(0, 99) == 0) {
+if(mt_rand(0, 199) == 0) {
 	DoMaintenance();
 }
 
@@ -91,7 +91,7 @@ function Main()
 	'raids' => array('kbs/raids.php', 'RaidOverview'),
 	'ressuserlist' => array('ress/list.php', 'RessUserList'),
 	'settingsex' => array('core/UserSettingsEx.php', 'UserSettingsEx'),
-	'sitter_flotten' => array('sitter/view.php', 'SitterFeindlFlottenUebersicht'),
+	'sitter_flotten' => array('war/timing.php', 'SitterFeindlFlottenUebersicht'),
 	'sitter_login' => array('sitter/login.php', 'SitterLogin'),
 	'sitter_dologin' => array('sitter/login.php', 'SitterDoLogin'),
 	'sitter_edit' => array('sitter/edit.php', 'SitterEdit'),
@@ -99,6 +99,7 @@ function Main()
 	'sitter_history' => array('sitter/history.php', 'SitterHistory'),
 	'sitter_globalhist' => array('sitter/history.php', 'SitterGlobalHistory'), 
 	'sitter_list' => array('sitter/list.php', 'SitterList'),
+	'sitterutil_flug' => array('war/timing.php', 'SitterUtilFlug'),
 	'sitterutil_job' => array('sitter/login.php', 'SitterUtilJob'),
 	'sitterutil_jobex' => array('sitter/login.php', 'SitterUtilJobEx'),
 	'sitterutil_log' => array('sitter/login.php', 'SitterUtilLog'),
@@ -123,6 +124,7 @@ function Main()
 	'war_kbs' => array('war/kbs.php', 'WarKbs'),
 	'war_scans' => array('war/scan.php', 'WarScans'),
 	'war_schedule' => array('war/schedule.php', 'WarSchedule'),
+	'war_timing' => array('war/timing.php', 'WarTiming'),
 	
 	//### Comment for automatically adding new _!!Actions!!_ here
 	);

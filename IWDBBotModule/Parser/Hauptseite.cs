@@ -340,16 +340,18 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 			uidQuery.Parameters.Add("?sys", MySqlDbType.Int32);
 			uidQuery.Parameters.Add("?pla", MySqlDbType.Int32);
 			uidQuery.Prepare();
-			MySqlCommand insertQry = new MySqlCommand(@"INSERT INTO " + DBPrefix + @"flotten (startid, zielid, action, ankunft, nummer) VALUES (?start, ?ziel, ?action, ?ankunft, ?nummer)", con);
+			MySqlCommand insertQry = new MySqlCommand(@"INSERT INTO " + DBPrefix + @"flotten (startid, zielid, action, ankunft, nummer, firstseen) VALUES (?start, ?ziel, ?action, ?ankunft, ?nummer, ?firstseen)", con);
 			insertQry.Parameters.Add("?start", MySqlDbType.UInt32);
 			insertQry.Parameters.Add("?ziel", MySqlDbType.UInt32);
 			insertQry.Parameters.Add("?action", MySqlDbType.Enum);
 			insertQry.Parameters.Add("?ankunft", MySqlDbType.UInt32);
 			insertQry.Parameters.Add("?nummer", MySqlDbType.UInt32);
+            insertQry.Parameters.Add("?firstseen", MySqlDbType.UInt32);
 			insertQry.Prepare();
 			MySqlCommand deleteQry = new MySqlCommand(@"DELETE FROM " + DBPrefix + @"flotten WHERE id=?id", con);
 			deleteQry.Parameters.Add("?id", MySqlDbType.UInt32);
 			deleteQry.Prepare();
+            uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
 
 			foreach(Match outerMatch in matches) {
 				MatchCollection innerMatches = Regex.Matches(outerMatch.Groups[0].Value, "(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\s+(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\n
@@ -403,12 +405,11 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 				List<OrderedListDifference<FlottenCacheFlotte>> diffs = cachedFlotten.Differences(flotten);
 				int neu = 0;
 				String ziel = "";
-				uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
 				foreach(OrderedListDifference<FlottenCacheFlotte> diff in diffs) {
 					if(diff.Item.Action != "Angriff")
 						continue;
 					if(diff.Difference == OrderedListDifferenceType.MissingInCompared) {
-						if(diff.Item.ankunft < (now-900) || diff.Item.ankunft > now) {
+						if(diff.Item.ankunft < (now-900) || diff.Item.ankunft > now) { //failsafe gegen Chemiemangel, dafür "werden flotten nicht recalled"
 							deleteQry.Parameters["?id"].Value = diff.Item.id;
 							deleteQry.ExecuteNonQuery();
 						}
@@ -418,6 +419,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 						insertQry.Parameters["?action"].Value = "Angriff";
 						insertQry.Parameters["?ankunft"].Value = diff.Item.ankunft;
 						insertQry.Parameters["?nummer"].Value = diff.Item.nummer;
+                        insertQry.Parameters["?firstseen"].Value = now;
 						insertQry.ExecuteNonQuery();
 						if(neu == 0) {
 							MySqlCommand zielQry = new MySqlCommand("SELECT ownername FROM " + DBPrefix + "universum WHERE id=?id", con);
@@ -429,7 +431,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 				}
 				if(neu > 0)
 					parser.NeueFlottenGesichtet(ziel, neu, true);
-				cachedFlotten.RemoveMatching(delegate(FlottenCacheFlotte f) { return f.Action == "Angriff"; });
+				cachedFlotten.RemoveMatching(delegate(FlottenCacheFlotte f) { return f.Action == "Angriff"; }); //wird von der Koloinfo wieder befüllt
 				resp.Respond("Feindliche Flotten ("+ownerData.Item2+") eingelesen!\n");
 			}
 		}

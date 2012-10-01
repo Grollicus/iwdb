@@ -198,9 +198,8 @@
 		TemplateHeader('<script type="text/javascript" src="'.$themeurl.'/jquery-ui-1.8.23.custom.min.js"></script>
 			<link rel="stylesheet" type="text/css" href="'.$themeurl.'/jquery-ui-1.8.23.custom.css" />');
 		TemplateMenu();
-		echo '<div class="content">';
-		
-		echo '<script type="text/javascript"><!-- // --><![CDATA[
+		echo '<div class="content">
+		<script type="text/javascript"><!-- // --><![CDATA[
 	$(function() {
 		$( ".column" ).sortable({
 			connectWith: ".column"

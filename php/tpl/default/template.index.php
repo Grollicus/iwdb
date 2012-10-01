@@ -70,6 +70,7 @@ if(!function_exists('TemplateMenu')) {
 		echo '
 			<tr><td><a class="',$content['action'] == 'war_schedule' ? 'active' : 'item','" href="', $scripturl, '/?action=war_schedule">Zeitplan</a></td></tr>';
 		echo '
+			<tr><td><a class="',$content['action'] == 'war_timing' ? 'active' : 'item','" href="', $scripturl, '/?action=war_timing">Timing</a></td></tr>
 			<tr><th>Sonstiges</th></tr>
 			<tr><td><a class="',$content['action'] == 'techtree' ? 'active' : 'item','" href="', $scripturl, '/?action=techtree">Techtree</a></td></tr>
 			<tr><td><a class="',$content['action'] == 'highscore_inactives' ? 'active' : 'item','" href="', $scripturl, '/?action=highscore_inactives">Inaktivensuche</a></td></tr>
@@ -127,6 +128,7 @@ if(!function_exists('TemplateHtmlHeader')) {
 	<script type="text/javascript" src="', $themeurl, '/jquery.tablesorter.min.js"></script>
 	<script type="text/javascript" src="', $themeurl, '/jquery.cookie.js"></script>
 	<script type="text/javascript" src="', $themeurl, '/jquery-ui-1.8.23.custom.min.js"></script>
+	<script type="text/javascript" src="', $themeurl, '/moment.min.js"></script>
 	<script type="text/javascript" src="', $themeurl, '/dhtml.js"></script>', $html_header_add, '
 </head>
 ';

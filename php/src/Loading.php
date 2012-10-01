@@ -98,5 +98,6 @@ function DoMaintenance() {
 	$now = time();
 	DBQuery("DELETE FROM {$pre}requestids WHERE time < ".($now-172800), __FILE__, __LINE__);
 	DBQuery("DELETE FROM {$pre}geoscans WHERE reset is not null and reset < ".$now." AND (SELECT objekttyp='---' FROM {$pre}universum AS universum WHERE universum.id = {$pre}geoscans.id)", __FILE__, __LINE__);
+	DBQuery("DELETE flotten FROM ({$pre}flotten AS flotten LEFT JOIN {$pre}universum AS universum ON flotten.zielid=universum.id) LEFT JOIN {$pre}igm_data AS igm_data ON universum.ownername=igm_data.igmname WHERE universum.ownername IS NULL OR igm_data.igmname IS NULL", __FILE__, __LINE__);
 }
 ?>

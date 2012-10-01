@@ -282,7 +282,7 @@
 					.html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />")
 					.data("url", url)
 					.data("title", text)
-					.load(url, {"uid": v.uid, "id": v.jid})
+					.load(url, {"uid": v.uid, "id": v.jid}, function() {$(this).dialog( "option", "height", "auto" );$(this).dialog( "option", "width", "auto" );})
 					.dialog(opts);
 			}
 			function savestate() {
@@ -328,7 +328,7 @@
 				$("#nextLogin").click(function(e) {e.preventDefault();$.get(',$content['jsonLink'],', {nextid:1}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning, dta.act, dta.acc);}, "json");});
 				$("#idleLogin").click(function(e) {e.preventDefault();$.get(',$content['jsonLink'],', {idleid:1}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning, dta.act, dta.acc);}, "json");});
 				$("#loginSelect").change(function() {$.get(',$content['jsonLink'],', {idinfo:$("#loginSelect").val()}, function(dta) {uid_change(dta.uid, dta.name, dta.loginwarning, dta.act, dta.acc);}, "json");});
-				$("#reLogin").click(function(e) {e.preventDefault();$("iframe", "#iwframe").attr("src", ', $content['loginBase'], '+"&ID="+v.uid);});
+				$("#reLogin").click(function(e) {e.preventDefault();$("iframe", "#iwframe").attr("src", ', $content['loginBase'], '+"&ID="+v.uid).focus()});
 				loadstate();
 				document.title = "IW - ', $content['accName'], ' - StonedSheep-DB";
 				', $content['loginWarning'] ? 'loginwarning('.$content['loginLastUser'].');' : '', '
@@ -349,6 +349,7 @@
 				<a href="'.$scripturl.'/index.php?action=sitterutil_trade">Handel</a>
 				<a href="'.$scripturl.'/index.php?action=sitterutil_log">Log</a>
 				<a href="'.$scripturl.'/index.php?action=sitterutil_ress">Ress</a>
+				<a href="'.$scripturl.'/index.php?action=sitterutil_flug">Flug</a>
 				<div id="act" title="Wie lange der Account nicht mehr gesittet wurde" class="', $content['actuality_color'], ' .ui-widget-content">
 					<span title="'.$content['accountInfo']['typeDesc'].'">'.$content['accountInfo']['type'].'</span>'
 					.($content['accountInfo']['iwsa'] ? '&nbsp;<span title="Supporter-Account">IWSA</span>':'')
@@ -396,6 +397,81 @@
 		
 		TemplateFooter();
 	}
+	
+	function TemplateSitterUtilFlug() {
+		global $content;
+		echo '
+		<script type="text/javascript"><!-- // --><![CDATA[
+			var schiffe = ',$content['schiffe'],';
+			$(function() {
+				var upd = function() {
+					var util = $(".sitter_flug");
+					var src_g = parseInt($(".src_g", util).val());
+					var src_s = parseInt($(".src_s", util).val());
+					var src_p = parseInt($(".src_p", util).val());
+					var dst_g = parseInt($(".dst_g", util).val());
+					var dst_s = parseInt($(".dst_s", util).val());
+					var dst_p = parseInt($(".dst_p", util).val());
+					var ret_g = parseInt($(".ret_g", util).val());
+					var ret_s = parseInt($(".ret_s", util).val());
+					var ret_p = parseInt($(".ret_p", util).val());
+					if(!src_g || !src_s || !src_p || !dst_g || !dst_s || !dst_p || !ret_g || !ret_s || !ret_p)
+						return;
+					var start = moment($(".start", util).val(), ["D.M.YYYY H:m:s", "D.M.YYYY H:m"]);
+					var schiff = schiffe[$(".schiff", util).val()];
+					var hins = parseFloat($(".hins", util).val());
+					var ruecks = parseFloat($(".ruecks", util).val());
+					var fz = flugzeit(src_g, src_s, src_p, dst_g, dst_s, dst_p, schiff.gal*hins, schiff.sol*hins);
+					var arrive = start.unix()+fz;
+					$(".arrive", util).val(formatdate(arrive));
+					var fz = flugzeit(dst_g, dst_s, dst_p, ret_g, ret_s, ret_p, schiff.gal*ruecks, schiff.sol*ruecks);
+					var kampfdauer = 600;
+					$(".ret", util).val(formatdate(arrive+kampfdauer+fz));
+				};
+			
+				$(".btn", ".sitter_flug").button().click(function(e) {e.preventDefault();upd();return false;});
+				var s = $(".schiff", ".sitter_flug"); 
+				s.empty();
+				for(var i=0; i < schiffe.length; ++i) {
+					var sch=schiffe[i];
+					s.append("<option value=\""+i+"\">"+sch.name+"<\/option>");
+				}
+				var h = $(".hins", ".sitter_flug");
+				var r = $(".ruecks", ".sitter_flug");
+				h.empty();
+				r.empty();
+				for(var i=5; i <= 130; i += 5) {
+					h.append("<option value=\""+(i*0.01)+"\""+(i==100?" selected=\"selected\"" : "")+">"+i+" %<\/option>");
+					r.append("<option value=\""+(i*0.01)+"\""+(i==100?" selected=\"selected\"" : "")+">"+i+" %<\/option>");
+				}
+				$(".src_g,.src_s,.src_p,.dst_g,.dst_s,.dst_p,.ret_g,.ret_s,.ret_p,.start,.schiff,.hins,.ruecks", ".sitter_flug").change(upd).keyup(upd);
+				$(".src_g", ".sitter_flug").change(function() {
+					var util = $(this).parent().parent().parent().parent().parent();
+					if(!$(".ret_g", util).val())
+						$(".ret_g", util).val($(this).val())
+				});
+				$(".src_s", ".sitter_flug").change(function() {
+					var util = $(this).parent().parent().parent().parent().parent();
+					if(!$(".ret_s", util).val())
+						$(".ret_s", util).val($(this).val())
+				});
+				$(".src_p", ".sitter_flug").change(function() {
+					var util = $(this).parent().parent().parent().parent().parent();
+					if(!$(".ret_p", util).val())
+						$(".ret_p", util).val($(this).val())
+				});
+			});
+		// ]]></script>
+		<div class="sitter_flug"><table>
+			<tr><td>Von:</td><td><input type="text" class="src_g" name="src_g" size="2" /><input type="text" class="src_s" name="src_s" size="3" /><input type="text" class="src_p" name="src_p" size="2" /> <input type="text" class="start" name="start" value="',$content['time'],'" /></td></tr>
+			<tr><td>Nach:</td><td><input type="text" class="dst_g" name="dst_g" size="2" /><input type="text" class="dst_s" name="dst_s" size="3" /><input type="text" class="dst_p" name="dst_p" size="2" /> <input type="text" class="arrive" name="arrive" /></td></tr>
+			<tr><td>Rück:</td><td><input type="text" class="ret_g" name="ret_g" size="2" /><input type="text" class="ret_s" name="ret_s" size="3" /><input type="text" class="ret_p" name="ret_p" size="2" /> <input type="text" class="ret" name="ret" /></td></tr>
+			<tr><td colspan="2">langsamstes Schiff: <select class="schiff" name="schiff"><option>meep</option></select></td></tr>
+			<tr><td colspan="2">Hin <select class="hins" name="hins"><option>meep</option></select> Weg <select class="ruecks" name="ruecks"><option>meep</option></select></td></tr>
+			<tr><td colspan="2"><a href="#" class="btn">Berechnen</a></td></tr>
+		</div>
+		';
+	}
 
 	function TemplateSitterUtilJobEx() {
 		global $content, $themeurl;
@@ -414,6 +490,8 @@
 							+ "<tr><td colspan=\"2\" align=\"center\"><a href=\"#\" class=\"do_move\">Verschieben!</a><a href=\"#\" class=\"show\">Zurück</a></td></tr>"
 						+ "</table>"
 						);
+						$(".sitterjob_info").parent().dialog( "option", "height", "auto" );
+						$(".sitterjob_info").parent().dialog( "option", "width", "auto" );
 						$(".show", ".sitterjob_info").button().click(function(e) {
 							e.preventDefault();
 							showjob();
@@ -463,6 +541,8 @@
 							+ (f.hasFollowUp ? "<tr><th>Bauschleife<br /><i style=\"font-size:smaller\">Strg+a, Strg+c der Bauseite</i></th><td><textarea name=\"bauschleife\"></textarea></td></tr>" : "")
 							+ "<tr><td colspan=\"2\" align=\"center\"><a href=\"#\" class=\"done\">Erledigt</a><a href=\"#\" class=\"move\">Verschieben</a></td></tr>"
 						+ "</table>");
+						$(".sitterjob_info").parent().dialog( "option", "height", "auto" );
+						$(".sitterjob_info").parent().dialog( "option", "width", "auto" );
 						$(".done", ".sitterjob_info").button().click(function(e) {
 							e.preventDefault();
 							var util = $(this).parent().parent().parent().parent().parent();
@@ -490,6 +570,8 @@
 						});
 					} else {
 						$(".sitterjob_info").html("<div class=\"imp\">"+(fmsg?fmsg:"")+"</div><div class=\"simp\">"+(smsg?smsg:"")+"</div>Kein Sitterauftrag!");
+						$(".sitterjob_info").parent().dialog( "option", "height", "auto" );
+						$(".sitterjob_info").parent().dialog( "option", "width", "auto" );
 					}
 				}
 				if(!$.data(document.body, "job_update")) {
@@ -685,46 +767,44 @@
 		global $content;
 		TemplateHeader();
 		TemplateMenu();
-		echo '	<script type="text/javascript"><!-- // --><![CDATA[
-		var UserRows = new Object();';
-		foreach($content['users'] as $user) {
-			echo '
-			UserRows[', $user['uid'], '] = new Array(';
-			foreach($user['planis'] as $p) {
-				echo $p['ID'], ', ';
+	echo '
+	<script type="text/javascript"><!-- // --><![CDATA[
+		var flotten = ',$content['flotten'],';
+		var schiffe_sol = ',$content['schiffe'],';
+		var schiffe_gal = ',$content['schiffe'],';
+		schiffe_sol.sort(function(a,b){return a.sol>b.sol ? 1 : a.sol==b.sol?0:-1;});
+		schiffe_gal.sort(function(a,b){return a.gal>b.gal ? 1 : a.gal==b.gal?0:-1;});
+		function firstship(speed, sol) {
+			var schiffe = sol ? schiffe_sol : schiffe_gal;
+			for(var i=0; i < schiffe.length; ++i) {
+				var schiff = schiffe[i];
+				if(speed <= (sol ? schiff.sol : schiff.gal))
+					return schiff.name;
 			}
-			echo '0);';
+			return "das schafft kein Schiff. BUG?";
 		}
-		echo '
-		function toggleUserRows(uid) {
-			var rows = UserRows[uid];
-			for(var i = 0; i < rows.length; ++i) {
-				var el = rows[i];
-				if(el != 0) {
-					toggleVisibility(getElById("p_"+el));
-				}
+		$(function() {
+			for(var i = 0; i < flotten.length; i++) {
+				var fl = flotten[i];
+				var speed = flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen);
+				$("#fl").append("<tr"+ (fl.gefaehrlich ? " class=\"danger\"" : "")+ ">"
+					+"<td>["+ fl.startally + "]" + fl.startowner + "<br />(" + fl.startkoords+ ") " + fl.startname +"<\/td>"
+					+"<td>["+fl.zielally+"]"+fl.zielowner+ "<br />("+fl.zielkoords+") "+fl.zielname+"<\/td>"
+					+"<td>"+fl.bewegung+"<\/td>"
+					+"<td>"+formatdate(fl.firstSeen)+"<\/td>"
+					+"<td>"+formatdate(fl.ankunft)+"<\/td>"
+					+"<td>"+Math.floor(speed)+"<br />"+firstship(speed, fl.s_g==fl.d_g && fl.s_s == fl.d_s)+"<\/td>"
+					+"<td><a href=\""+fl.loginLink+"\">["+fl.zielowner+"]<\/a><\/td><\/tr>");	
 			}
-		}
+			$("#fl").append("<tr><td colspan=\"7\"><b>Sol:<\/b> "+$.map(schiffe_sol, function(e) {return e.name}).join(" &lt; ")+"<\/td><\/tr>");
+			$("#fl").append("<tr><td colspan=\"7\"><b>Gal:<\/b> "+$.map(schiffe_gal, function(e) {return e.name}).join(" &lt; ")+"<\/td><\/tr>");
+		});
 	// ]]></script>
 	<div class="content"><h2>Übersicht feindliche Flotten</h2>
-		<table cellpadding="0" cellspacing="0" border="0"><tr><th colspan="4">Spieler</th><th>Ankunft</th></tr>';
-		foreach($content['users'] as $user) {
-			echo '
-			<tr class="danger_', $user['gefahrenLevel'], '"><td colspan="4"><a href="',$user['loginLink'], '">[', $user['name'], ']</a></td><td>', $user['ersteAnkunft'], '</td></tr>';
-			foreach($user['planis'] as $plani) {
-				echo '
-			<tr id="p_', $plani['ID'], '" class="danger_', $plani['gefahrenLevel'], '">
-				<td>&nbsp;</td>
-				<td>(', $plani['startkoords'],')', $plani['startname'], '<br /><i>[', $plani['startally'], ']', $plani['startowner'], '</i></td>
-				<td>(', $plani['zielkoords'],')', $plani['zielname'], '<br /><i>[', $plani['zielally'], ']', $plani['zielowner'], '</i></td>
-				<td>', $plani['bewegung'], '</td>
-				<td>', $plani['ankunft'], '</td>
-			</tr>';
-			}
-		}
-		echo '<tr><th colspan="5">Farbenlegende: <span class="danger_1">Angriff INC</span></th></tr></table></div>';
+		<table id="fl">
+			<tr><th>Start</th><th>Ziel</th><th>Typ</th><th>zuerst gesichtet</th><th>Ankunft</th><th>maxspeed</th><th></th></tr>
+		</table></div>';
 		TemplateFooter();
 	}
-	
 	
 ?>

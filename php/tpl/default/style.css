@@ -242,8 +242,7 @@ iframe {
 .techtree_for_done { color: #0000FF; }
 .techtree_geb_done { color: #6666BB; }
 
-.danger_0 {}
-.danger_1 { background-color:#FFFF00; }
+.danger { background-color:#FFFF00; }
 
 .sitterjob_own {
 	background-color: #E5C0E8;

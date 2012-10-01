@@ -64,6 +64,7 @@ namespace IWDB.Parser {
 			parserList.Add(new KBParser(this, warFilter, techKostenCache));
 			parserList.Add(new SchiffsKostenXmlParser(this));
             parserList.Add(new HighscoreParser(this));
+            parserList.Add(new FremderScanParser(this));
             return parserList;
         }
         public bool HasParser(String comma, String dot, Type t) {
