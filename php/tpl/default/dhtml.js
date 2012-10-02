@@ -16,7 +16,7 @@ function flugzeit(g1, s1, p1, g2, s2, p2, solspeed, galaspeed) {
 	var gal = Math.abs(g1-g2);
 	var sol = Math.abs(s1-s2);
 	var pla = Math.abs(p1-p2);
-	return (15000000/galaspeed)*Math.pow((3000*gal*gal/Math.log(gal+50)+mod*sol*Math.max(3, sol)/Math.log(sol+2)+pla), 0.25);
+	return (15000000/galaspeed)*Math.pow(((3000*gal*gal)/Math.log(gal+50)+(mod*sol*Math.max(3, sol))/Math.log(sol+2)+pla), 0.25);
 }
 function flugspeed(g1, s1, p1, g2, s2, p2, fz) {
 	return flugzeit(g1, s1, p1, g2, s2, p2, fz, fz); //selbstinvers o.o

@@ -221,17 +221,20 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 			uidQuery.Parameters.Add("?pla", MySqlDbType.Int32);
 			uidQuery.Prepare();
 
-			MySqlCommand insertQry = new MySqlCommand(@"INSERT INTO " + DBPrefix + @"flotten (startid, zielid, action, ankunft, nummer) VALUES (?start, ?ziel, ?action, ?ankunft, ?nummer)", con);
+            MySqlCommand insertQry = new MySqlCommand(@"INSERT INTO " + DBPrefix + @"flotten (startid, zielid, action, ankunft, nummer, firstseen) VALUES (?start, ?ziel, ?action, ?ankunft, ?nummer, ?firstseen)", con);
 			insertQry.Parameters.Add("?start", MySqlDbType.UInt32);
 			insertQry.Parameters.Add("?ziel", MySqlDbType.UInt32);
 			insertQry.Parameters.Add("?action", MySqlDbType.Enum);
 			insertQry.Parameters.Add("?ankunft", MySqlDbType.UInt32);
 			insertQry.Parameters.Add("?nummer", MySqlDbType.UInt32);
+            insertQry.Parameters.Add("?firstseen", MySqlDbType.UInt32);
 			insertQry.Prepare();
 
 			MySqlCommand deleteQry = new MySqlCommand(@"DELETE FROM " + DBPrefix + @"flotten WHERE id=?id", con);
 			deleteQry.Parameters.Add("?id", MySqlDbType.UInt32);
 			deleteQry.Prepare();
+
+            uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
 
 			foreach(Match outerMatch in matches) {
 				MatchCollection innerMatches = Regex.Matches(outerMatch.Groups[0].Value, "(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\s+(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\n
@@ -298,6 +301,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 						insertQry.Parameters["?action"].Value = diff.Item.Action;
 						insertQry.Parameters["?ankunft"].Value = diff.Item.ankunft;
 						insertQry.Parameters["?nummer"].Value = diff.Item.nummer;
+                        insertQry.Parameters["?firstseen"].Value = now;
 						insertQry.ExecuteNonQuery();
 						if(neu == 0) {
 							MySqlCommand zielQry = new MySqlCommand("SELECT ownername FROM " + DBPrefix + "universum WHERE id=?id", con);
