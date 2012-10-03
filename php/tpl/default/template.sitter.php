@@ -256,6 +256,7 @@
 				$(".anz", ".sitter_ress").click();
 				$("#loginSelect").val(uid);
 				$("#act").removeClass("act_0 act_1 act_2 act_3 act_4 act_5").addClass(act);
+				$("#loginwarning").removeClass("act_0 act_1 act_2 act_3 act_4 act_5").addClass(act);
 				$("#act").html(
 					"<span title=\""+acc.typeDesc+"\">"+acc.type+"<\/span>"
 					+ (acc.iwsa ? "&nbsp;<span title=\"Supporter-Account\">IWSA<\/span>":"")
@@ -316,7 +317,8 @@
 					show_dialog("Sitteraufträge", "'.$scripturl.'/index.php?action=sitterutil_jobex", {open: function(evt, ui) { savestate();}});
 			}
 			function loginwarning(username) {
-				$("<div><strong>Achtung:<\/strong> "+($("<div/>").text(username).html())+" hat sich in den letzten 5 Minuten eingeloggt!<\/div>").dialog({modal:true, title:"Loginwarnung", Buttons: { Ok: function() { $(this).dialog("close");}}});
+				//$("<div><strong>Achtung:<\/strong> "+($("<div/>").text(username).html())+" hat sich in den letzten 5 Minuten eingeloggt!<\/div>").dialog({modal:true, title:"Loginwarnung", Buttons: { Ok: function() { $(this).dialog("close");}}});
+				$("#loginwarning").text(username);
 			}
 			$(document).ready(function() {
 				$("a", "#igmnav").button();
@@ -355,7 +357,7 @@
 					.($content['accountInfo']['iwsa'] ? '&nbsp;<span title="Supporter-Account">IWSA</span>':'')
 					.($content['accountInfo']['ikea'] ? '&nbsp;<span title="Ikea-Account">I</span>':'')
 					.($content['accountInfo']['mdp'] ? '&nbsp;<span title="Meister der Peitschen-Account">M</span>':''), '
-				</div> <select id="loginSelect">';
+				</div><div id="loginwarning">&nbsp;</div> <select id="loginSelect">';
 			foreach($content['userLogins'] as $user) {
 				echo '<option value="', $user['value'], '" ', $user['isSelected'] ? 'selected="selected"' : '', '>', $user['name'], '</option>';
 			}

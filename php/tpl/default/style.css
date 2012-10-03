@@ -189,7 +189,7 @@ iframe {
 	right: 0px;
 	top: 0px;
 }
-#act {
+#act, #loginwarning {
 	position: relative;
 	display: inline-block;
 	margin:0;

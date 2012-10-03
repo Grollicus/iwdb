@@ -111,8 +111,8 @@ if(!function_exists('TemplateHtmlHeader')) {
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<meta name="description" content="StonedSheep - IWDB" />
 	<title>StonedSheep-DB</title>
-	<link rel="stylesheet" type="text/css" href="'.$themeurl.'/style.css" />
-	<link rel="stylesheet" type="text/css" href="'.$themeurl.'/jquery-ui-1.8.23.custom.css" />
+	<link rel="stylesheet" type="text/css" href="'.$themeurl.'/style.css?v=1" />
+	<link rel="stylesheet" type="text/css" href="'.$themeurl.'/jquery-ui-1.8.23.custom.css?v=1" />
 	<link rel="icon" href="favicon.png" type="image/png" />
 	<script type="text/javascript"><!-- // --><![CDATA[
 		var themeurl = "', $themeurl, '";
@@ -124,12 +124,12 @@ if(!function_exists('TemplateHtmlHeader')) {
 			return false;
 		}
 	// ]]></script>
-	<script type="text/javascript" src="', $themeurl, '/jquery-1.8.0.min.js"></script>
-	<script type="text/javascript" src="', $themeurl, '/jquery.tablesorter.min.js"></script>
-	<script type="text/javascript" src="', $themeurl, '/jquery.cookie.js"></script>
-	<script type="text/javascript" src="', $themeurl, '/jquery-ui-1.8.23.custom.min.js"></script>
-	<script type="text/javascript" src="', $themeurl, '/moment.min.js"></script>
-	<script type="text/javascript" src="', $themeurl, '/dhtml.js"></script>', $html_header_add, '
+	<script type="text/javascript" src="', $themeurl, '/jquery-1.8.0.min.js?v=1"></script>
+	<script type="text/javascript" src="', $themeurl, '/jquery.tablesorter.min.js?v=1"></script>
+	<script type="text/javascript" src="', $themeurl, '/jquery.cookie.js?v=1"></script>
+	<script type="text/javascript" src="', $themeurl, '/jquery-ui-1.8.23.custom.min.js?v=1"></script>
+	<script type="text/javascript" src="', $themeurl, '/moment.min.js?v=1"></script>
+	<script type="text/javascript" src="', $themeurl, '/dhtml.js?v=1"></script>', $html_header_add, '
 </head>
 ';
 	}
