@@ -264,7 +264,7 @@
 					+ (acc.mdp ? "&nbsp;<span title=\"Meister der Peitschen-Account\">M<\/span>":"")
 					+ "<\/div>"
 				);
-				loginwarning(warning?warning:" ");
+				loginwarning(warning);
 			}
 			function show_dialog(text, url, ext) {
 				var opts = {
@@ -317,7 +317,10 @@
 			}
 			function loginwarning(username) {
 				//$("<div><strong>Achtung:<\/strong> "+($("<div/>").text(username).html())+" hat sich in den letzten 5 Minuten eingeloggt!<\/div>").dialog({modal:true, title:"Loginwarnung", Buttons: { Ok: function() { $(this).dialog("close");}}});
-				$("#loginwarning").text(username);
+				if(!username)
+					$("#loginwarning").html("&nbsp;");
+				else
+					$("#loginwarning").text(username);
 			}
 			$(document).ready(function() {
 				$("a", "#igmnav").button();
