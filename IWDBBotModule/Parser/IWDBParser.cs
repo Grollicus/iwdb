@@ -93,6 +93,7 @@ namespace IWDB.Parser {
         }
         private void NetworkCallback(NetworkMessage Msg) {
             try {
+                Log.WriteLine(LogLevel.E_DEBUG, "NetworkCallback begin");
                 Socket s = ((NewConnectionNetworkMessage)Msg).NewSocket;
                 s.ReceiveTimeout = 1000;
                 StringBuilder sb = new StringBuilder();
@@ -101,15 +102,12 @@ namespace IWDB.Parser {
                 byte[] buffer = new byte[512];
                 int read;
                 bool finished = false;
-                bool cancelled = false;
                 ParserRequestMessage msg = new ParserRequestMessage(s);
                 ParserRequestMessagePart part = msg.NextPart();
                 while (!finished) {
                     read = s.Receive(buffer, 512, SocketFlags.None);
-                    if (read == 0) {
-                        cancelled = true;
-                        break;
-                    }
+                    if (read == 0)
+                        return;
                     for (int i = 0; i < read; ++i) {
                         previous = b;
                         b = buffer[i];
@@ -117,35 +115,31 @@ namespace IWDB.Parser {
                             if (previous == 0) { // zwei Nullen => Ende der Nachricht
                                 finished = true;
                                 break;
-                            }
-                            else {
+                            } else {
                                 part = msg.NextPart();
                             }
-                        }
-                        else {
+                        } else {
                             part.Add(b);
                         }
                     }
                 }
-                if (cancelled)
-                    return;
                 msg.Finished();
 
                 RequestHandler handler;
                 if (handlers.TryGetValue(msg[0].AsString, out handler)) {
+                    Log.WriteLine(LogLevel.E_DEBUG, "NetworkCallback: Got Message for " + msg[0].AsString);
                     handler.HandleRequest(msg);
-                }
-                else {
+                } else {
                     msg.AnswerLine("Protocol Mismatch.");
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 Log.WriteLine(LogLevel.E_NOTICE, "IWDBParser exception");
                 Log.WriteException(e);
-            }
-            catch (SocketException e) {
+            } catch (SocketException e) {
                 Log.WriteLine(LogLevel.E_NOTICE, "IWDBParser exception");
                 Log.WriteException(e);
+            } finally {
+                Log.WriteLine(LogLevel.E_DEBUG, "NetworkCallback end");
             }
         }
 
