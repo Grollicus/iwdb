@@ -798,8 +798,8 @@
 					+"<td>"+Math.floor(speed)+"<br />"+firstship(speed, fl.s_g==fl.d_g && fl.s_s == fl.d_s)+"<\/td>"
 					+"<td><a href=\""+fl.loginLink+"\">["+fl.zielowner+"]<\/a><\/td><\/tr>");	
 			}
-			$("#fl").append("<tr><td colspan=\"7\"><b>Sol:<\/b> "+$.map(schiffe_sol, function(e) {return e.name}).join(" &lt; ")+"<\/td><\/tr>");
-			$("#fl").append("<tr><td colspan=\"7\"><b>Gal:<\/b> "+$.map(schiffe_gal, function(e) {return e.name}).join(" &lt; ")+"<\/td><\/tr>");
+			$("#fl").append("<tr><td colspan=\"7\"><b>Sol:<\/b> "+$.map(schiffe_sol, function(e) {return e.name+" "+e.sol}).join(" &lt; ")+"<\/td><\/tr>");
+			$("#fl").append("<tr><td colspan=\"7\"><b>Gal:<\/b> "+$.map(schiffe_gal, function(e) {return e.name+" "+e.gal}).join(" &lt; ")+"<\/td><\/tr>");
 		});
 	// ]]></script>
 	<div class="content"><h2>Übersicht feindliche Flotten</h2>
