@@ -264,8 +264,7 @@
 					+ (acc.mdp ? "&nbsp;<span title=\"Meister der Peitschen-Account\">M<\/span>":"")
 					+ "<\/div>"
 				);
-				if(warning)
-					loginwarning(warning);
+				loginwarning(warning?warning:"");
 			}
 			function show_dialog(text, url, ext) {
 				var opts = {
@@ -783,7 +782,7 @@
 				if(speed <= (sol ? schiff.sol : schiff.gal))
 					return schiff.name;
 			}
-			return "das schafft kein Schiff. BUG?";
+			return "wat? mehr einlesen!";
 		}
 		$(function() {
 			for(var i = 0; i < flotten.length; i++) {

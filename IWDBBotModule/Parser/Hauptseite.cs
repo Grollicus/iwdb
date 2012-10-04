@@ -9,6 +9,7 @@ namespace IWDB.Parser {
 	class HauptseiteKolonieinformationParser : ReportParser { //Beachte: Dieser Parser muss der ERSTE Hauptseitenparser sein!
 		Dictionary<uint, OrderedList<FlottenCacheFlotte>> flottenCache;
 		List<uint> ownerCache;
+        Dictionary<uint, uint> oldLastParsed;
 		WarFilter warFilter;
 		public HauptseiteKolonieinformationParser(NewscanHandler newscanHandler, WarFilter warFilter)
 			: base(newscanHandler, false) {
@@ -19,6 +20,7 @@ namespace IWDB.Parser {
 			AddPattern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch);
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
 			ownerCache = RequestCache<List<uint>>("OwnerCache");
+            oldLastParsed = RequestCache<Dictionary<uint, uint>>("OldLastParsed");
 			this.warFilter = warFilter;
 		}
 
@@ -106,6 +108,7 @@ namespace IWDB.Parser {
 					return;
 				}
 				uint lastUpdTime = (uint)ret;
+                oldLastParsed[uid] = lastUpdTime;
                 if (m.Groups[2].Success) {
                     MySqlCommand lastParseUpd = new MySqlCommand(@"UPDATE " + DBPrefix + "igm_data SET lastParsed=?lp, forschung=?for, forschung_ende=?end WHERE ID=?id", con);
                     lastParseUpd.Parameters.Add("?lp", MySqlDbType.UInt32).Value = now;
@@ -143,7 +146,8 @@ namespace IWDB.Parser {
 			}
 		}
 	}
-	class HauptseiteAusbaustatusParser : ReportParser {
+
+    class HauptseiteAusbaustatusParser : ReportParser {
 		public HauptseiteAusbaustatusParser(NewscanHandler newscanHandler)
 			: base(newscanHandler, false) {
             AddPattern(@"Ausbaustatus
@@ -198,6 +202,7 @@ namespace IWDB.Parser {
 		Dictionary<uint, OrderedList<FlottenCacheFlotte>> flottenCache;
 		List<uint> ownerCache;
 		IWDBParser parser;
+        Dictionary<uint, uint> oldLastParsed;
 		public HauptseiteFremdeFlottenParser(NewscanHandler h, IWDBParser parser)
 			: base(h, false) {
             AddPattern(@"fremde\sFlotten\s+
@@ -208,6 +213,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 " + SpielerName + @"\s+(?:" + PräziseIWZeit + @"|" + AbladeAktionen + @")[\s\-]+(?:[\d:]+|angekommen)\s+(?:" + Aktionen + @")(?:[\s\S]+?\+)?)+)", PatternFlags.All);
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
 			ownerCache = RequestCache<List<uint>>("OwnerCache");
+            oldLastParsed = RequestCache<Dictionary<uint, uint>>("OldLastParsed");
 			this.parser = parser;
 		}
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
@@ -221,13 +227,14 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 			uidQuery.Parameters.Add("?pla", MySqlDbType.Int32);
 			uidQuery.Prepare();
 
-            MySqlCommand insertQry = new MySqlCommand(@"INSERT INTO " + DBPrefix + @"flotten (startid, zielid, action, ankunft, nummer, firstseen) VALUES (?start, ?ziel, ?action, ?ankunft, ?nummer, ?firstseen)", con);
+            MySqlCommand insertQry = new MySqlCommand(@"INSERT INTO " + DBPrefix + @"flotten (startid, zielid, action, ankunft, nummer, firstseen, notyetseen) VALUES (?start, ?ziel, ?action, ?ankunft, ?nummer, ?firstseen, ?notyetseen)", con);
 			insertQry.Parameters.Add("?start", MySqlDbType.UInt32);
 			insertQry.Parameters.Add("?ziel", MySqlDbType.UInt32);
 			insertQry.Parameters.Add("?action", MySqlDbType.Enum);
 			insertQry.Parameters.Add("?ankunft", MySqlDbType.UInt32);
 			insertQry.Parameters.Add("?nummer", MySqlDbType.UInt32);
             insertQry.Parameters.Add("?firstseen", MySqlDbType.UInt32);
+            insertQry.Parameters.Add("?notyetseen", MySqlDbType.UInt32);
 			insertQry.Prepare();
 
 			MySqlCommand deleteQry = new MySqlCommand(@"DELETE FROM " + DBPrefix + @"flotten WHERE id=?id", con);
@@ -302,6 +309,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 						insertQry.Parameters["?ankunft"].Value = diff.Item.ankunft;
 						insertQry.Parameters["?nummer"].Value = diff.Item.nummer;
                         insertQry.Parameters["?firstseen"].Value = now;
+                        insertQry.Parameters["?notyetseen"].Value = oldLastParsed.GetOrDefault(uid, (uint)0);
 						insertQry.ExecuteNonQuery();
 						if(neu == 0) {
 							MySqlCommand zielQry = new MySqlCommand("SELECT ownername FROM " + DBPrefix + "universum WHERE id=?id", con);
@@ -321,6 +329,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 	}
 	class HauptseiteFeindlicheFlottenParser:ReportParser {
 		Dictionary<uint, OrderedList<FlottenCacheFlotte>> flottenCache;
+        Dictionary<uint, uint> oldLastParsed;
 		List<uint> ownerCache;
         IWDBParser parser;
         public HauptseiteFeindlicheFlottenParser(NewscanHandler h, IWDBParser parser)
@@ -328,10 +337,11 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 			AddPattern(@"feindliche\sFlotten\s+
 Fremde\sFlotten\n
 Ziel\s+Start\s+Ankunft\s+Aktionen\s+
-((?:\s*\n" + KolonieName + @"\s" + Koordinaten + @"\s+" + KolonieName + @"\s" + Koordinaten + @"\n
+((?:\s*\n(?:" + KolonieName + @"\s|)" + Koordinaten + @"\s+" + KolonieName + @"\s" + Koordinaten + @"\n
 " + SpielerName + @"\s+(?:" + PräziseIWZeit + @"|Plündert,\sMordet\sund\sBrandschatzt)[\s\-]+.*?\s+Angriff)+)", PatternFlags.All);
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
 			ownerCache = RequestCache<List<uint>>("OwnerCache");
+            oldLastParsed = RequestCache<Dictionary<uint, uint>>("OldLastParsed");
 			this.parser = parser;
 		}
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
@@ -344,13 +354,14 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 			uidQuery.Parameters.Add("?sys", MySqlDbType.Int32);
 			uidQuery.Parameters.Add("?pla", MySqlDbType.Int32);
 			uidQuery.Prepare();
-			MySqlCommand insertQry = new MySqlCommand(@"INSERT INTO " + DBPrefix + @"flotten (startid, zielid, action, ankunft, nummer, firstseen) VALUES (?start, ?ziel, ?action, ?ankunft, ?nummer, ?firstseen)", con);
+            MySqlCommand insertQry = new MySqlCommand(@"INSERT INTO " + DBPrefix + @"flotten (startid, zielid, action, ankunft, nummer, firstseen, notyetseen) VALUES (?start, ?ziel, ?action, ?ankunft, ?nummer, ?firstseen, ?notyetseen)", con);
 			insertQry.Parameters.Add("?start", MySqlDbType.UInt32);
 			insertQry.Parameters.Add("?ziel", MySqlDbType.UInt32);
 			insertQry.Parameters.Add("?action", MySqlDbType.Enum);
 			insertQry.Parameters.Add("?ankunft", MySqlDbType.UInt32);
 			insertQry.Parameters.Add("?nummer", MySqlDbType.UInt32);
             insertQry.Parameters.Add("?firstseen", MySqlDbType.UInt32);
+            insertQry.Parameters.Add("?notyetseen", MySqlDbType.UInt32);
 			insertQry.Prepare();
 			MySqlCommand deleteQry = new MySqlCommand(@"DELETE FROM " + DBPrefix + @"flotten WHERE id=?id", con);
 			deleteQry.Parameters.Add("?id", MySqlDbType.UInt32);
@@ -424,6 +435,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 						insertQry.Parameters["?ankunft"].Value = diff.Item.ankunft;
 						insertQry.Parameters["?nummer"].Value = diff.Item.nummer;
                         insertQry.Parameters["?firstseen"].Value = now;
+                        insertQry.Parameters["?notyetseen"].Value = oldLastParsed.GetOrDefault(uid, (uint)0);
 						insertQry.ExecuteNonQuery();
 						if(neu == 0) {
 							MySqlCommand zielQry = new MySqlCommand("SELECT ownername FROM " + DBPrefix + "universum WHERE id=?id", con);
