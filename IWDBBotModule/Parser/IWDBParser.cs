@@ -184,7 +184,6 @@ namespace IWDB.Parser {
 			}
             int pos = ~usersLoggedIn.BinarySearch(nick);
             usersLoggedIn.Insert(pos, nick);
-            parserMod.SendRawMessage("NOTICE " + nick + " :Du wurdest automatisch angemeldet!");
         }
         public void CheckLogout(string nick, string username, string host) {
             Log.WriteLine("Logging "+nick+" out (IWDBParser.CheckLogout)");
@@ -193,7 +192,6 @@ namespace IWDB.Parser {
                 usersLoggedIn.RemoveAt(pos);
                 if (parserMod.IsLoggedIn(nick)) {
                     parserMod.LogoutUser(nick);
-                    parserMod.SendRawMessage("NOTICE " + nick + " :Du wurdest automatisch abgemeldet!");
                 }
             }
         }

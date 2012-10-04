@@ -771,39 +771,43 @@
 	echo '
 	<script type="text/javascript"><!-- // --><![CDATA[
 		var flotten = ',$content['flotten'],';
-		var schiffe_sol = ',$content['schiffe'],';
-		var schiffe_gal = ',$content['schiffe'],';
-		schiffe_sol.sort(function(a,b){return a.sol>b.sol ? 1 : a.sol==b.sol?0:-1;});
-		schiffe_gal.sort(function(a,b){return a.gal>b.gal ? 1 : a.gal==b.gal?0:-1;});
-		function firstship(speed, sol) {
-			var schiffe = sol ? schiffe_sol : schiffe_gal;
+		var schiffe = ',$content['schiffe'],';
+		schiffe.sort(function(a,b){return a.gal>b.gal ? 1 : a.gal==b.gal?0:-1;});
+		function schiffsnamen(minspeed, maxspeed, sol) {
+			var ret = "";
 			for(var i=0; i < schiffe.length; ++i) {
 				var schiff = schiffe[i];
-				if(speed <= (sol ? schiff.sol : schiff.gal))
-					return schiff.name;
+				var sp = (sol ? schiff.sol : schiff.gal);
+				if(minspeed <= sp && sp <= maxspeed)
+					ret += schiff.name+"<br/>";
 			}
-			return "wat? mehr einlesen!";
+			return ret == "" ? "bug? das schafft kein Schiff" : ret;
 		}
 		$(function() {
 			for(var i = 0; i < flotten.length; i++) {
 				var fl = flotten[i];
-				var speed = flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen);
+				var maxspeed = flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen);
+				var minspeed = flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen);
 				$("#fl").append("<tr"+ (fl.gefaehrlich ? " class=\"danger\"" : "")+ ">"
 					+"<td>["+ fl.startally + "]" + fl.startowner + "<br />(" + fl.startkoords+ ") " + fl.startname +"<\/td>"
 					+"<td>["+fl.zielally+"]"+fl.zielowner+ "<br />("+fl.zielkoords+") "+fl.zielname+"<\/td>"
 					+"<td>"+fl.bewegung+"<\/td>"
 					+"<td>"+formatdate(fl.firstSeen)+"<\/td>"
 					+"<td>"+formatdate(fl.ankunft)+"<\/td>"
-					+"<td>"+Math.floor(speed)+"<br />"+firstship(speed, fl.s_g==fl.d_g && fl.s_s == fl.d_s)+"<\/td>"
+					+"<td>"+Math.floor(minspeed)+"<\/td>"
+					+"<td>"+schiffsnamen(minspeed, maxspeed, fl.s_g==fl.d_g && fl.s_s == fl.d_s)+"<\/td>"
+					+"<td>"+Math.floor(maxspeed)+"<\/td>"
 					+"<td><a href=\""+fl.loginLink+"\">["+fl.zielowner+"]<\/a><\/td><\/tr>");	
 			}
-			$("#fl").append("<tr><td colspan=\"7\"><b>Sol:<\/b> "+$.map(schiffe_sol, function(e) {return e.name+" "+e.sol}).join(" &lt; ")+"<\/td><\/tr>");
-			$("#fl").append("<tr><td colspan=\"7\"><b>Gal:<\/b> "+$.map(schiffe_gal, function(e) {return e.name+" "+e.gal}).join(" &lt; ")+"<\/td><\/tr>");
+			schiffe.sort(function(a,b){return a.sol>b.sol ? 1 : a.sol==b.sol?0:-1;});
+			$("#fl").append("<tr><td colspan=\"9\"><b>Sol:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.sol}).join(" &lt; ")+"<\/td><\/tr>");
+			schiffe.sort(function(a,b){return a.gal>b.gal ? 1 : a.gal==b.gal?0:-1;});
+			$("#fl").append("<tr><td colspan=\"9\"><b>Gal:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.gal}).join(" &lt; ")+"<\/td><\/tr>");
 		});
 	// ]]></script>
 	<div class="content"><h2>Übersicht feindliche Flotten</h2>
 		<table id="fl">
-			<tr><th>Start</th><th>Ziel</th><th>Typ</th><th>zuerst gesichtet</th><th>Ankunft</th><th>maxspeed</th><th></th></tr>
+			<tr><th>Start</th><th>Ziel</th><th>Typ</th><th>zuerst gesichtet</th><th>Ankunft</th><th>minspeed</th><th></th><th>maxspeed</th><th></th></tr>
 		</table></div>';
 		TemplateFooter();
 	}

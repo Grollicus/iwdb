@@ -4,16 +4,16 @@ if (!defined("dddfd"))
 
 global $schiffe;
 $schiffe = array(
-	array('type' => 'sonde', 'name' => 'Terminus Sonde', 'gal' => 75000, 'sol' => 11000),
-	array('type' => 'sonde', 'name' => 'Sonde X11', 'gal' => 60000, 'sol' => 10000),
-	array('type' => 'sonde', 'name' => 'Sonde X13', 'gal' => 85000, 'sol' => 13000),
-	array('type' => 'schiff','name' => 'Systrans (Systemtransporter Klasse 1)', 'gal' => 3900, 'sol' => 370),
-	array('type' => 'schiff','name' => 'Kamel Z-98 (Hyperraumtransporter Klasse 1)', 'gal' => 4500, 'sol' => 500),
-	array('type' => 'schiff','name' => 'Waschbär (Hyperraumtransporter Klasse 2)', 'gal' => 4300, 'sol' => 500),
-	array('type' => 'schiff','name' => 'Kronk', 'gal' => 5700, 'sol' => 450),
-	array('type' => 'schiff','name' => 'Zeus', 'gal' => 5600, 'sol' => 200),
-	array('type' => 'schiff','name' => 'Eraser 95%', 'gal' => 4900*0.95, 'sol' => 630*0.95),
-	array('type' => 'schiff','name' => 'X12 (Carrier)', 'gal' => 4900, 'sol' => 600),
+	array('type' => 'sonde', 'name' => 'Terminus Sonde', 'gal' => 75000, 'sol' => 11000, 'war' => false),
+	array('type' => 'sonde', 'name' => 'Sonde X11', 'gal' => 60000, 'sol' => 10000, 'war' => false),
+	array('type' => 'sonde', 'name' => 'Sonde X13', 'gal' => 85000, 'sol' => 13000, 'war' => false),
+	array('type' => 'schiff','name' => 'Systrans (Systemtransporter Klasse 1)', 'gal' => 3900, 'sol' => 370, 'war' => false),
+	array('type' => 'schiff','name' => 'Kamel Z-98 (Hyperraumtransporter Klasse 1)', 'gal' => 4500, 'sol' => 500, 'war' => true),
+	array('type' => 'schiff','name' => 'Waschbär (Hyperraumtransporter Klasse 2)', 'gal' => 4300, 'sol' => 500, 'war' => true),
+	array('type' => 'schiff','name' => 'Kronk', 'gal' => 5700, 'sol' => 450, 'war' => false),
+	array('type' => 'schiff','name' => 'Zeus', 'gal' => 5600, 'sol' => 200, 'war' => false),
+	array('type' => 'schiff','name' => 'Eraser 95%', 'gal' => 4900*0.95, 'sol' => 630*0.95, 'war' => true),
+	array('type' => 'schiff','name' => 'X12 (Carrier)', 'gal' => 4900, 'sol' => 600, 'war' => true),
 );
 	
 	
@@ -112,7 +112,7 @@ function SitterUtilFlug() {
 
 function SitterFeindlFlottenUebersicht() {
 	global $content, $pre, $scripturl, $schiffe;
-	$q = DBQuery("SELECT startuni.gala, startuni.sys, startuni.pla, startuni.planiname, startuni.ownername, start_userdata.allytag, zieluni.gala, zieluni.sys, zieluni.pla, zieluni.planiname, zieluni.ownername, ziel_userdata.allytag, flotten.action, flotten.ankunft, flotten.firstseen, igm_data.id
+	$q = DBQuery("SELECT startuni.gala, startuni.sys, startuni.pla, startuni.planiname, startuni.ownername, start_userdata.allytag, zieluni.gala, zieluni.sys, zieluni.pla, zieluni.planiname, zieluni.ownername, ziel_userdata.allytag, flotten.action, flotten.ankunft, flotten.firstseen, flotten.notyetSeen, igm_data.id
 FROM (((({$pre}flotten AS flotten INNER JOIN {$pre}universum AS startuni ON flotten.startid = startuni.ID) 
 	INNER JOIN {$pre}universum AS zieluni ON flotten.zielid=zieluni.ID)
 	LEFT JOIN {$pre}uni_userdata AS start_userdata ON startuni.ownername = start_userdata.name)
@@ -138,14 +138,15 @@ ORDER BY flotten.ankunft", __FILE__, __LINE__);
 			'zielowner' => EscapeOU($row[10]),
 			'zielally' => EscapeOU($row[11]),
 			'bewegung' => EscapeOU($row[12]),
-			'loginLink' => $scripturl.'/index.php?action=sitter_login&amp;from=sitter_flotten&amp;id='.$row[15],
+			'loginLink' => $scripturl.'/index.php?action=sitter_login&amp;from=sitter_flotten&amp;id='.$row[16],
 			'firstSeen' => intval($row[14]),
+			'notyetSeen' => intval($row[15]),
 			'ankunft' => intval($row[13]),
 			'gefaehrlich' => $row[12] == 'Angriff',
 		);
 	}
 	$content['flotten'] = EscapeJSU($fl);
-	$content['schiffe'] = EscapeJSU($schiffe);
+	$content['schiffe'] = EscapeJSU(array_values(array_filter($schiffe, function($el) {return $el['war'];})));
 	TemplateInit('sitter');
 	TemplateFeindlFlottenUebersicht();
 }
