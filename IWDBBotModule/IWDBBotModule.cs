@@ -214,8 +214,6 @@ namespace IWDB {
 			chan.SetTimerEvent(DateTime.Now.AddSeconds(5), this, CheckChan, null);
 		}
 		void SendGreetingMessages(object timerIdentifyer) {
-			SendGreetingMessage(joinedUsers, "Hallo!");
-
             int offeneAuftraege, jobid;
             DateTime naechsterAuftrag;
             iwdb.SitterauftraegeOffen(out offeneAuftraege, out jobid, out naechsterAuftrag);
