@@ -264,7 +264,7 @@
 					+ (acc.mdp ? "&nbsp;<span title=\"Meister der Peitschen-Account\">M<\/span>":"")
 					+ "<\/div>"
 				);
-				loginwarning(warning?warning:"");
+				loginwarning(warning?warning:" ");
 			}
 			function show_dialog(text, url, ext) {
 				var opts = {
@@ -351,7 +351,7 @@
 				<a href="'.$scripturl.'/index.php?action=sitterutil_log">Log</a>
 				<a href="'.$scripturl.'/index.php?action=sitterutil_ress">Ress</a>
 				<a href="'.$scripturl.'/index.php?action=sitterutil_flug">Flug</a>
-				<div id="act" title="Wie lange der Account nicht mehr gesittet wurde" class="', $content['actuality_color'], ' .ui-widget-content">
+				<div id="act" title="Wie lange der Account nicht mehr gesittet wurde" class="', $content['actuality_color'], '">
 					<span title="'.$content['accountInfo']['typeDesc'].'">'.$content['accountInfo']['type'].'</span>'
 					.($content['accountInfo']['iwsa'] ? '&nbsp;<span title="Supporter-Account">IWSA</span>':'')
 					.($content['accountInfo']['ikea'] ? '&nbsp;<span title="Ikea-Account">I</span>':'')
