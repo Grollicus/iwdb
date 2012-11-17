@@ -64,11 +64,12 @@ namespace IWDB.Parser {
 
 				handlers = new Dictionary<string, RequestHandler>();
 				techKostenCache = new TechTreeKostenCache();
-				warFilter = new WarFilter(DBPrefix, mysql, techKostenCache);
+                warFilter = new WarFilter(DBPrefix, mysql, techKostenCache, config["mysql"].InnerText);
 				AddHandler(warFilter);
 				AddHandler(new NewscanHandler(mysql, DBPrefix, config["mysql"].InnerText, this, warFilter, techKostenCache));
 				AddHandler(new BauschleifenHandler());
 				AddHandler(new TechTreeDepthHandler(mysql, DBPrefix));
+                AddHandler(new WarStats(DBPrefix, mysql, warFilter));
 				kabaFilter = new KabaFilter(DBPrefix, mysql);
 				AddHandler(kabaFilter);
 			} finally {

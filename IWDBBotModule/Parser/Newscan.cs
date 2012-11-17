@@ -215,6 +215,7 @@ namespace IWDB.Parser {
 								toHandle.Answer(errResp.ToString());
 								toHandle.Handled();
 							} catch(Exception ex) {
+                                IRCeX.Log.WriteLine(IRCeX.LogLevel.E_ERROR, "Fehler im Exceptionhandler :O");
 								IRCeX.Log.WriteException(e);
 								IRCeX.Log.WriteException(ex);
 							}

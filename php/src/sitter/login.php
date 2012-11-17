@@ -14,11 +14,22 @@
 		if(!$sitter && $id != $user['igmuser']) {
 			die("nö.");
 		}
+		$now = time();
+		if(!isset($_SESSION['iwlogins']))
+			$_SESSION['iwlogins'] = array();
+		$_SESSION['iwlogins'][] = $now;
+		if(count($_SESSION['iwlogins']) > 4) {
+			$wait = $now-array_shift($_SESSION['iwlogins']);
+			if($wait < 10)
+				sleep(10-$wait);
+		}
+		
+		
 		
 		$victim = DBQueryOne("SELECT igmname, sitterpw, realpw FROM {$pre}igm_data AS igm_data WHERE igm_data.id=".$id, __FILE__, __LINE__);
 		if($victim === false)
 			die("noe.");
-		$now = time();
+		$now = time(); //nochmal gesetzt wegen potentiellem sleep()
 		DBQuery("UPDATE {$pre}igm_data SET lastLogin={$now} WHERE ID={$id}", __FILE__, __LINE__);
 		if($sitter)
 			LogAction($id, 'login', '');

@@ -106,4 +106,27 @@ function WarKbs() {
 	TemplateInit('wars');
 	TemplateWarKbs();
 }
+
+function WarStats() {
+	global $content, $pre, $scripturl;
+	
+	$content['resp'] = '';
+	if(isset($_REQUEST['refresh'])) {
+		$content['resp'] = QueryIWDBUtil('warstats', array(intval($_REQUEST['refresh'])), $resp) ? $resp : 'MEH :( Refresh fail';
+	}
+	
+	$q = DBQuery("SELECT wars.id, wars.name, stats.stats FROM {$pre}wars AS wars LEFT JOIN {$pre}war_stats AS stats ON wars.id=stats.id", __FILE__, __LINE__);
+	$content['stats'] = array();
+	while($row = mysql_fetch_row($q)) {
+		$content['stats'][] = array(
+			'name' => EscapeOU($row[1]),
+			'refreshLink' => $scripturl.'/index.php?action=war_stats&amp;refresh='.$row[0],
+			'stats' => $row[2], //unescaped weil der Bot da html einträgt
+		);
+	}
+	
+	TemplateInit('wars');
+	TemplateWarStats();
+	
+}
 ?>

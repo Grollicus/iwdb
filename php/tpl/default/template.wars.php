@@ -384,4 +384,17 @@
 		</div>';
 		TemplateFooter();
 	}
+
+	function TemplateWarStats() {
+		global $content;
+		TemplateHeader();
+		TemplateMenu();
+		
+		echo '<div class="imp">', $content['resp'], '</div>';
+		foreach($content['stats'] as $war) {
+			echo '<h2>', $war['name'], '</h2><br /><a href="',$war['refreshLink'],'">refresh</a><br /><pre>', $war['stats'], '</pre>';
+		}
+		
+		TemplateFooter();
+	}	
 ?>

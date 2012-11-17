@@ -39,6 +39,15 @@ namespace IWDB.Parser {
                 MySqlParameter pInsGebp = insInactive.Parameters.Add("?gebp", MySqlDbType.UInt32);
                 insInactive.Prepare();
 
+                MySqlCommand unidataUpdate = new MySqlCommand("INSERT INTO " + DBPrefix + @"uni_userdata (name, allytag, updatetime) VALUES (?name, ?tag, ?time) 
+                    ON DUPLICATE KEY UPDATE 
+                        allytag = IF(updatetime<=VALUES(updatetime), VALUES(allytag), allytag),
+                        updatetime = IF(updatetime<=VALUES(updatetime), VALUES(updatetime), updatetime)", con);
+                MySqlParameter pUniName = unidataUpdate.Parameters.Add("?name", MySqlDbType.String);
+                MySqlParameter pUniTag = unidataUpdate.Parameters.Add("?tag", MySqlDbType.String);
+                unidataUpdate.Parameters.Add("?time", MySqlDbType.UInt32).Value = time;
+                unidataUpdate.Prepare();
+
                 foreach (Match m in c) {
                     pPos.Value = uint.Parse(m.Groups[1].Value);
                     pName.Value = m.Groups[2].Value;
@@ -57,6 +66,11 @@ namespace IWDB.Parser {
                     pInsName.Value = m.Groups[2].Value;
                     pInsGebp.Value = uint.Parse(m.Groups[4].Value, System.Globalization.NumberStyles.Any);
                     insInactive.ExecuteNonQuery();
+
+                    pUniName.Value = m.Groups[2].Value;
+                    String tag = m.Groups[3].Value;
+                    pUniTag.Value = tag.Length < 2 ? tag : tag.Substring(1,tag.Length-2);
+                    unidataUpdate.ExecuteNonQuery();
 
                     resp.Respond("HS eingelesen!");
                 }

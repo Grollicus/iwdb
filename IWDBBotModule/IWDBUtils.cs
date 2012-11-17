@@ -50,6 +50,18 @@ namespace IWDB {
 			foreach(T t in list)
 				f(t);
 		}
+        public static string Join<T>(this IEnumerable<T> list, string glue) {
+            StringBuilder ret = list.Aggregate(new StringBuilder(), (sb, a) => sb.Append(a.ToString()).Append(glue));
+            if (ret.Length > glue.Length)
+                ret.Length -= glue.Length;
+            return ret.ToString();
+        }
+        public static string Join<T>(this IEnumerable<T> list, string glue, Func<T, string> formatter) {
+            StringBuilder ret = list.Aggregate(new StringBuilder(), (sb, a) => sb.Append(formatter(a)).Append(glue));
+            if (ret.Length > glue.Length)
+                ret.Length -= glue.Length;
+            return ret.ToString();
+        }
     }
 	abstract class IWDBRegex {
 		public const String KolonieName = @"(?:(?:[a-zA-Z0-9_\-\.äöüÄÖÜß*+][a-zA-Z0-9_\-\. äöüÄÖÜß*+]*[a-zA-Z0-9_\-\.äöüÄÖÜß*+])|[a-zA-Z0-9_\-\.äöüÄÖÜß*+])";

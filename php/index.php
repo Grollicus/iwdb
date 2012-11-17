@@ -124,6 +124,7 @@ function Main()
 	'war_kbs' => array('war/kbs.php', 'WarKbs'),
 	'war_scans' => array('war/scan.php', 'WarScans'),
 	'war_schedule' => array('war/schedule.php', 'WarSchedule'),
+	'war_stats' => array('war/kbs.php', 'WarStats'),
 	'war_timing' => array('war/timing.php', 'WarTiming'),
 	
 	//### Comment for automatically adding new _!!Actions!!_ here
