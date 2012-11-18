@@ -390,10 +390,19 @@
 		TemplateHeader();
 		TemplateMenu();
 		
-		echo '<div class="simp">', $content['resp'], '</div>';
+		echo '<div class="simp">', $content['resp'], '</div>
+		<script type="text/javascript"><!-- // --><![CDATA[
+				$(function() {
+					$("#accordion").accordion({active:false, collapsible:true, autoHeight:false});
+				});
+			// ]]></script>
+		<div id="accordion">';
 		foreach($content['stats'] as $war) {
-			echo '<h2>', $war['name'], '</h2><br /><a href="',$war['refreshLink'],'">refresh</a><br />', $war['stats'];
+			echo '
+			<h2><a href="#">', $war['name'], '</a></h2>
+			<div><a href="',$war['refreshLink'],'">refresh</a><br />', $war['stats'], '</div>';
 		}
+		echo '</div>';
 		
 		TemplateFooter();
 	}	

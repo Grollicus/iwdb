@@ -675,6 +675,7 @@ namespace IWDB.Parser {
 
         protected String GenerateStats(IEnumerable<Kb> kbs, WarFilter.War war) {
             StringBuilder stats = new StringBuilder();
+            stats.Append("Stats erstellt um ").Append(DateTime.Now.ToString()).AppendLine("<br />");
             stats.AppendLine(kbs.Count() + " Kampfberichte verarbeitet");
             stats.AppendLine("<h3>Angriffe</h3><ul>");
             kbs.SelectMany(kb => kb.Attackers.Select(att=>att.Item2).Distinct().Select(att => new { ally = att, win = kb.AttWin, bomb = kb.Bomb, plopp=kb.Plopp })).GroupBy(attacker => attacker.ally).Select(grp => { var agg = grp.Aggregate(new { cnt = 0, win = 0, bomb = 0, plopp=0 }, (acc, el) => new { cnt = acc.cnt + 1, win = acc.win + (el.win ? 1 : 0), bomb = acc.bomb + (el.bomb ? 1 : 0), plopp = acc.plopp+(el.plopp?1:0) }); return "<li>"+grp.Key + ": " + agg.cnt + " Angriffe, " + agg.win + " Win, " + agg.bomb + " Bomb, "+agg.plopp+" Plopp</li>"; }).Aggregate(stats, (sb, att) => sb.AppendLine(att));

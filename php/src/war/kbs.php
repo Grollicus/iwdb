@@ -128,8 +128,9 @@ function WarStats() {
 	$content['stats'] = array();
 	while($row = mysql_fetch_row($q)) {
 		$content['stats'][] = array(
+			'id' => intval($row[0]),
 			'name' => EscapeOU($row[1]),
-			'refreshLink' => $scripturl.'/index.php?action=war_stats&amp;refresh='.$row[0],
+			'refreshLink' => $scripturl.'/index.php?action=war_stats&amp;refresh='.intval($row[0]),
 			'stats' => $row[2], //unescaped weil der Bot da html einträgt
 		);
 	}

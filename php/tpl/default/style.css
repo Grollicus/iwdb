@@ -3,7 +3,7 @@ body {
 }
 
 a:visited, a:active, a:hover, a:focus, a:link, a:hover { /*Alle Links erstmal blau */
-	color: #0000FF;
+	color: #0000FF !important;
 }
 a:active {
 	font-style: italic;
