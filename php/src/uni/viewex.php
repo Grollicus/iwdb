@@ -152,6 +152,13 @@
 			'genFilter' => 'GeoGesprengtGenFilter',
 			'mods_req' => array('coords', 'geo_ttl'),
 		),
+		'raw_sql' => array(
+			'title' => 'raw SQL',
+			'desc' => 'für Besonderen Kram',
+			'prepare' => 'RawSqlPrepare',
+			'genFilter' => 'RawSqlGenFilter',
+			'mods_req' => array('coords'),
+		),
 	);
 	
 	function ViewFilteredUniEx() {
@@ -455,6 +462,12 @@
 	function GeoGesprengtPrepare($request) {
 		return isset($request['geo_gesprengt']);
 	}
+	function RawSqlPrepare($request) {
+		return array(
+			'sql' => isset($request['raw_sql']) ? EscapeO(Param('raw_sql', $request)) : '',
+			'hash' => isset($request['raw_sql_hash']) ? EscapeO(Param('raw_sql_hash', $request)) : '',
+		);
+	}
 	
 	function IntValueFilter($col, $min, $max, $req) {
 		if(!empty($req[$min])) {
@@ -608,6 +621,13 @@
 	}
 	function GeoGesprengtGenFilter($req) {
 		return isset($req['geo_gesprengt']) ? "(geoscans.reset<=".(time()-86400).")" : "";
+	}
+	
+	function RawSqlGenFilter($req) {
+		global $uni_secret;
+		if(empty($req['raw_sql']) || empty($req['raw_sql_hash']) || hash('sha256', Param('raw_sql', $req).$uni_secret) !== Param('raw_sql_hash', $req))
+			return '';
+		return Param('raw_sql', $req);
 	}
 	
 	//$active_mods = array (keys of $modules)

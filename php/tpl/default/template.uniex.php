@@ -166,6 +166,8 @@
 					}
 					echo '</select>';
 					break;
+				case 'raw_sql':
+					echo '<input type="text" size="30" name="raw_sql" value="', $filter['data']['sql'], '" /><input type="text" size="10" name="raw_sql_hash" value="', $filter['data']['hash'], '" />';
 					break;
 				default:
 					var_dump($filter['data']);
