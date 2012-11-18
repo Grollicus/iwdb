@@ -112,7 +112,16 @@ function WarStats() {
 	
 	$content['resp'] = '';
 	if(isset($_REQUEST['refresh'])) {
-		$content['resp'] = QueryIWDBUtil('warstats', array(intval($_REQUEST['refresh'])), $resp) ? $resp : 'MEH :( Refresh fail';
+		$msg = QueryIWDBUtil('warstats', array(intval($_REQUEST['refresh'])), $resp) ? 'ok' : 'fail';
+		Redirect($scripturl.'/index.php?action=war_stats&msg='.$msg);
+	}
+	
+	if(isset($_REQUEST['msg'])) {
+		$messages = array(
+			'ok' => 'Erfolgreich aktualisiert!',
+			'fail' => 'MEH :( Refresh fehlgeschlagen',
+		);
+		$content['resp'] = $messages[$_REQUEST['msg']];
 	}
 	
 	$q = DBQuery("SELECT wars.id, wars.name, stats.stats FROM {$pre}wars AS wars LEFT JOIN {$pre}war_stats AS stats ON wars.id=stats.id", __FILE__, __LINE__);

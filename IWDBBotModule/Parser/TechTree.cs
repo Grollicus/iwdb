@@ -590,6 +590,15 @@ abstract class TechtreeItem {
                 case 7:
                     Energie = val;
                     break;
+                case 8:
+                    //Pinguine
+                    break;
+                case 10:
+                    Credits = val;
+                    break;
+                case 11:
+                    Bev = val;
+                    break;
             }
         }
 		public void ParseXml(XmlNode ressourcenXml) {

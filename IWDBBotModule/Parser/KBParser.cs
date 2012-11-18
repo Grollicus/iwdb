@@ -218,6 +218,9 @@ namespace IWDB.Parser {
 				}
 			}
 		}
+        public Pair<String, String> Owner {
+            get { return new Pair<string, string>(xml["pla_def"]["user"]["name"].Attributes["value"].InnerText, xml["pla_def"]["user"]["allianz_tag"].Attributes["value"].InnerText); }
+        }
         public IEnumerable<Pair<String, String>> Defenders {
 			get {
 				yield return new Pair<string, string>(xml["pla_def"]["user"]["name"].Attributes["value"].InnerText, xml["pla_def"]["user"]["allianz_tag"].Attributes["value"].InnerText);
@@ -339,6 +342,7 @@ namespace IWDB.Parser {
 		public KbSaveMode SaveMode { get { return saveMode; } }
         public bool AttWin { get { return xml.SelectSingleNode("resultat/id").Attributes["value"].InnerText == "1"; } }
         public bool Bomb { get { return xml.SelectSingleNode("bomben") != null; } }
+        public bool Plopp { get { return xml.SelectSingleNode("bomben/basis_zerstoert[@value='1']") != null; } }
 	}
 
 	class TechTreeKostenCache {
@@ -648,27 +652,53 @@ namespace IWDB.Parser {
         String DBPrefix;
         MySqlConnection con;
         WarFilter warFilter;
+        TechTreeKostenCache tkc;
         public WarStats(String DBPrefix, MySqlConnection con, WarFilter warFilter) {
             this.DBPrefix = DBPrefix;
             this.con = con;
             this.warFilter = warFilter;
+            this.tkc = warFilter.TechKostenCache;
+        }
+
+        private StringBuilder RSFormat(StringBuilder sb, ResourceSet rset) {
+            sb.AppendFormat("<li>Eisen {0:#,#}</li>", rset.Eisen);
+            sb.AppendFormat("<li>Stahl {0:#,#}</li>", rset.Stahl);
+            sb.AppendFormat("<li>VV4A {0:#,#}</li>", rset.VV4A);
+            sb.AppendFormat("<li>Chemie {0:#,#}</li>", rset.Chemie);
+            sb.AppendFormat("<li>Eis {0:#,#}</li>", rset.Eis);
+            sb.AppendFormat("<li>Wasser {0:#,#}</li>", rset.Wasser);
+            sb.AppendFormat("<li>Energie {0:#,#}</li>", rset.Energie);
+            sb.AppendFormat("<li>Bev {0:#,#}</li>", rset.Bev);
+            sb.AppendFormat("<li>Zeit {0:#,#.#}h</li>", rset.Zeit.TotalHours);
+            return sb;
         }
 
         protected String GenerateStats(IEnumerable<Kb> kbs, WarFilter.War war) {
             StringBuilder stats = new StringBuilder();
-            stats.AppendLine("Kampfberichte: " + kbs.Count());
-            stats.AppendLine("Angriffe");
-            kbs.SelectMany(kb => kb.Attackers.Select(att=>att.Item2).Distinct().Select(att => new { ally = att, win = kb.AttWin, bomb = kb.Bomb })).GroupBy(attacker => attacker.ally).Select(grp => { var agg = grp.Aggregate(new { cnt = 0, win = 0, bomb = 0 }, (acc, el) => new { cnt = acc.cnt + 1, win = acc.win + (el.win ? 1 : 0), bomb = acc.bomb + (el.bomb ? 1 : 0) }); return grp.Key + ": " + agg.cnt + " Angriffe, " + agg.win + " Win, " + agg.bomb + " Bomb"; }).Aggregate(stats, (sb, att) => sb.AppendLine(att));
+            stats.AppendLine(kbs.Count() + " Kampfberichte verarbeitet");
+            stats.AppendLine("<h3>Angriffe</h3><ul>");
+            kbs.SelectMany(kb => kb.Attackers.Select(att=>att.Item2).Distinct().Select(att => new { ally = att, win = kb.AttWin, bomb = kb.Bomb, plopp=kb.Plopp })).GroupBy(attacker => attacker.ally).Select(grp => { var agg = grp.Aggregate(new { cnt = 0, win = 0, bomb = 0, plopp=0 }, (acc, el) => new { cnt = acc.cnt + 1, win = acc.win + (el.win ? 1 : 0), bomb = acc.bomb + (el.bomb ? 1 : 0), plopp = acc.plopp+(el.plopp?1:0) }); return "<li>"+grp.Key + ": " + agg.cnt + " Angriffe, " + agg.win + " Win, " + agg.bomb + " Bomb, "+agg.plopp+" Plopp</li>"; }).Aggregate(stats, (sb, att) => sb.AppendLine(att));
             stats.AppendLine();
-            stats.AppendLine("Verteidigungen");
-            kbs.SelectMany(kb => kb.Defenders.Select(def => def.Item2).Distinct().Select(def => new { ally = def, win = kb.AttWin, bomb = kb.Bomb })).GroupBy(defender => defender.ally).Select(grp => { var agg = grp.Aggregate(new { cnt = 0, win = 0 }, (acc, el) => new { cnt = acc.cnt + 1, win = acc.win + (!el.win ? 1 : 0) }); return grp.Key + ": " + agg.cnt + " Angriffe, " + agg.win + " Win"; }).Aggregate(stats, (sb, def) => sb.AppendLine(def));
+            stats.AppendLine("</ul><h3>Verteidigungen</h3><ul>");
+            kbs.SelectMany(kb => kb.Defenders.Select(def => def.Item2).Distinct().Select(def => new { ally = def, win = kb.AttWin, bomb = kb.Bomb, plopp = kb.Plopp })).GroupBy(defender => defender.ally).Select(grp => { var agg = grp.Aggregate(new { cnt = 0, win = 0, bomb = 0, plopp = 0 }, (acc, el) => new { cnt = acc.cnt + 1, win = acc.win + (!el.win ? 1 : 0), bomb = acc.bomb + (el.bomb ? 1 : 0), plopp = acc.plopp + (el.plopp ? 1 : 0) }); return "<li>" + grp.Key + ": " + agg.cnt + " Verteidigungen, " + agg.win + " Win, " + agg.bomb + " Bomb, " + agg.plopp + " Plopps</li>"; }).Aggregate(stats, (sb, def) => sb.AppendLine(def));
             stats.AppendLine();
-            stats.AppendLine("Verlorene Schiffe");
-            kbs.SelectMany(kb => kb.DefFleets.Union(kb.AttFleets)).GroupBy(fl => fl.Ally).Aggregate(stats, (sb, ally) => { sb.AppendLine(ally.Key+": "); ally.SelectMany(fl => fl.Ships).Where(sch => sch.Item5 > 0).GroupBy(sch => sch.Item1).Aggregate(sb, (s,sch) => s.Append(sch.Key).Append(" ").AppendLine(sch.Sum(schiff=>schiff.Item5).ToString())); return sb; });
-            //verlorene Schiffe in Ress umrechnen
+            stats.AppendLine("</ul><h3>Verlorene Schiffe</h3><ul>");
+            kbs.SelectMany(kb => kb.DefFleets.Union(kb.AttFleets)).GroupBy(fl => fl.Ally).Aggregate(stats, (sb, ally) => { sb.AppendLine("<li>" + ally.Key + "<br/><ul>"); ally.SelectMany(fl => fl.Ships).Where(sch => sch.Item5 > 0).GroupBy(sch => sch.Item1).OrderBy(sch=>sch.Key).Aggregate(sb, (s, sch) => s.Append("<li>").Append(sch.Key).Append(" ").Append(sch.Sum(schiff => schiff.Item5).ToString()).AppendLine("</li>")); sb.AppendLine("</ul></li>"); return sb; });
+            stats.AppendLine("</ul><h3>Verlorene Gebäude</h3><ul>");
+            kbs.Where(kb => kb.Bomb).GroupBy(kb => kb.Owner.Item2).Aggregate(stats, (sb, ally) => { sb.AppendLine("<li>" + ally.Key + "<br/><ul>"); ally.SelectMany(a => a.Bombed).GroupBy(geb => geb.Item1).OrderBy(geb=>geb.Key).Aggregate(sb, (s, geb) => s.Append("<li>").Append(geb.Key).Append(" ").Append(geb.Sum(g =>g.Item3)).Append("</li>")); sb.AppendLine("</ul></li>"); return sb; });
+            stats.AppendLine("</ul><h3>Verlorene Ress</h3><ul>");
+            foreach (var grp in kbs.SelectMany(kb => kb.DefFleets.Union(kb.AttFleets)).GroupBy(fl => fl.Ally)) {
+                ResourceSet rset = grp.SelectMany(fl => fl.Ships).Aggregate(new ResourceSet(), (rs, s) => rs + tkc.Query(s.Item1, con, DBPrefix) * s.Item5);
+                if (rset.RaidScore <= float.Epsilon)
+                    continue;
+                stats.Append("<li>").Append(grp.Key).Append("<br/><ul>");
+                RSFormat(stats, rset);
+                stats.Append("</ul></li>");
+            }
+            stats.AppendLine("</ul>");
+            
             //für einzlene Schiffe berechnen welcher Spieler wie viel verloren hat
             //aufhübschen ^^
-            //bombings
             return stats.ToString();
         }
 
