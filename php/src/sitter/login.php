@@ -20,8 +20,8 @@
 		$_SESSION['iwlogins'][] = $now;
 		if(count($_SESSION['iwlogins']) > 4) {
 			$wait = $now-array_shift($_SESSION['iwlogins']);
-			if($wait < 10)
-				sleep(10-$wait);
+			if($wait < 11)
+				sleep(11-$wait);
 		}
 		
 		
