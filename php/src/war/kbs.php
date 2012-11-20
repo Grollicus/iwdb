@@ -3,7 +3,7 @@ if (!defined("dddfd"))
 	die("Hacking attempt");
 	
 function WarKbs() {
-	global $content, $pre, $fake_att, $fake_def, $scripturl;
+	global $content, $pre, $fake, $scripturl;
 	
 	$limit = isset($_REQUEST['limit']) ? intval($_REQUEST['limit']) : 0;
 
@@ -89,7 +89,7 @@ function WarKbs() {
 				'attWin' => $row[13] == '1',
 				'startKoords' => nl2br(EscapeOU($row[14])),
 				'zielKoords' => EscapeOU($row[15]),
-				'isFake' => $row[7] < $fake_att && $row[9] < $fake_def,
+				'isFake' => $row[7] < $fake && $row[9] < $fake,
 			);
 		}
 
@@ -118,7 +118,7 @@ function WarStats() {
 	
 	if(isset($_REQUEST['msg'])) {
 		$messages = array(
-			'ok' => 'Erfolgreich aktualisiert!',
+			'ok' => 'Stats werden generiert (Seite nochmal refreshen, evtl nen Moment warten)!',
 			'fail' => 'MEH :( Refresh fehlgeschlagen',
 		);
 		$content['resp'] = $messages[$_REQUEST['msg']];

@@ -626,7 +626,7 @@ ORDER BY flotten.ankunft", __FILE__, __LINE__);
 				'dst_plani' => EscapeOU($row[8]),
 				'id' => intval($row[9]),
 				'action' => EscapeOU($row[10]),
-				'time' => FormatDate($row[11]),
+				'time' => FormatPreciseDate($row[11]),
 				'safe' => $row[12] == '1',
 				'dont_save' => !is_null($row[13]),
 				'dont_save_user' => EscapeOU($row[13]),

@@ -106,7 +106,7 @@ function WarTiming() { //TODO: das gleiche für alte Kampfberichte einbauen
 function SitterUtilFlug() {
 	global $schiffe, $content;
 	$content['schiffe'] = EscapeJSU($schiffe);
-	$content['time'] = date("d.m.Y H:i:s");
+	$content['time'] = FormatPreciseDate(time());
 	TemplateInit('sitter');
 	TemplateSitterUtilFlug();
 }

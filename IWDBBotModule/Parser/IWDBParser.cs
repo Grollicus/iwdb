@@ -69,7 +69,7 @@ namespace IWDB.Parser {
 				AddHandler(new NewscanHandler(mysql, DBPrefix, config["mysql"].InnerText, this, warFilter, techKostenCache));
 				AddHandler(new BauschleifenHandler());
 				AddHandler(new TechTreeDepthHandler(mysql, DBPrefix));
-                AddHandler(new WarStats(DBPrefix, mysql, warFilter));
+                AddHandler(new WarStats(DBPrefix, config["mysql"].InnerText, warFilter));
 				kabaFilter = new KabaFilter(DBPrefix, mysql);
 				AddHandler(kabaFilter);
 			} finally {

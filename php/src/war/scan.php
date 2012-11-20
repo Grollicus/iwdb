@@ -3,7 +3,7 @@ if (!defined("dddfd"))
 	die("Hacking attempt");
 
 function WarScans() {
-	global $content, $pre, $fake_att, $fake_def, $scripturl;
+	global $content, $pre, $scripturl;
 	
 	$limit = isset($_REQUEST['limit']) ? intval($_REQUEST['limit']) : 0;
 

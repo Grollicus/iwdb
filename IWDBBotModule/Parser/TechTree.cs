@@ -614,6 +614,20 @@ abstract class TechtreeItem {
 			}
 		}
 		public float RaidScore { get { return Eisen * 1 + Stahl * 2 + Chemie * 1.5f + VV4A * 4 + Eis * 2 + Wasser * 4 + Energie; } }
+        public Utils.DefaultDict<string, float> AsDict() {
+            Utils.DefaultDict<string, float> ret = new Utils.DefaultDict<string, float>();
+            ret.Add("Eisen", Eisen);
+            ret.Add("Stahl", Stahl);
+            ret.Add("VV4A", VV4A);
+            ret.Add("Chemie", Chemie);
+            ret.Add("Eis", Eis);
+            ret.Add("Wasser", Wasser);
+            ret.Add("Energie", Energie);
+            ret.Add("Bev", Bev);
+            ret.Add("Credits", Credits);
+            ret.Add("Zeit (h)", (float)Zeit.TotalHours);
+            return ret;
+        }
 	}
 	class TechtreeItemStufe {
 		public int Stufe;

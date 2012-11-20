@@ -218,6 +218,9 @@ function FormatDays($secs) {
 function FormatDate($secs) {
 	return date("d.m.Y H:i", $secs);
 }
+function FormatPreciseDate($secs) {
+	return date("d.m.Y H:i:s", $secs);
+}
 
 /**
  * @name ParseTime
