@@ -288,25 +288,44 @@ function LogError($str, $file, $line, $flags = 0) {
 		die($str);
 }
 
+function fwriteall($sock, $dta) {
+    $btw = strlen($dta);
+    $bw = 0;
+    while ( $bw < $btw )
+    {
+        $rv = fwrite($sock, $bw==0?$dta:substr($dta,$bw));
+        if ( $rv === false || $rv == 0 ) {
+        	LogError("incomplete write error :(", __FILE__, __LINE__);
+        	return false;
+        }
+        $bw += $rv;
+    }
+
+    return $bw;
+
+}
+
 function QueryIWDBUtil($action, array $req, &$response) {
 	global $util_host, $util_port;
-	$req = str_replace(array("\r\n", "\r", " \t", "\t"), array("\n", "\n", " ", " "), $req);
+	$req = str_replace(array("\r\n", "\r", " \t", "\t", "\0"), array("\n", "\n", " ", " ", ""), $req);
 	$sock = @fsockopen($util_host, $util_port, $err, $errstr, 5);
 	if($sock === false) {
 		LogError("Fehler beim Verbinden mit dem IWDBUtil: {$errstr} ($err)", __FILE__, __LINE__);
 		return false;
 	}
 	stream_set_timeout($sock, 5);
-	fwrite($sock, $action."\0");
+	if(fwriteall($sock, $action."\0") === false)
+		return false;
 	foreach($req as $part) {
 		if(strlen($part) == 0) {
 			fclose($sock);
 			return false;
 		}
-		fwrite($sock, utf8_encode($part));
-		fwrite($sock, "\0");
+		if(fwriteall($sock, utf8_encode($part)) === false || fwriteall($sock, "\0") === false)
+			return false;
 	}
-	fwrite($sock, "\0");
+	if(fwriteall($sock, "\0")===false)
+		return false;
 	$str = '';
 	while(!feof($sock)) {
 		$str .= @fread($sock, 100);

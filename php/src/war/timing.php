@@ -7,11 +7,12 @@ $schiffe = array(
 	array('type' => 'sonde', 'name' => 'Terminus Sonde', 'gal' => 75000, 'sol' => 11000, 'war' => false),
 	array('type' => 'sonde', 'name' => 'Sonde X11', 'gal' => 60000, 'sol' => 10000, 'war' => false),
 	array('type' => 'sonde', 'name' => 'Sonde X13', 'gal' => 85000, 'sol' => 13000, 'war' => false),
-	array('type' => 'schiff','name' => 'Systrans (Systemtransporter Klasse 1)', 'gal' => 3900, 'sol' => 370, 'war' => false),
-	array('type' => 'schiff','name' => 'Kamel Z-98 (Hyperraumtransporter Klasse 1)', 'gal' => 4500, 'sol' => 500, 'war' => true),
-	array('type' => 'schiff','name' => 'Waschbär (Hyperraumtransporter Klasse 2)', 'gal' => 4300, 'sol' => 500, 'war' => true),
+	array('type' => 'schiff','name' => 'Systrans', 'gal' => 3900, 'sol' => 370, 'war' => false),
+	array('type' => 'schiff','name' => 'Kamel Z-98', 'gal' => 4500, 'sol' => 500, 'war' => true),
+	array('type' => 'schiff','name' => 'Waschbär', 'gal' => 4300, 'sol' => 500, 'war' => true),
 	array('type' => 'schiff','name' => 'Kronk', 'gal' => 5700, 'sol' => 450, 'war' => false),
 	array('type' => 'schiff','name' => 'Zeus', 'gal' => 5600, 'sol' => 200, 'war' => false),
+	array('type' => 'schiff','name' => 'Eraser 90%', 'gal' => 4900*0.9, 'sol' => 630*0.9, 'war' => true),
 	array('type' => 'schiff','name' => 'Eraser 95%', 'gal' => 4900*0.95, 'sol' => 630*0.95, 'war' => true),
 	array('type' => 'schiff','name' => 'Eraser', 'gal' => 4900, 'sol' => 630, 'war' => true),
 	array('type' => 'schiff','name' => 'X12 (Carrier)', 'gal' => 4900, 'sol' => 600, 'war' => true),
@@ -95,7 +96,7 @@ function WarTiming() { //TODO: das gleiche für alte Kampfberichte einbauen
 		);
 	}
 	$content['scans'] = EscapeJSU($scans);
-	$content['schiffe'] = EscapeJS($schiffe);
+	$content['schiffe'] = EscapeJSU($schiffe);
 	$content['kbs'] = EscapeJSU($kbs);
 	
 	TemplateInit('wars');
