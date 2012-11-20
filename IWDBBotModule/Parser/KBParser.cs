@@ -698,6 +698,13 @@ namespace IWDB.Parser {
             }
             stats.AppendLine("</ul>");
             
+            //Werften pro Ally
+            //Planeten ohne Flottenscanner
+            //Planeten mit Galascannern
+            //Angriffe / Spieler
+            //Nach Schiffen: Verluste / Spieler
+            //Ress durch Bombings verloren
+
             //für einzlene Schiffe berechnen welcher Spieler wie viel verloren hat
             //aufhübschen ^^
             return stats.ToString();

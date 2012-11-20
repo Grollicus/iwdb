@@ -113,7 +113,7 @@ function SitterUtilFlug() {
 
 function SitterFeindlFlottenUebersicht() {
 	global $content, $pre, $scripturl, $schiffe;
-	$q = DBQuery("SELECT startuni.gala, startuni.sys, startuni.pla, startuni.planiname, startuni.ownername, start_userdata.allytag, zieluni.gala, zieluni.sys, zieluni.pla, zieluni.planiname, zieluni.ownername, ziel_userdata.allytag, flotten.action, flotten.ankunft, flotten.firstseen, flotten.notyetSeen, igm_data.id
+	$q = DBQuery("SELECT startuni.gala, startuni.sys, startuni.pla, startuni.planiname, startuni.ownername, start_userdata.allytag, zieluni.gala, zieluni.sys, zieluni.pla, zieluni.planiname, zieluni.ownername, ziel_userdata.allytag, flotten.action, flotten.ankunft, flotten.firstseen, flotten.notyetSeen, flotten.safe, flotten.dont_save, igm_data.id
 FROM (((({$pre}flotten AS flotten INNER JOIN {$pre}universum AS startuni ON flotten.startid = startuni.ID) 
 	INNER JOIN {$pre}universum AS zieluni ON flotten.zielid=zieluni.ID)
 	LEFT JOIN {$pre}uni_userdata AS start_userdata ON startuni.ownername = start_userdata.name)
@@ -139,11 +139,13 @@ ORDER BY flotten.ankunft", __FILE__, __LINE__);
 			'zielowner' => EscapeOU($row[10]),
 			'zielally' => EscapeOU($row[11]),
 			'bewegung' => EscapeOU($row[12]),
-			'loginLink' => $scripturl.'/index.php?action=sitter_login&amp;from=sitter_flotten&amp;id='.$row[16],
+			'gefaehrlich' => $row[12] == 'Angriff',
+			'ankunft' => intval($row[13]),
 			'firstSeen' => intval($row[14]),
 			'notyetSeen' => intval($row[15]),
-			'ankunft' => intval($row[13]),
-			'gefaehrlich' => $row[12] == 'Angriff',
+			'safe' => $row[16] == 1,
+			'dont_save' => $row[17] != 0,
+			'loginLink' => $scripturl.'/index.php?action=sitter_login&amp;show_save=1&amp;from=sitter_flotten&amp;id='.$row[18],
 		);
 	}
 	$content['flotten'] = EscapeJSU($fl);

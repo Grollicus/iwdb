@@ -158,6 +158,7 @@
 		$content['id'] = EscapeJS($id);
 		$content['jid'] = EscapeJS($jid);
 		$content['sitter'] = EscapeJS(!$fulllogin);
+		$content['show_save'] = isset($_REQUEST['show_save']);
 		
 		$q = DBQuery("SELECT id, igmname FROM {$pre}igm_data ORDER BY igmname", __FILE__, __LINE__);
 		$content['users'] = array();
@@ -498,7 +499,7 @@ FROM (({$pre}trade_reqs AS trade_reqs INNER JOIN {$pre}igm_data AS igm_data ON t
 		$q = DBQuery("SELECT users.visibleName, sitterlog.type, sitterlog.time, sitterlog.Text 
 FROM ({$pre}sitterlog AS sitterlog INNER JOIN {$pre}users AS users ON sitterlog.userid = users.ID)
 WHERE sitterlog.victimid=".$uid." ORDER BY time DESC LIMIT 0, 6", __FILE__, __LINE__);
-		$content['ownlog'] = array();
+		$content['log'] = array();
 		$types = array(
 			'login' => 'L',
 			'auftrag' => 'A',
@@ -589,5 +590,51 @@ WHERE uid={$uid} AND universum.objekttyp IN ('Kolonie', 'Sammelbasis')", __FILE_
 		
 		TemplateInit('sitter');
 		TemplateSitterUtilRess();
+	}
+
+	function SitterUtilFlotten() {
+		global $content, $pre, $scripturl, $user, $ID_MEMBER;
+		if($user['isRestricted'])
+			die("Hacking Attempt");
+		if(isset($_REQUEST['safe']) || isset($_REQUEST['dont_save'])) {
+			$flid = intval($_REQUEST['flid']);
+			if(isset($_REQUEST['safe']))
+				DBQuery("UPDATE {$pre}flotten SET safe=".($_REQUEST['safe'] == '1'?'1':'0')." WHERE dont_save=0 and id={$flid}", __FILE__, __LINE__);
+			elseif($_REQUEST['dont_save'] == '1')
+				DBQuery("UPDATE {$pre}flotten SET safe=0, dont_save={$ID_MEMBER} WHERE id={$flid}", __FILE__, __LINE__);
+			else
+				DBQuery("UPDATE {$pre}flotten SET dont_save=0 WHERE id={$flid}", __FILE__, __LINE__);
+			$fl = DBQueryOne("SELECT safe, users.visibleName FROM {$pre}flotten AS flotten LEFT JOIN {$pre}users AS users ON flotten.dont_save=users.id where flotten.id={$flid}", __FILE__, __LINE__);
+			echo EscapeJSU(array('safe' => $fl[0] == '1', 'dont_save' => !is_null($fl[1]), 'dont_save_user' => $fl[1]));
+			return;
+		}
+		$uid = intval($_REQUEST['uid']);
+		$q = DBQuery("SELECT startuni.gala, startuni.sys, startuni.pla, startuni.planiname, startuni.ownername, zieluni.gala, zieluni.sys, zieluni.pla, zieluni.planiname, flotten.id, flotten.action, flotten.ankunft, flotten.safe, users.visibleName
+FROM ((({$pre}flotten AS flotten INNER JOIN {$pre}universum AS startuni ON flotten.startid = startuni.ID) 
+	INNER JOIN {$pre}universum AS zieluni ON flotten.zielid=zieluni.ID)
+	INNER JOIN {$pre}igm_data AS igm_data ON zieluni.ownername=igm_data.igmname)
+	LEFT JOIN {$pre}users AS users ON flotten.dont_save=users.ID
+WHERE flotten.action IN ('Angriff', 'Sondierung (Gebäude/Ress)','Sondierung (Schiffe/Def/Ress)') AND igm_data.id={$uid}
+ORDER BY flotten.ankunft", __FILE__, __LINE__);
+		$flotten = array();
+		while($row  = mysql_fetch_row($q)) {
+			$flotten[] = array(
+				'src_coords' => EscapeOU($row[0].':'.$row[1].':'.$row[2]),
+				'src_plani' => EscapeOU($row[3]),
+				'src_owner' => EscapeOU($row[4]),
+				'dst_coords' => EscapeOU($row[5].':'.$row[6].':'.$row[7]),
+				'dst_plani' => EscapeOU($row[8]),
+				'id' => intval($row[9]),
+				'action' => EscapeOU($row[10]),
+				'time' => FormatDate($row[11]),
+				'safe' => $row[12] == '1',
+				'dont_save' => !is_null($row[13]),
+				'dont_save_user' => EscapeOU($row[13]),
+			);
+		}
+		$content['flotten'] = EscapeJSU($flotten);
+		$content['requesturl'] = EscapeJS($scripturl."/index.php?action=sitterutil_flotten");
+		TemplateInit('sitter');
+		TemplateSitterUtilFlotten();
 	}
 ?>

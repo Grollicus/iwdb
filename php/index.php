@@ -99,6 +99,7 @@ function Main()
 	'sitter_history' => array('sitter/history.php', 'SitterHistory'),
 	'sitter_globalhist' => array('sitter/history.php', 'SitterGlobalHistory'), 
 	'sitter_list' => array('sitter/list.php', 'SitterList'),
+	'sitterutil_flotten' => array('sitter/login.php', 'SitterUtilFlotten'),
 	'sitterutil_flug' => array('war/timing.php', 'SitterUtilFlug'),
 	'sitterutil_job' => array('sitter/login.php', 'SitterUtilJob'),
 	'sitterutil_jobex' => array('sitter/login.php', 'SitterUtilJobEx'),

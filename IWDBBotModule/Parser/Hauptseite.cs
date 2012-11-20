@@ -198,7 +198,6 @@ namespace IWDB.Parser {
 		}
 	}
 	class HauptseiteFremdeFlottenParser:ReportParser {
-		const String Aktionen = @"Sondierung\s\(Gebäude/Ress\)|Sondierung\s\(Geologie\)|Sondierung\s\(Schiffe/Def/Ress\)|Transport|Übergabe|Ressourcenhandel\s\(ok\)|Ressourcenhandel";
 		Dictionary<uint, OrderedList<FlottenCacheFlotte>> flottenCache;
 		List<uint> ownerCache;
 		IWDBParser parser;
@@ -210,7 +209,7 @@ Fremde\sFlotten\n
 (?:\(Es\ssind\sfremde\sFlotten\süber\sdem\sPlaneten\sstationiert\.\)\s+)?
 Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 ((?:\s*\n" + KolonieName + @"\s" + Koordinaten + @"\s+" + KolonieName + @"\s" + Koordinaten + @"\n
-" + SpielerName + @"\s+(?:" + PräziseIWZeit + @"|" + AbladeAktionen + @")[\s\-]+(?:[\d:]+|angekommen)\s+(?:" + Aktionen + @")(?:[\s\S]+?\+)?)+)", PatternFlags.All);
+" + SpielerName + @"\s+(?:" + PräziseIWZeit + @"|" + AbladeAktionen + @")[\s\-]+(?:[\d:]+|angekommen)\s+(?:" + FlottenAktionen + @")(?:\s+Stationieren)?(?:[\s\S]+?\+)?)+)", PatternFlags.All);
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
 			ownerCache = RequestCache<List<uint>>("OwnerCache");
             oldLastParsed = RequestCache<Dictionary<uint, uint>>("OldLastParsed");
@@ -246,7 +245,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 			foreach(Match outerMatch in matches) {
 				MatchCollection innerMatches = Regex.Matches(outerMatch.Groups[0].Value, "(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\s+(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\n
 (" + SpielerName + @")\s+(" + PräziseIWZeit + @"|" + AbladeAktionen + @")[\s\-]+
-(?:[\d:]+|angekommen)\s+(" + Aktionen + @")", RegexOptions.IgnorePatternWhitespace);
+(?:[\d:]+|angekommen)\s+(" + FlottenAktionen + @")(?:\s+Stationieren)?", RegexOptions.IgnorePatternWhitespace);
 				if(innerMatches.Count == 0) {
 					resp.RespondError("Hab hier fremde Flotten ohne Flotten! Evtl läuft da was schief.. bitte mal melden!");
 					continue;

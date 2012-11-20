@@ -236,7 +236,8 @@
 			var v = {
 				"uid": ', $content['id'], ',
 				"jid": ', $content['jid'], ',
-				"sitter": ', $content['sitter'], '
+				"sitter": ', $content['sitter'], ',
+				"show_save": ', $content['show_save'], '
 			};
 			function uid_change(uid, name, warning, act, acc) {
 				if(!uid)
@@ -252,8 +253,11 @@
 				$(".sitter_log:visible").parent().each(function(i, el) {
 					$(el).html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />").load($(el).data("url"), {"uid": v.uid, "id": v.jid});
 				});
-				$(".uid", ".sitter_ress").each(function(i,el) {$(el).val(v.uid);});
-				$(".anz", ".sitter_ress").click();
+				$(".sitter_flotten:visible").parent().each(function(i, el) {
+					$(el).html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />").load($(el).data("url"), {"uid": v.uid, "id": v.jid});
+				});
+				$(".uid", ".sitter_ress:visible").each(function(i,el) {$(el).val(v.uid);});
+				$(".anz", ".sitter_ress:visible").click();
 				$("#loginSelect").val(uid);
 				$("#act").removeClass("act_0 act_1 act_2 act_3 act_4 act_5").addClass(act);
 				$("#loginwarning").removeClass("act_0 act_1 act_2 act_3 act_4 act_5").addClass(act);
@@ -282,7 +286,7 @@
 					.html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />")
 					.data("url", url)
 					.data("title", text)
-					.load(url, {"uid": v.uid, "id": v.jid}, function() {$(this).dialog( "option", "height", "auto" );$(this).dialog( "option", "width", "auto" );})
+					.load(url, {"uid": v.uid, "id": v.jid}, function() {$(this).dialog( "option", "width", "auto" );$(this).dialog( "option", "height", "auto" );})
 					.dialog(opts);
 			}
 			function savestate() {
@@ -303,9 +307,12 @@
 				if(!state)
 					return;
 				var has_sitter=false;
+				var has_save=false;
 				$.each(state, function() {
 					if(this.title=="Sitteraufträge")
 						has_sitter=true;
+					if(this.title=="Flotten")
+						has_save=true;
 					show_dialog(this.title, this.url, {
 						position: [this.pos.left, this.pos.top],
 						height: this.height,
@@ -314,6 +321,10 @@
 				});
 				if(!has_sitter && v.jid != 0)
 					show_dialog("Sitteraufträge", "'.$scripturl.'/index.php?action=sitterutil_jobex", {open: function(evt, ui) { savestate();}});
+				if(!has_save && v.show_save) {
+					v.show_save = false;
+					show_dialog("Flotten", "'.$scripturl.'/index.php?action=sitterutil_flotten", {open: function(evt, ui) { savestate();}});
+				}
 			}
 			function loginwarning(username) {
 				//$("<div><strong>Achtung:<\/strong> "+($("<div/>").text(username).html())+" hat sich in den letzten 5 Minuten eingeloggt!<\/div>").dialog({modal:true, title:"Loginwarnung", Buttons: { Ok: function() { $(this).dialog("close");}}});
@@ -354,6 +365,7 @@
 				<a href="'.$scripturl.'/index.php?action=sitterutil_log">Log</a>
 				<a href="'.$scripturl.'/index.php?action=sitterutil_ress">Ress</a>
 				<a href="'.$scripturl.'/index.php?action=sitterutil_flug">Flug</a>
+				<a href="'.$scripturl.'/index.php?action=sitterutil_flotten">Flotten</a>
 				<div id="act" title="Wie lange der Account nicht mehr gesittet wurde" class="', $content['actuality_color'], '">
 					<span title="'.$content['accountInfo']['typeDesc'].'">'.$content['accountInfo']['type'].'</span>'
 					.($content['accountInfo']['iwsa'] ? '&nbsp;<span title="Supporter-Account">IWSA</span>':'')
@@ -494,8 +506,8 @@
 							+ "<tr><td colspan=\"2\" align=\"center\"><a href=\"#\" class=\"do_move\">Verschieben!</a><a href=\"#\" class=\"show\">Zurück</a></td></tr>"
 						+ "</table>"
 						);
-						$(".sitterjob_info").parent().dialog( "option", "height", "auto" );
 						$(".sitterjob_info").parent().dialog( "option", "width", "auto" );
+						$(".sitterjob_info").parent().dialog( "option", "height", "auto" );
 						$(".show", ".sitterjob_info").button().click(function(e) {
 							e.preventDefault();
 							showjob();
@@ -545,8 +557,8 @@
 							+ (f.hasFollowUp ? "<tr><th>Bauschleife<br /><i style=\"font-size:smaller\">Strg+a, Strg+c der Bauseite</i></th><td><textarea name=\"bauschleife\"></textarea></td></tr>" : "")
 							+ "<tr><td colspan=\"2\" align=\"center\"><a href=\"#\" class=\"done\">Erledigt</a><a href=\"#\" class=\"move\">Verschieben</a></td></tr>"
 						+ "</table>");
-						$(".sitterjob_info").parent().dialog( "option", "height", "auto" );
 						$(".sitterjob_info").parent().dialog( "option", "width", "auto" );
+						$(".sitterjob_info").parent().dialog( "option", "height", "auto" );
 						$(".done", ".sitterjob_info").button().click(function(e) {
 							e.preventDefault();
 							var util = $(this).parent().parent().parent().parent().parent();
@@ -574,8 +586,8 @@
 						});
 					} else {
 						$(".sitterjob_info").html("<div class=\"imp\">"+(fmsg?fmsg:"")+"</div><div class=\"simp\">"+(smsg?smsg:"")+"</div>Kein Sitterauftrag!");
-						$(".sitterjob_info").parent().dialog( "option", "height", "auto" );
 						$(".sitterjob_info").parent().dialog( "option", "width", "auto" );
+						$(".sitterjob_info").parent().dialog( "option", "height", "auto" );
 					}
 				}
 				if(!$.data(document.body, "job_update")) {
@@ -767,6 +779,67 @@
 	</div>';
 	}
 
+	function TemplateSitterUtilFlotten() {
+		global $content;
+		echo '
+	<div class="sitter_flotten">
+		<script type="text/javascript"><!-- // --><![CDATA[
+			var flotten = ',$content['flotten'],';
+			$(function() {
+				function sitter_flotten_refresh(flid) {
+					var safe = $(".safe_"+flid, ".sitter_flotten");
+					var dont_save = $(".dont_save_"+flid, ".sitter_flotten");
+					safe.css("background", safe.data("safe")?"green":"red");
+					safe.button("option", "disabled", safe.data("dont_save"));
+					dont_save.button("option", "disabled", false);
+					if(safe.data("dont_save"))
+						$(dont_save).button("option", "label", safe.data("dont_save_user"));
+					else
+						$(dont_save).button("option", "label", "Nicht saven");
+				}
+				$("#fl_tbl", ".sitter_flotten").html("<tr><th>Ziel</th><th>Start</th><th>Ankunft</th><th>Aktion</th><th style=\"width:130px;\">&nbsp;</th></tr>");
+				for(var i = 0; i < flotten.length; ++i) {
+					var fl = flotten[i];
+					$("#fl_tbl", ".sitter_flotten").append(
+						"<tr><td>"+fl.dst_plani+" ("+fl.dst_coords+")</td>"+
+						"<td>"+fl.src_plani+" ("+fl.src_coords+")<br />"+fl.src_owner+"</td>"+
+						"<td>"+fl.time+"</td>"+
+						"<td>"+fl.action+"</td>"+
+						"<td>"+
+							"<a href=\"#\" style=\"background:"+(fl.safe?"green":"red")+";\" class=\"safe_"+fl.id+"\">Save</a>"+
+							"<a href=\"#\" class=\"dont_save_"+fl.id+"\">Nicht saven</a>"+
+						"</td></tr>");
+					$(".safe_"+fl.id, ".sitter_flotten")
+						.data({"flid":fl.id, "safe":fl.safe, "dont_save": fl.dont_save,"dont_save_user": fl.dont_save_user})
+						.button({"disabled":fl.dont_save}).click(function(e){
+							e.preventDefault();
+							var flid = $(this).data("flid");
+							$(this).button("option", "disabled", true);
+							$.getJSON(', $content['requesturl'], ', {"safe":$(this).data("safe")?"0":"1", "flid":flid}, function(dta) {
+								$(".safe_"+flid, ".sitter_flotten").data({"safe":dta.safe, "dont_save":dta.dont_save, "dont_save_user":dta.dont_save_user});
+								sitter_flotten_refresh(flid);
+							});
+							return false;
+					});
+					$(".dont_save_"+fl.id, ".sitter_flotten").data("flid", fl.id).button().click(function(e) {
+						e.preventDefault();
+						var flid = $(this).data("flid");
+						var safe = $(".safe_"+flid);
+						$(this).button("option", "disabled", true);
+						$.getJSON(', $content['requesturl'], ', {"dont_save":safe.data("dont_save")?"0":"1", "flid":flid}, function(dta) {
+							$(".safe_"+flid, ".sitter_flotten").data({"safe":dta.safe, "dont_save":dta.dont_save, "dont_save_user":dta.dont_save_user});
+							sitter_flotten_refresh(flid);
+						});
+						return false;
+					});
+					sitter_flotten_refresh(fl.id);
+				}
+			});
+		// ]]></script>
+		<table width="99%" cellpadding="0" cellspacing="0" border="1" id="fl_tbl" style="min-width:530px;"></table>
+	</div>';
+	}
+	
 	function TemplateFeindlFlottenUebersicht() {
 		global $content;
 		TemplateHeader();
@@ -791,26 +864,27 @@
 				var fl = flotten[i];
 				var maxspeed = flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen);
 				var minspeed = flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen);
-				$("#fl").append("<tr"+ (fl.gefaehrlich ? " class=\"danger\"" : "")+ ">"
+				$("#fl").append("<tr>"
 					+"<td>["+ fl.startally + "]" + fl.startowner + "<br />(" + fl.startkoords+ ") " + fl.startname +"<\/td>"
 					+"<td>["+fl.zielally+"]"+fl.zielowner+ "<br />("+fl.zielkoords+") "+fl.zielname+"<\/td>"
-					+"<td>"+fl.bewegung+"<\/td>"
+					+"<td"+ (fl.gefaehrlich ? " class=\"danger\"" : "")+ ">"+fl.bewegung+"<\/td>"
 					+"<td>"+formatdate(fl.firstSeen)+"<\/td>"
 					+"<td>"+formatdate(fl.ankunft)+"<\/td>"
 					+"<td>"+Math.floor(minspeed)+"<\/td>"
 					+"<td>"+schiffsnamen(minspeed, maxspeed, fl.s_g==fl.d_g && fl.s_s == fl.d_s)+"<\/td>"
 					+"<td>"+Math.floor(maxspeed)+"<\/td>"
+					+(fl.dont_save ? "<td>Nicht saven<\/td>" : (fl.safe ? "<td style=\"background:green;\">Saved<\/td>" : "<td style=\"background:red;\">Not Saved<\/td>"))
 					+"<td><a href=\""+fl.loginLink+"\">["+fl.zielowner+"]<\/a><\/td><\/tr>");	
 			}
 			schiffe.sort(function(a,b){return a.sol>b.sol ? 1 : a.sol==b.sol?0:-1;});
-			$("#fl").append("<tr><td colspan=\"9\"><b>Sol:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.sol}).join(" &lt; ")+"<\/td><\/tr>");
+			$("#fl").append("<tr><td colspan=\"10\"><b>Sol:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.sol}).join(" &lt; ")+"<\/td><\/tr>");
 			schiffe.sort(function(a,b){return a.gal>b.gal ? 1 : a.gal==b.gal?0:-1;});
-			$("#fl").append("<tr><td colspan=\"9\"><b>Gal:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.gal}).join(" &lt; ")+"<\/td><\/tr>");
+			$("#fl").append("<tr><td colspan=\"10\"><b>Gal:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.gal}).join(" &lt; ")+"<\/td><\/tr>");
 		});
 	// ]]></script>
 	<div class="content"><h2>Übersicht feindliche Flotten</h2>
 		<table id="fl">
-			<tr><th>Start</th><th>Ziel</th><th>Typ</th><th>zuerst gesichtet</th><th>Ankunft</th><th>minspeed</th><th></th><th>maxspeed</th><th></th></tr>
+			<tr><th>Start</th><th>Ziel</th><th>Typ</th><th>zuerst gesichtet</th><th>Ankunft</th><th>minspeed</th><th></th><th>maxspeed</th><th></th><th></th></tr>
 		</table></div>';
 		TemplateFooter();
 	}

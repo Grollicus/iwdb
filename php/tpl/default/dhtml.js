@@ -3,6 +3,11 @@ var callback = false;
 var Selects = new Object();
 var AjaxRequests = 0;
 var CollapseGroups = new Object();
+var unique_id=0;
+
+function gen_id() {
+	return "unique_id_"+(unique_id++);
+}
 
 function flugzeit(g1, s1, p1, g2, s2, p2, solspeed, galaspeed) {
 	if(p1 == false && p2 == false) //Flug zwischen Stargates

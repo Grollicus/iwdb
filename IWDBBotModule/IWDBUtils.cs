@@ -80,6 +80,7 @@ namespace IWDB {
         public static String DecimalNumber { get { return "[\\d+" + System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator + System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator + "]+"; } }
 		public const String RessourcenName = @"(?:Eisen|Stahl|VV4A|chem\.\sElemente|Eis|Wasser|Energie|Pinguine|Credits|Bevölkerung)";
 		public const String AbladeAktionen = @"Erforscht\sgrade\sseine\sNase|Erklaert\sdie\sInfinitesimalrechnung|Faselt\swas\svon\sWurzelzwergen|Faselt\swirres\sZeug\sins\sInterkom|Hört\sMusik|Im\sLandeanflug|Liegt\sbesoffen\sin\sder\sEcke|Pfeift\sder\sfeschen\sPilotin\shinterher\sund\smacht\skomische\sAndeutungen|Quatscht\smit\sder\sBodenkontrolle|Schaut\sder\sfeschen\sPilotin\shinterher|Sabbert\sdie\sInstrumente\svoll|Surft\sim\sBordnetz|Versucht\sdie\srichtigen\sKnöpfe\sfür\sdie\sLandung\szu\sfinden|Wartet\sauf\sLandeplatz|Wartet\sauf\sWeihnachten|Wurzelzwergen,\süberall\sWurzelzwergen|Wartet\sauf\sWeihnachten|Bewertet\sdas\sFlottenessen";
+        public const String FlottenAktionen = @"Sondierung\s\(Gebäude/Ress\)|Sondierung\s\(Geologie\)|Sondierung\s\(Schiffe/Def/Ress\)|Transport|Übergabe|Ressourcenhandel\s\(ok\)|Ressourcenhandel|Stationieren|Rückkehr|Stationieren\s&\sVerteidigen|Basisaufbau\s\(Ressourcen\)|Ressourcen\sabholen";
 	}
 	public class Pair<T1, T2> {
 		public T1 Item1;
