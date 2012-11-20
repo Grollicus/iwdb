@@ -158,7 +158,7 @@
 		$content['id'] = EscapeJS($id);
 		$content['jid'] = EscapeJS($jid);
 		$content['sitter'] = EscapeJS(!$fulllogin);
-		$content['show_save'] = isset($_REQUEST['show_save']);
+		$content['show_save'] = EscapeJS(isset($_REQUEST['show_save']));
 		
 		$q = DBQuery("SELECT id, igmname FROM {$pre}igm_data ORDER BY igmname", __FILE__, __LINE__);
 		$content['users'] = array();
