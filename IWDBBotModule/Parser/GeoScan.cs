@@ -118,7 +118,7 @@ namespace IWDB.Parser {
 						break;
 					case "2": //Sondierung (Gebäude/Ress)
 						GebScan s = new GebScan(uint.Parse(m.Groups[1].Value), m.Groups[2].Value);
-						s.LoadXml(xml, con, DBPrefix, warFilter);
+						s.LoadXml(xml, warFilter);
 						if (s.ToDB(con, DBPrefix, warFilter.TechKostenCache)) {
 							resp.Respond("Gebäudescan eingelesen!\n");
 						} else {
@@ -127,7 +127,7 @@ namespace IWDB.Parser {
 						break;
                     case "3": //Sondierung (Schiffe/Def/Ress)
                         SchiffScan schiffScan = new SchiffScan(uint.Parse(m.Groups[1].Value), m.Groups[2].Value);
-						schiffScan.LoadXml(xml, con, DBPrefix, warFilter);
+						schiffScan.LoadXml(xml, warFilter);
 						if(schiffScan.ToDB(con, DBPrefix, warFilter.TechKostenCache)) {
                             resp.Respond("Schiffscan eingelesen!\n");
                         } else {
@@ -136,64 +136,6 @@ namespace IWDB.Parser {
                         break;
 				}
 			}
-		}
-	}
-
-	class SchiffScanFlotte {
-		String OwnerName;
-		String Typ;
-		List<Tuple<uint, uint, String>> schiffe;
-		MySqlConnection con;
-		String DBPrefix;
-		public SchiffScanFlotte(MySqlConnection con, String DBPrefix) {
-			this.schiffe = new List<Tuple<uint, uint, string>>();
-			this.con = con;
-			this.DBPrefix = DBPrefix;
-		}
-        public void LoadXml(XmlNode xml, bool stationiert) {
-            this.OwnerName = xml.SelectSingleNode("name").InnerText;
-            this.Typ = stationiert ? "stationiert" : "planetar";
-			MySqlCommand cmd = new MySqlCommand("SELECT ID FROM " + DBPrefix + "techtree_items WHERE name=?name AND type='schiff'", con);
-			cmd.Parameters.Add("?name", MySqlDbType.String);
-			cmd.Prepare();
-            foreach (XmlNode n in xml.SelectNodes("schiffe/schifftyp")) {
-				schiffe.Add(new Tuple<uint, uint, string>(getSchiffsID(n["name"].InnerText, cmd), uint.Parse(n["anzahl"].InnerText), n["name"].InnerText));
-            }
-            foreach (XmlNode n in xml.SelectNodes("defence/defencetyp")) {
-				schiffe.Add(new Tuple<uint, uint, string>(getSchiffsID(n["name"].InnerText, cmd), uint.Parse(n["anzahl"].InnerText), n["name"].InnerText));
-            }
-        }
-		public void ToDB(uint scanid) {
-			MySqlCommand flInsert = new MySqlCommand("INSERT INTO " + DBPrefix + "scans_flotten (scanid, owner, typ) VALUES (?scanid, ?owner, ?typ)", con);
-            flInsert.Parameters.Add("?scanid", MySqlDbType.String).Value = scanid;
-			flInsert.Parameters.Add("?owner", MySqlDbType.String).Value = OwnerName;
-			flInsert.Parameters.Add("?typ", MySqlDbType.String).Value = Typ;
-			flInsert.ExecuteNonQuery();
-			long flid = flInsert.LastInsertedId;
-			MySqlCommand schiffsInsert = new MySqlCommand("INSERT INTO " + DBPrefix + "scans_flotten_schiffe (flid, schid, anz) VALUES (?flid, ?schid, ?anz)", con);
-			schiffsInsert.Parameters.Add("?flid", MySqlDbType.UInt32).Value = flid;
-			schiffsInsert.Parameters.Add("?schid", MySqlDbType.UInt32);
-			schiffsInsert.Parameters.Add("?anz", MySqlDbType.UInt32);
-			schiffsInsert.Prepare();
-			foreach (Tuple<uint, uint, string> t in schiffe) {
-				schiffsInsert.Parameters["?schid"].Value = t.Item1;
-				schiffsInsert.Parameters["?anz"].Value = t.Item2;
-				schiffsInsert.ExecuteNonQuery();
-			}
-		}
-		public float getFlottenValue(TechTreeKostenCache tkc, MySqlConnection con, String DBPrefix) {
-			return schiffe.Aggregate((float)0, (acc, t) => acc + tkc.Query(t.Item3, con, DBPrefix).RaidScore * t.Item2);
-		}
-		protected uint getSchiffsID(String name, MySqlCommand idQry) {
-			idQry.Parameters["?name"].Value = name;
-			object ret = idQry.ExecuteScalar();
-			if(ret == null || Convert.IsDBNull(ret)) {
-				MySqlCommand insertQry = new MySqlCommand("INSERT INTO " + DBPrefix + "techtree_items (name,type) VALUES (?name, 'schiff')", con);
-				insertQry.Parameters.Add("?name", MySqlDbType.String).Value = name;
-				insertQry.ExecuteNonQuery();
-				return (uint)insertQry.LastInsertedId;
-			}
-			return (uint)ret;
 		}
 	}
 
@@ -390,82 +332,116 @@ namespace IWDB.Parser {
             }
 		}
 	}
+    class ScanGeb {
+        public String name;
+        public uint anz;
+    }
 	class GebScan:IWScan {
-		protected List<Tuple<uint, uint, string>> gebs;
+		//protected List<ScanGeb> gebs;
 
 		public GebScan(uint iwid, string iwhash) : base(iwid, iwhash) { }
 
-		public void LoadXml(XmlNode xml, MySqlConnection con, String DBPrefix, WarFilter warFilter) {
-			base.LoadXml(xml, warFilter);
-			MySqlCommand cmd = new MySqlCommand("SELECT ID FROM " + DBPrefix + "techtree_items WHERE name=?name AND type='geb'", con);
-			cmd.Parameters.Add("?name", MySqlDbType.String);
-			cmd.Prepare();
-			gebs = new List<Tuple<uint, uint, string>>();
-			foreach (XmlNode n in xml.SelectNodes("scann/gebaeude/gebaeude")) {
-				uint anz = uint.Parse(n.SelectSingleNode("anzahl").InnerText);
-				gebs.Add(new Tuple<uint, uint, string>(getGebID(n.SelectSingleNode("name").InnerText, cmd, con, DBPrefix), anz, n.SelectSingleNode("name").InnerText));
-			}
-		}
-		public bool ToDB(MySqlConnection con, String DBPrefix, TechTreeKostenCache tkc) {
-            long scanID = base.ToDB(con, DBPrefix, "geb", tkc);
+		public override bool ToDB(MySqlConnection con, String DBPrefix, TechTreeCache tc) {
+            long scanID = base.ToDB(con, DBPrefix, "geb", tc);
 			if (scanID == 0)
 				return false;
-			MySqlCommand gebInsert = new MySqlCommand("INSERT INTO " + DBPrefix + @"scans_gebs (scanid, gebid, anzahl) VALUES (?kbid, ?gebid, ?anz)", con);
-			gebInsert.Parameters.Add("?kbid", MySqlDbType.UInt32).Value = scanID;
+            MySqlCommand gebInsert = new MySqlCommand("INSERT INTO " + DBPrefix + @"scans_gebs (scanid, gebid, anzahl) VALUES (?scanid, ?gebid, ?anz)", con);
+            gebInsert.Parameters.Add("?scanid", MySqlDbType.UInt32).Value = scanID;
 			gebInsert.Parameters.Add("?gebid", MySqlDbType.UInt32);
 			gebInsert.Parameters.Add("?anz", MySqlDbType.UInt16);
 			gebInsert.Prepare();
-			foreach (Tuple<uint, uint, string> geb in gebs) {
-				gebInsert.Parameters["?gebid"].Value = geb.Item1;
-				gebInsert.Parameters["?anz"].Value = geb.Item2;
+            foreach (ScanGeb geb in Gebs) {
+                gebInsert.Parameters["?gebid"].Value = tc.ID(geb.name, "geb", con, DBPrefix);
+				gebInsert.Parameters["?anz"].Value = geb.anz;
 				gebInsert.ExecuteNonQuery();
 			}
 			return true;
 		}
-		protected override uint getScore(TechTreeKostenCache tkc, MySqlConnection con, string DBPrefix) {
-			return (uint)gebs.Aggregate((float)0, (acc, geb) => acc + tkc.Query(geb.Item3, con, DBPrefix).RaidScore * geb.Item2);
+		protected override uint getScore(TechTreeCache tc, MySqlConnection con, string DBPrefix) {
+			return (uint)Gebs.Aggregate((float)0, (acc, geb) => acc + tc.Kosten(geb.name, con, DBPrefix).RaidScore * geb.anz);
 		}
-		protected uint getGebID(String name, MySqlCommand idQry, MySqlConnection con, String DBPrefix) {
-			idQry.Parameters["?name"].Value = name;
-			object ret = idQry.ExecuteScalar();
-			if (ret == null || Convert.IsDBNull(ret)) {
-				MySqlCommand insertQry = new MySqlCommand("INSERT INTO " + DBPrefix + "techtree_items (name,type) VALUES (?name, 'geb')", con);
-				insertQry.Parameters.Add("?name", MySqlDbType.String).Value = name;
-				insertQry.ExecuteNonQuery();
-				return (uint)insertQry.LastInsertedId;
-			}
-			return (uint)ret;
-		}
-	}
-    class SchiffScan : IWScan {
-        List<SchiffScanFlotte> flotten;
-		public SchiffScan(uint iwid, string iwhash):base(iwid, iwhash) {}
-		public void LoadXml(XmlNode xml, MySqlConnection con, String DBPrefix, WarFilter warFilter) {
-			base.LoadXml(xml, warFilter);
-            flotten = new List<SchiffScanFlotte>();
-            SchiffScanFlotte fl = new SchiffScanFlotte(con, DBPrefix);
-            fl.LoadXml(xml.SelectSingleNode("scann/pla_def/user"), false);
-            flotten.Add(fl);
-            foreach (XmlNode n in xml.SelectNodes("scann/flotten_def/user")) {
-                fl = new SchiffScanFlotte(con, DBPrefix);
-                fl.LoadXml(n, true);
-                flotten.Add(fl);
+
+        public IEnumerable<ScanGeb> Gebs {
+            get {
+                foreach (XmlNode n in xml.SelectNodes("scann/gebaeude/gebaeude")) {
+                    yield return new ScanGeb() { name = n["name"].InnerText, anz = uint.Parse(n["anzahl"].InnerText) };
+                }
             }
         }
-        public bool ToDB(MySqlConnection con, String DBPrefix, TechTreeKostenCache tkc) {
-            uint scanid = (uint)base.ToDB(con, DBPrefix, "schiff", tkc);
+        
+	}
+
+    class ScanSchiff {
+        public String name;
+        public uint anz;
+    }
+    class ScanFlotte {
+        public string ownerName;
+        public String typ;
+        public IEnumerable<ScanSchiff> schiffe;
+    }
+    class SchiffScan : IWScan {
+		public SchiffScan(uint iwid, string iwhash):base(iwid, iwhash) {}
+        public override bool ToDB(MySqlConnection con, String DBPrefix, TechTreeCache tc) {
+            long scanid = (long)base.ToDB(con, DBPrefix, "schiff", tc);
             if (scanid == 0)
                 return false;
-            foreach (SchiffScanFlotte fl in flotten) {
-                fl.ToDB(scanid);
+            MySqlCommand flInsert = new MySqlCommand("INSERT INTO " + DBPrefix + "scans_flotten (scanid, owner, typ) VALUES (?scanid, ?owner, ?typ)", con);
+            MySqlParameter fl_scanid = flInsert.Parameters.Add("?scanid", MySqlDbType.String);
+            MySqlParameter fl_owner = flInsert.Parameters.Add("?owner", MySqlDbType.String);
+            MySqlParameter fl_typ = flInsert.Parameters.Add("?typ", MySqlDbType.String);
+            flInsert.Prepare();
+            MySqlCommand schiffsInsert = new MySqlCommand("INSERT INTO " + DBPrefix + "scans_flotten_schiffe (flid, schid, anz) VALUES (?flid, ?schid, ?anz)", con);
+            MySqlParameter sch_flid = schiffsInsert.Parameters.Add("?flid", MySqlDbType.UInt32);
+            MySqlParameter sch_schid = schiffsInsert.Parameters.Add("?schid", MySqlDbType.UInt32);
+            MySqlParameter sch_anz = schiffsInsert.Parameters.Add("?anz", MySqlDbType.UInt32);
+            schiffsInsert.Prepare();
+            foreach (ScanFlotte fl in Flotten) {
+                fl_scanid.Value = scanid;
+                fl_owner.Value = fl.ownerName;
+                fl_typ.Value = fl.typ;
+                flInsert.ExecuteNonQuery();
+                sch_flid.Value = flInsert.LastInsertedId;
+                foreach (ScanSchiff s in fl.schiffe) {
+                    schiffsInsert.Parameters["?schid"].Value = tc.ID(s.name, "sch", con, DBPrefix);
+                    schiffsInsert.Parameters["?anz"].Value = s.anz;
+                    schiffsInsert.ExecuteNonQuery();
+                }
             }
             return true;
         }
-		protected override uint getScore(TechTreeKostenCache tkc, MySqlConnection con, string DBPrefix) {
-			return (uint)flotten.Aggregate((float)0, (acc, fl) => acc + fl.getFlottenValue(tkc, con, DBPrefix));
+		protected override uint getScore(TechTreeCache tkc, MySqlConnection con, string DBPrefix) {
+            return (uint)Flotten.Aggregate(new ResourceSet(), (rs, f) => f.schiffe.Aggregate(rs, (r, s) => r + tkc.Kosten(s.name, con, DBPrefix) * s.anz)).RaidScore;
 		}
+        public IEnumerable<ScanFlotte> Flotten { get {
+            return xml.SelectNodes("scann/pla_def/user").OfType<XmlNode>().Select(n => new { n = n, typ = "planetar" }).Union(xml.SelectNodes("scann/flotten_def/user").OfType<XmlNode>().Select(n => new { n = n, typ = "stationiert" })).Select(v => new ScanFlotte() {
+                ownerName = v.n["name"].InnerText,
+                typ=v.typ,
+                schiffe = v.n.SelectNodes("schiffe/schifftyp").OfType<XmlNode>().Union(xml.SelectNodes("defence/defencetyp").OfType<XmlNode>()).Select(s=>new ScanSchiff() { name=s["name"].InnerText, anz=uint.Parse(s["anzahl"].InnerText)})
+            });
+        } }
     }
+
     abstract class IWScan {
+
+        public static IWScan LoadXml(MySqlConnection con, String DBPrefix, WarFilter filter, uint iwid, string iwhash) {
+            String url = String.Format("http://www.icewars.de/portal/kb/de/sb.php?id={0}&md_hash={1}&typ=xml", iwid, iwhash);
+            XmlNode xml = IWCache.Query(url, con, DBPrefix);
+            switch (xml.SelectSingleNode("scann/scann_typ/id").InnerText) {
+                case "2": { //Sondierung (Gebäude/Ress)
+                    GebScan s = new GebScan(iwid, iwhash);
+                    s.LoadXml(xml, filter);
+                    return s;
+                    }
+                case "3": { //Sondierung (Schiffe/Def/Ress)
+                    SchiffScan s = new SchiffScan(iwid, iwhash);
+                    s.LoadXml(xml, filter);
+                    return s;
+                    }
+            }
+            throw new InvalidOperationException("Unbekannter Scan-Typ!");
+        }
+
         protected uint iwid;
         protected String hash;
 
@@ -480,12 +456,15 @@ namespace IWDB.Parser {
         protected ResourceSet ress;
 		protected uint warID;
 
+        protected XmlNode xml;
+
 		protected IWScan(uint iwid, string iwhash) {
 			this.iwid = iwid;
 			this.hash = iwhash;
 		}
 
-		protected void LoadXml(XmlNode xml, WarFilter warFilter) {
+		public void LoadXml(XmlNode xml, WarFilter warFilter) {
+            this.xml = xml;
             XmlNode planidata = xml.SelectSingleNode("scann/plani_data");
             XmlNode coords = planidata.SelectSingleNode("koordinaten");
             gal = uint.Parse(coords["gal"].InnerText);
@@ -502,7 +481,7 @@ namespace IWDB.Parser {
 			warID = war != null ? war.id : 0;
         }
 
-        protected long ToDB(MySqlConnection con, String DBPrefix, String type, TechTreeKostenCache tkc) {
+        protected long ToDB(MySqlConnection con, String DBPrefix, String type, TechTreeCache tkc) {
             MySqlCommand scanInsert = new MySqlCommand("INSERT IGNORE INTO " + DBPrefix + @"scans (
 				iwid, iwhash, time, gala, sys, pla, typ, planityp, objekttyp, ownername, ownerally, fe, st, vv, ch, ei, wa, en, warid, ressScore, score
 			) VALUES (
@@ -563,8 +542,12 @@ namespace IWDB.Parser {
 
             return scanID;
         }
+        protected abstract uint getScore(TechTreeCache tkc, MySqlConnection con, String DBPrefix);
+        public abstract bool ToDB(MySqlConnection con, String DBPrefix, TechTreeCache tkc);
 
-		protected abstract uint getScore(TechTreeKostenCache tkc, MySqlConnection con, String DBPrefix);
+        public Spieler Owner { get { return new Spieler(owner_name, owner_ally); } }
+        public DateTime Time { get { return IWDBUtils.fromUnixTimestamp(timestamp); } }
+        public Coords Coords { get { return new Coords() { gal = (int)gal, sys = (int)sol, pla = (int)pla }; } }
 	}
 }
 

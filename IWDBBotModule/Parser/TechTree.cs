@@ -28,7 +28,7 @@ namespace IWDB.Parser {
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySql.Data.MySqlClient.MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match gebinfo in matches) {
 				try {
-					TechtreeItem item = Gebäude.Parse(gebinfo.Value, DBPrefix);
+					TechtreeItem item = TechtreeGebäude.Parse(gebinfo.Value, DBPrefix);
 					if (item == null) {
 						resp.RespondError("Bei einem Gebäude ist das Einlesen fehlgeschlagen!");
 						continue;
@@ -51,7 +51,7 @@ namespace IWDB.Parser {
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySql.Data.MySqlClient.MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match forschungsInfo in matches) {
 				try {
-					TechtreeItem item = Forschung.Parse(forschungsInfo.Value, DBPrefix);
+					TechtreeItem item = TechtreeForschung.Parse(forschungsInfo.Value, DBPrefix);
 					if (item == null) {
 						resp.RespondError("Eine Forschung konnte nicht richtig erkannt werden! Bitte als Bug melden!");
 						continue;
@@ -85,7 +85,7 @@ Verbrauch\sEnergie\s+(\d+)\n", PatternFlags.Firefox);
         }
         public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match m in matches) {
-				TechtreeItem item = new Schiff(m, DBPrefix);
+				TechtreeItem item = new TechtreeSchiff(m, DBPrefix);
 				item.WriteToDB(con);
 				resp.Respond("Schiffsinfo eingelesen!\n");
 			}
@@ -614,8 +614,8 @@ abstract class TechtreeItem {
 			}
 		}
 		public float RaidScore { get { return Eisen * 1 + Stahl * 2 + Chemie * 1.5f + VV4A * 4 + Eis * 2 + Wasser * 4 + Energie; } }
-        public Utils.DefaultDict<string, float> AsDict() {
-            Utils.DefaultDict<string, float> ret = new Utils.DefaultDict<string, float>();
+        public Utils.DefaultDict<string, double> AsDict() {
+            Utils.DefaultDict<string, double> ret = new Utils.DefaultDict<string, double>();
             ret.Add("Eisen", Eisen);
             ret.Add("Stahl", Stahl);
             ret.Add("VV4A", VV4A);
@@ -625,7 +625,7 @@ abstract class TechtreeItem {
             ret.Add("Energie", Energie);
             ret.Add("Bev", Bev);
             ret.Add("Credits", Credits);
-            ret.Add("Zeit (h)", (float)Zeit.TotalHours);
+            ret.Add("Zeit (h)", Zeit.TotalHours);
             return ret;
         }
 	}
@@ -692,14 +692,14 @@ abstract class TechtreeItem {
 			ParseBringt(laufendeKosten);
 		}
 	}
-	abstract class Gebäude:TechtreeItem {
-		protected Gebäude(String DBPrefix) : base("geb", DBPrefix) { }
-		public static Gebäude Parse(String gebInfo, String DBPrefix) {
-			return NormGeb.ParseNormGeb(gebInfo, DBPrefix);
+	abstract class TechtreeGebäude:TechtreeItem {
+		protected TechtreeGebäude(String DBPrefix) : base("geb", DBPrefix) { }
+		public static TechtreeGebäude Parse(String gebInfo, String DBPrefix) {
+			return TechtreeNormGeb.ParseNormGeb(gebInfo, DBPrefix);
 		}
 	}
-	class NormGeb : Gebäude {
-		public static NormGeb ParseNormGeb(String gebInfo, String DBPrefix) {
+	class TechtreeNormGeb : TechtreeGebäude {
+		public static TechtreeNormGeb ParseNormGeb(String gebInfo, String DBPrefix) {
 			Match m = Regex.Match(gebInfo, @"Gebäudeinfo:\s+(.+)\n
 	([\s\S]*?)\n
 	(?:Stufengebäude\n
@@ -720,11 +720,11 @@ abstract class TechtreeItem {
 	Farbenlegende", RegexOptions.IgnorePatternWhitespace);
 			if (!m.Success)
 				return null;
-			NormGeb geb = new NormGeb(m, DBPrefix);
+			TechtreeNormGeb geb = new TechtreeNormGeb(m, DBPrefix);
 			return geb;
 		}
 
-		private NormGeb(Match m, String DBPrefix)
+		private TechtreeNormGeb(Match m, String DBPrefix)
 			: base(DBPrefix) {
 			
 			this.name = m.Groups[1].Value;
@@ -761,8 +761,8 @@ abstract class TechtreeItem {
 		}
 
 	}
-	class Forschung : TechtreeItem {
-		public static Forschung Parse(String forschungsInfo, String DBPrefix) {
+	class TechtreeForschung : TechtreeItem {
+		public static TechtreeForschung Parse(String forschungsInfo, String DBPrefix) {
 			Match m = Regex.Match(forschungsInfo, @"Forschungsinfo:\s+(.+?)\n
 	Status\s+(.+?)\n
 	Gebiet\s+(.+?)\n
@@ -783,12 +783,12 @@ abstract class TechtreeItem {
 	Farbenlegende", RegexOptions.IgnorePatternWhitespace);
 			if (!m.Success)
 				return null;
-			Forschung f = new Forschung(m, DBPrefix);
+			TechtreeForschung f = new TechtreeForschung(m, DBPrefix);
 			return f;
 		}
 
 
-		protected Forschung(Match m, String DBPrefix) : base("for", DBPrefix) {
+		protected TechtreeForschung(Match m, String DBPrefix) : base("for", DBPrefix) {
 			this.maxLevel = 1;
 			this.name = m.Groups[1].Value;
 			this.gebiet = m.Groups[3].Value;
@@ -809,8 +809,8 @@ abstract class TechtreeItem {
 			BedingungsParser(m.Groups[13].Value, ermDef);
 		}
 	}
-	class Schiff : TechtreeItem {
-		public Schiff(Match m, String DBPrefix)
+	class TechtreeSchiff : TechtreeItem {
+		public TechtreeSchiff(Match m, String DBPrefix)
 			: base("schiff", DBPrefix) {
 			this.name = m.Groups[1].Value;
 			TechtreeItemStufe stufe = new TechtreeItemStufe(m.Groups[2].Value);

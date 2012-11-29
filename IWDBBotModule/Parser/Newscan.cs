@@ -17,9 +17,9 @@ namespace IWDB.Parser {
 		internal readonly Dictionary<String, Object> caches;
         SingleNewscanRequestHandler realRequestHandler;
 		WarFilter warFilter;
-		TechTreeKostenCache techKostenCache;
+		TechTreeCache techKostenCache;
 
-		public NewscanHandler(MySqlConnection con, String DBPrefix, String DBConnection, IWDBParser parser, WarFilter warFilter, TechTreeKostenCache techKostenCache) {
+		public NewscanHandler(MySqlConnection con, String DBPrefix, String DBConnection, IWDBParser parser, WarFilter warFilter, TechTreeCache techKostenCache) {
 			this.parser = parser;
 			this.DBPrefix = DBPrefix;
 			caches = new Dictionary<string, object>();

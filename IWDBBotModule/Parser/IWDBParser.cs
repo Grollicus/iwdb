@@ -41,7 +41,7 @@ namespace IWDB.Parser {
         IWDBParserModule parserMod;
 		KabaFilter kabaFilter;
 		WarFilter warFilter;
-		TechTreeKostenCache techKostenCache;
+		TechTreeCache techKostenCache;
 
         List<String> usersLoggedIn;
         Dictionary<String, List<string>> checkingUsers;
@@ -63,8 +63,9 @@ namespace IWDB.Parser {
 				mysql.Open();
 
 				handlers = new Dictionary<string, RequestHandler>();
-				techKostenCache = new TechTreeKostenCache();
+				techKostenCache = new TechTreeCache();
                 warFilter = new WarFilter(DBPrefix, mysql, techKostenCache, config["mysql"].InnerText);
+                FlugRechner.ReloadCache(DBPrefix, mysql);
 				AddHandler(warFilter);
 				AddHandler(new NewscanHandler(mysql, DBPrefix, config["mysql"].InnerText, this, warFilter, techKostenCache));
 				AddHandler(new BauschleifenHandler());
@@ -167,7 +168,6 @@ namespace IWDB.Parser {
         public void CheckLogin(string nick, string username, string host) {
             if (parserMod.IsLoggedIn(nick))
                 return;
-			//Log.WriteLine("MySqlOpen: CheckLogin");
 			Monitor.Enter(mysql);
             mysql.Open();
 			try {
@@ -179,7 +179,6 @@ namespace IWDB.Parser {
 				IRCModuleUser u = new IRCModuleUser(nick, (IRCModuleUserAccess)(sbyte)ret);
 				parserMod.LoginUser(nick, u);
 			} finally {
-				//IRCeX.Log.WriteLine("MySqlClose: CheckLogin");
 				mysql.Close();
 				Monitor.Exit(mysql);
 			}
@@ -208,7 +207,6 @@ namespace IWDB.Parser {
             }
         }
         public void BauleerlaufInfo(out int anz, out List<Pair<int, String>> neu) {
-			//IRCeX.Log.WriteLine("MySqlOpen: BauleerlaufInfo");
 			Monitor.Enter(mysql);
             mysql.Open();
 			try {
@@ -227,14 +225,12 @@ namespace IWDB.Parser {
 				cmd.Parameters.Add("?time", MySqlDbType.UInt32).Value = IWDBUtils.toUnixTimestamp(now.AddSeconds(-IWDBChanModule.BauleerlaufSpamIntervalInSeconds));
 				anz = Convert.ToInt32(cmd.ExecuteScalar());
 			} finally {
-				//IRCeX.Log.WriteLine("MySqlClose: BauleerlaufInfo");
 				mysql.Close();
 				Monitor.Exit(mysql);
 			}
         }
         public void SitterauftraegeOffen(out int anz, out int jobid, out DateTime next) {
             next = DateTime.MinValue;
-			//Log.WriteLine("MySqlOpen: SitterauftraegeOffen");
 			Monitor.Enter(mysql);
 			try {
 				mysql.Open();
@@ -244,7 +240,6 @@ namespace IWDB.Parser {
 				aktJobCnt.Parameters.Add("?time", MySqlDbType.UInt32).Value = now;
 				aktJobCnt.Prepare();
 				MySqlDataReader r = aktJobCnt.ExecuteReader();
-				//object ret = aktJobCnt.ExecuteScalar();
 				anz = 0; jobid = 0;
 				while(r.Read()) {
 					if(anz == 0)
@@ -262,19 +257,17 @@ namespace IWDB.Parser {
 					next = IWDBUtils.fromUnixTimestamp(time);
 				}
 			} finally {
-				//IRCeX.Log.WriteLine("MySqlClose: SitterauftraegeOffen");
 				mysql.Close();
 				Monitor.Exit(mysql);
 			}
         }
         public void AnfliegendeFlotten(out uint flottenAnz, out uint zielplaniAnz) {
-			//IRCeX.Log.WriteLine("MySqlOpen: AnfliegendeFlotten");
 			Monitor.Enter(mysql);
 			try {
 				mysql.Open();
 
 				uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
-				MySqlCommand aktFlottenUnterwegs = new MySqlCommand("SELECT COUNT(*), COUNT(DISTINCT zielid) FROM " + DBPrefix + @"flotten WHERE ankunft BETWEEN ?now AND ?soon
+				MySqlCommand aktFlottenUnterwegs = new MySqlCommand("SELECT COUNT(*), COUNT(DISTINCT zielid) FROM " + DBPrefix + @"flotten WHERE ankunft BETWEEN ?now AND ?soon AND safe=0
 AND action IN('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/Ress)')", mysql);
 				aktFlottenUnterwegs.Parameters.Add("?now", MySqlDbType.UInt32).Value = now;
 				aktFlottenUnterwegs.Parameters.Add("?soon", MySqlDbType.UInt32).Value = now + 600;
@@ -286,13 +279,11 @@ AND action IN('Angriff', 'Sondierung (Gebäude/Ress)', 'Sondierung (Schiffe/Def/R
 					flottenAnz = zielplaniAnz = 0;
 				}
 			} finally {
-				//IRCeX.Log.WriteLine("MySqlClose: AnfliegendeFlotten");
 				mysql.Close();
 				Monitor.Exit(mysql);
 			}
         }
         public List<PlaniData> PlanisMitBesitzer(String name) {
-			//IRCeX.Log.WriteLine("MySqlOpen: PlanisMitBesitzer");
 			Monitor.Enter(mysql);
 			try {
 				mysql.Open();
@@ -519,9 +510,6 @@ class ParserRequestMessagePart {
 		}
 		public Int32 ParseInt32() {
 			return int.Parse(AsString);
-		}
-		public override string ToString() {
-			return AsString;
 		}
 	}
 	class ParserRequestMessage {

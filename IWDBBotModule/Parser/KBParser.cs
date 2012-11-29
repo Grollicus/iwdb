@@ -9,12 +9,13 @@ using IRCeX;
 using System.Collections;
 using System.Threading;
 using Utils;
+using Flow;
 
 namespace IWDB.Parser {
 	class KBParser:ReportParser {
 		WarFilter warFilter;
-		TechTreeKostenCache techKostenCache;
-		public KBParser(NewscanHandler newscanHandler, WarFilter warFilter, TechTreeKostenCache tkc)
+		TechTreeCache techKostenCache;
+		public KBParser(NewscanHandler newscanHandler, WarFilter warFilter, TechTreeCache tkc)
 			: base(newscanHandler) {
 				AddPattern(@"http://www\.icewars\.de/portal/kb/de/kb\.php\?id=(\d+)&md_hash=([a-z0-9A-Z]{32})");
 				this.warFilter = warFilter;
@@ -56,7 +57,8 @@ namespace IWDB.Parser {
     class Fleet {
         public String Name;
         public String Ally;
-        public IEnumerable<Tuple<String, uint, uint, uint, uint>> Ships;
+        public String StartCoords;
+        public IEnumerable<KbSchiff> Ships;
     }
 
     class Spieler {
@@ -181,7 +183,7 @@ namespace IWDB.Parser {
 			}
 		}
 
-		public bool SaveAsWarKb(uint warID, MySqlConnection con, String DBPrefix, TechTreeKostenCache tkc) {
+		public bool SaveAsWarKb(uint warID, MySqlConnection con, String DBPrefix, TechTreeCache tkc) {
 			if(saveMode != KbSaveMode.None)
 				throw new InvalidOperationException("Versuche KB als KriegsKB zu speichern obwohl er schon gespeichert ist!");
 
@@ -198,9 +200,9 @@ namespace IWDB.Parser {
 			cmd.Parameters.Add("?def", MySqlDbType.String).Value = def.Select(p => p.Name).Distinct().Aggregate((x, y) => x + ", " + y);
 			cmd.Parameters.Add("?defally", MySqlDbType.String).Value = def.Select(p => p.Ally).Distinct().Aggregate((x, y) => x + ", " + y);
 
-            cmd.Parameters.Add("?attvalue", MySqlDbType.UInt32).Value = (uint)(AttShips.Aggregate(new ResourceSet(), (rs, ship) => rs + ship.Anzahl_Start * tkc.Query(ship.Name, con, DBPrefix)).RaidScore);
+            cmd.Parameters.Add("?attvalue", MySqlDbType.UInt32).Value = (uint)(AttShips.Aggregate(new ResourceSet(), (rs, ship) => rs + ship.Anzahl_Start * tkc.Kosten(ship.Name, con, DBPrefix)).RaidScore);
 			cmd.Parameters.Add("?attloss", MySqlDbType.UInt32).Value = attresslost.RaidScore;
-            cmd.Parameters.Add("?defvalue", MySqlDbType.UInt32).Value = (uint)(DefShips.Aggregate(new ResourceSet(), (rs, ship) => rs + ship.Anzahl_Start * tkc.Query(ship.Name, con, DBPrefix)).RaidScore);
+            cmd.Parameters.Add("?defvalue", MySqlDbType.UInt32).Value = (uint)(DefShips.Aggregate(new ResourceSet(), (rs, ship) => rs + ship.Anzahl_Start * tkc.Kosten(ship.Name, con, DBPrefix)).RaidScore);
 			cmd.Parameters.Add("?defloss", MySqlDbType.UInt32).Value = defresslost.RaidScore;
 			cmd.Parameters.Add("?raidvalue", MySqlDbType.UInt32).Value = pluenderung.RaidScore;
 			cmd.Parameters.Add("?bombvalue", MySqlDbType.UInt32).Value = Bombed.Aggregate((uint)0, (n, tp) => n + tp.Anzahl);
@@ -318,13 +320,13 @@ namespace IWDB.Parser {
 		}
         public IEnumerable<Fleet> AttFleets {
             get {
-                
                 foreach (XmlNode node in xml.SelectNodes("flotten_att/user")) {
                     yield return new Fleet() {
                         Name = node["name"].Attributes["value"].InnerText,
                         Ally = node["allianz_tag"].Attributes["value"].InnerText,
+                        StartCoords = node["startplanet"]["koordinaten"]["string"].Attributes["value"].InnerText,
                         Ships = node.SelectNodes("schiffe/schifftyp").OfType<XmlNode>().Select(n =>
-                            new Tuple<string, uint, uint, uint, uint>(
+                            new KbSchiff(
                                 n["name"].Attributes["value"].InnerText,
                                 uint.Parse(n["id"].Attributes["value"].InnerText),
                                 uint.Parse(n["anzahl_start"].Attributes["value"].InnerText),
@@ -337,12 +339,14 @@ namespace IWDB.Parser {
         }
         public IEnumerable<Fleet> DefFleets {
             get {
+                String coords = xml.SelectSingleNode("plani_data/koordinaten/string").Attributes["value"].InnerText;
                 foreach (XmlNode node in xml.SelectNodes("flotten_def/user").OfType<XmlNode>().Union(xml.SelectNodes("pla_def/user").OfType<XmlNode>())) {
                     yield return new Fleet() {
                         Name = node["name"].Attributes["value"].InnerText,
                         Ally = node["allianz_tag"].Attributes["value"].InnerText,
+                        StartCoords = coords,
                         Ships = node.SelectNodes("schiffe/schifftyp").OfType<XmlNode>().Select(n =>
-                            new Tuple<string, uint, uint, uint, uint>(
+                            new KbSchiff(
                                 n["name"].Attributes["value"].InnerText,
                                 uint.Parse(n["id"].Attributes["value"].InnerText),
                                 uint.Parse(n["anzahl_start"].Attributes["value"].InnerText),
@@ -385,26 +389,28 @@ namespace IWDB.Parser {
         public bool Plopp { get { return xml.SelectSingleNode("bomben/basis_zerstoert[@value='1']") != null; } }
 	}
 
-	class TechTreeKostenCache {
+	class TechTreeCache {
 		protected Dictionary<String, ResourceSet> kostenCache = new Dictionary<string, ResourceSet>();
+        protected DefaultDict<String, Dictionary<String, uint>> idCache = new DefaultDict<string, Dictionary<string, uint>>(() => new Dictionary<string, uint>());
 		public void Clear() {
 			lock(kostenCache) {
 				kostenCache.Clear();
+                idCache.Clear();
 			}
 		}
-		public ResourceSet Query(String schiffsName, MySqlConnection con, String DBPrefix) {
+		public ResourceSet Kosten(String name, MySqlConnection con, String DBPrefix) {
 			lock(kostenCache) {
 				ResourceSet ret = null;
-				if(kostenCache.TryGetValue(schiffsName, out ret))
+				if(kostenCache.TryGetValue(name, out ret))
 					return ret;
 				MySqlCommand cmd = new MySqlCommand(@"SELECT Dauer, bauE, bauS, bauC, bauV, bauEis, bauW, bauEn, bauCr, bauBev FROM " + DBPrefix + @"techtree_items AS techtree_items INNER JOIN " + DBPrefix + "techtree_stufen AS techtree_stufen ON techtree_items.ID=techtree_stufen.ItemID WHERE techtree_items.Name=?name AND techtree_items.type <> 'for'", con);
-				cmd.Parameters.Add("?name", MySqlDbType.String).Value = schiffsName;
+				cmd.Parameters.Add("?name", MySqlDbType.String).Value = name;
 				cmd.Prepare();
 				MySqlDataReader r = cmd.ExecuteReader();
 				try {
 					ret = new ResourceSet();
 					if(!r.Read()) {
-						kostenCache.Add(schiffsName, ret);
+						kostenCache.Add(name, ret);
 						return ret;
 					}
 					ret.Zeit = TimeSpan.FromSeconds(r.GetUInt32(0));
@@ -417,13 +423,39 @@ namespace IWDB.Parser {
 					ret.Energie = r.GetUInt32(7);
 					ret.Credits = r.GetUInt32(8);
 					ret.Bev = r.GetUInt32(9);
-					kostenCache.Add(schiffsName, ret);
+					kostenCache.Add(name, ret);
 				} finally {
 					r.Close();
 				}
 				return ret;
 			}
 		}
+        public uint ID(String name, String type, MySqlConnection con, String DBPrefix) {
+            lock (kostenCache) {
+                Dictionary<string, uint> cache = idCache[type];
+                uint ret = 0;
+                if (cache.TryGetValue(name, out ret))
+                    return ret;
+                MySqlCommand cmd = new MySqlCommand("SELECT ID FROM " + DBPrefix + "techtree_items WHERE name=?name AND type=?type", con);
+                cmd.Parameters.Add("?name", MySqlDbType.String).Value = name;
+                cmd.Parameters.Add("?type", MySqlDbType.String).Value = type;
+                cmd.Prepare();
+                object obj = cmd.ExecuteScalar();
+                if (obj != null) {
+                    ret = (uint)obj;
+                    cache.Add(name, ret);
+                    return ret;
+                }
+                MySqlCommand insert = new MySqlCommand("INSERT INTO " + DBPrefix + "techtree_items (name, type) VALUES (?name, ?type)", con);
+                insert.Parameters.Add("?name", MySqlDbType.String).Value = name;
+                insert.Parameters.Add("?type", MySqlDbType.String).Value = type;
+                insert.Prepare();
+                insert.ExecuteNonQuery();
+                ret = (uint)insert.LastInsertedId;
+                cache.Add(name, ret);
+                return ret;
+            }
+        }
 	}
 
 	class WarFilter : RequestHandler {
@@ -449,8 +481,8 @@ namespace IWDB.Parser {
 		MySqlConnection con;
         String connectionString;
         object warRefreshLock = new object();
-		public TechTreeKostenCache TechKostenCache;
-		public WarFilter(String DBPrefix, MySqlConnection con, TechTreeKostenCache tkc, String connectionString) {
+		public TechTreeCache TechKostenCache;
+		public WarFilter(String DBPrefix, MySqlConnection con, TechTreeCache tkc, String connectionString) {
 			this.DBPrefix = DBPrefix;
 			this.con = con;
 			this.TechKostenCache = tkc;
@@ -595,23 +627,12 @@ namespace IWDB.Parser {
                     }
                     cmd_flDel.ExecuteNonQuery();
                     cmd_scanDel.ExecuteNonQuery();
-                    String url = String.Format("http://www.icewars.de/portal/kb/de/sb.php?id={0}&md_hash={1}&typ=xml", tpl.Item2, tpl.Item3);
-                    XmlNode xml = IWCache.Query(url, con, DBPrefix);
-                    switch (xml.SelectSingleNode("scann/scann_typ/id").InnerText) {
-                        case "2": { //Sondierung (Gebäude/Ress)
-                                GebScan s = new GebScan(tpl.Item2, tpl.Item3);
-                                s.LoadXml(xml, con, DBPrefix, this);
-                                s.ToDB(con, DBPrefix, TechKostenCache);
-                                gebscan_cnt++;
-                            }
-                            break;
-                        case "3": { //Sondierung (Schiffe/Def/Ress)
-                                SchiffScan s = new SchiffScan(tpl.Item2, tpl.Item3);
-                                s.LoadXml(xml, con, DBPrefix, this);
-                                s.ToDB(con, DBPrefix, TechKostenCache);
-                                schiffscan_cnt++;
-                            } break;
-                    }
+                    IWScan scan = IWScan.LoadXml(con, DBPrefix, this, tpl.Item2, tpl.Item3);
+                    scan.ToDB(con, DBPrefix, TechKostenCache);
+                    if (scan is SchiffScan)
+                        schiffscan_cnt++;
+                    else if (scan is GebScan)
+                        gebscan_cnt++;
                 }
                 Log.WriteLine(LogLevel.E_NOTICE, DateTime.Now.ToString() + " " + gebscan_cnt + " Gebscans und " + schiffscan_cnt + " Schiffscans neu eingelesen!");
             } finally {
@@ -691,7 +712,7 @@ namespace IWDB.Parser {
         String DBPrefix;
         String connectionString;
         WarFilter warFilter;
-        TechTreeKostenCache tkc;
+        TechTreeCache tkc;
         object generatorLock = new object();
         public WarStats(String DBPrefix, String connectionString, WarFilter warFilter) {
             this.DBPrefix = DBPrefix;
@@ -700,23 +721,75 @@ namespace IWDB.Parser {
             this.tkc = warFilter.TechKostenCache;
         }
 
-        private StringBuilder FormatTable<T>(StringBuilder sb, DefaultDict<String, DefaultDict<String, T>> tbl, String title, String id, Func<T, T, T> Add) {
-            return FormatTable(sb, tbl, title, id, Add, el => el.ToString());
+        class SchiffSichtung {
+            public Kb Kb;
+            public String Name;
+            public String Ally;
+            public uint Anzahl;
+            public TimeSpan AnflugZeit;
+            public DateTime Zeit;
+            public String ZielCoords;
+            public String StartCoords;
         }
-        private StringBuilder FormatTable<T>(StringBuilder sb, DefaultDict<String, DefaultDict<String, T>> tbl, String title, String id, Func<T, T, T> Add, Func<T, String> formatter) {
-            IEnumerable<string> keys = tbl.Keys;
+
+        private int MeisteGleichzeitig(IEnumerable<SchiffSichtung> sichtungen, String schiff) {
+            List<SchiffSichtung> alle = new List<SchiffSichtung>(sichtungen.OrderBy(s => s.Zeit.Ticks));
+            MinimumFlowNetwork net = new MinimumFlowNetwork(2 * alle.Count + 2, 2 * alle.Count, 2 * alle.Count + 1);
+            for (int i = 0; i < alle.Count; ++i) {
+                SchiffSichtung s = alle[i];
+                net.c[net.s, 2 * i] = (int)s.Anzahl;
+                net.c[2 * i + 1, net.t] = (int)s.Anzahl;
+                net.c[2 * i, 2 * i + 1] = (int)s.Anzahl;
+                net.l[2 * i, 2 * i + 1] = (int)s.Anzahl;
+                DateTime startZeit = s.Zeit - s.AnflugZeit;
+                for (int j = 0; j < i; ++j) {
+                    SchiffSichtung s2 = alle[j];
+                    if (s2.Zeit + FlugRechner.MinZeit(s2.ZielCoords, s.StartCoords, schiff) <= startZeit) {
+                        net.c[2 * j + 1, 2 * i] = (int)s2.Anzahl;
+                    }
+                }
+            }
+            return net.MinFlow();
+        }
+
+        private StringBuilder FormatTable(StringBuilder sb, DefaultDict<String, DefaultDict<String, long>> tbl, String title, String id, DefaultDict<String, DefaultDict<String, long>> backgroundInfo = null, bool showsum = true, bool showpercent = false, Func<long, string> backgroundFormatter=null) {
+            Func<long, string> formatter = el => el.ToString("N0");
+            if (backgroundFormatter == null)
+                backgroundFormatter = formatter;
+            return FormatTable(sb, tbl, backgroundInfo, title, id, showsum, showpercent, (a1, a2) => a1 + a2, (a1, a2) => (double)a1 / a2, formatter, backgroundFormatter);
+        }
+        private StringBuilder FormatTable(StringBuilder sb, DefaultDict<String, DefaultDict<String, double>> tbl, String title, String id, DefaultDict<String, DefaultDict<String, double>> backgroundInfo = null, bool showsum = false, bool showpercent = false, Func<double, string> backgroundFormatter = null) {
+            Func<double, string> formatter = el => el.ToString("N0");
+            if (backgroundFormatter == null)
+                backgroundFormatter = formatter;
+            return FormatTable(sb, tbl, backgroundInfo, title, id, showsum, showpercent, (a1, a2) => a1 + a2, (a1, a2) => a1 / a2, formatter, backgroundFormatter);
+        }
+        private StringBuilder FormatTable<T>(StringBuilder sb, DefaultDict<String, DefaultDict<String, T>> tbl, DefaultDict<String, DefaultDict<String, T>> backgroundInfo, String title, String id, bool showSum, bool showPercent, Func<T, T, T> Add, Func<T, T, double> Div, Func<T, String> formatter, Func<T, String> backgroundFormatter) {
+            bool showInfo = backgroundInfo != null;
+            if (backgroundInfo == null)
+                backgroundInfo = new DefaultDict<string, DefaultDict<string, T>>();
+            IEnumerable<string> keys = tbl.Keys.Union(backgroundInfo.Keys).Distinct();
             sb.Append("<table class=\"tablesorter\" id=\""+id+"\"><thead><tr><th>").Append(Escape.Html(title)).Append("</th>");
-            keys.ForEach(k => sb.Append("<th>").Append(Escape.Html(k)).Append("</th>"));
-            sb.Append("<th>Gesamt</th></tr></thead><tbody>");
+            keys.ForEach(k => sb.Append("<th>").Append(Escape.Html(k)).Append("</th>").Append(showPercent?"<th style=\"width:70px;\">%</th>":""));
+            if(showSum)
+                sb.Append("<th>Gesamt</th>");
+            sb.Append("</tr></thead><tbody>");
             foreach (String ttle in tbl.Values.Aggregate(Enumerable.Empty<string>(), (acc,d) => acc.Union(d.Keys)).Distinct()) {
                 sb.Append("<tr><td>").Append(Escape.Html(ttle)).Append("</td>");
-                T sum = default(T);
+                T sum = keys.Select(k => tbl[k][ttle]).Aggregate(default(T), Add);
                 foreach(String k in keys) {
                     T t = tbl[k][ttle];
-                    sb.Append("<td>").Append(Escape.Html(formatter(t))).Append("</td>");
-                    sum = Add(sum, t);
+                    sb.Append("<td>").Append(Escape.Html(formatter(t)));
+                    if (showInfo)
+                        sb.Append(Escape.Html(backgroundFormatter(backgroundInfo[k][ttle])));
+                    sb.Append("</td>");
+                    if (showPercent) {
+                        double pcnt = 100 * Div(t, sum);
+                        sb.Append("<td>").Append(Escape.Html(pcnt.ToString("n0"))).Append("%</td>");
+                    }
                 }
-                sb.Append("<td>").Append(Escape.Html(formatter(sum))).Append("</td>");
+                if(showSum)
+                    sb.Append("<td>").Append(Escape.Html(formatter(sum))).Append("</td>");
                 sb.Append("</tr>");
             }
             sb.Append("</tbody></table><script type=\"text/javascript\">$(function(){$(\"#").Append(id).AppendLine("\").tablesorter();});</script>");
@@ -728,60 +801,81 @@ namespace IWDB.Parser {
             return ret;
         }
 
-        protected String GenerateStats(IEnumerable<Kb> kbs, WarFilter.War war, MySqlConnection con) {
+        protected String GenerateStats(List<Kb> kbs, List<GebScan> gebScans, List<SchiffScan> schiffScans, WarFilter.War war, MySqlConnection con) {
             StringBuilder stats = new StringBuilder();
-            stats.Append("Stats erstellt um ").Append(DateTime.Now.ToString()).AppendLine("<br />");
-            stats.AppendLine(kbs.Count() + " Kampfberichte verarbeitet");
+            stats.Append("Stats begonnen um ").Append(DateTime.Now.ToString()).AppendLine("<br />");
+            stats.AppendLine(kbs.Count() + " Kampfberichte verarbeitet<br />");
+            stats.AppendLine(gebScans.Count() + " Gebscans verarbeitet<br />");
+            stats.AppendLine(schiffScans.Count() + " Schiffscans verarbeitet<br />");
             stats.AppendLine("<h3>Angriffe</h3>");
             DefaultDict<String, DefaultDict<String, long>> angriffe = new DefaultDict<string, DefaultDict<string, long>>(() => new DefaultDict<string, long>());
             angriffe.AddRange(kbs.SelectMany(kb => kb.Attackers.Select(att => att.Ally).Distinct().Select(att => new { ally = att, win = kb.AttWin, bomb = kb.Bomb, plopp = kb.Plopp })).GroupBy(att => att.ally).Select(ally => new Tuple<string, DefaultDict<string, long>>(ally.Key, new DefaultDict<string, long>() { { "Angriffe", ally.Count() }, { "Siege", ally.Count(kb => kb.win) }, { "Bombings", ally.Count(kb => kb.bomb) }, { "Plopps", ally.Count(kb => kb.plopp) } })));
-            FormatTable(stats, angriffe, "Angriffe", "att_"+war.id, (a1, a2) => a1 + a2);
+            FormatTable(stats, angriffe, "Angriffe", "att_"+war.id, showpercent:true);
 
             stats.AppendLine("<h3>Verteidigungen</h3>");
             DefaultDict<String, DefaultDict<String, long>> verteidigungen = new DefaultDict<string, DefaultDict<string, long>>(() => new DefaultDict<string, long>());
             verteidigungen.AddRange(kbs.SelectMany(kb => kb.Defenders.Select(att => att.Ally).Distinct().Select(att => new { ally = att, win = kb.AttWin, bomb = kb.Bomb, plopp = kb.Plopp })).GroupBy(att => att.ally).Select(ally => new Tuple<string, DefaultDict<string, long>>(ally.Key, new DefaultDict<string, long>() { { "Verteidigungen", ally.Count() }, { "Siege", ally.Count(kb => !kb.win) }, { "Bombings", ally.Count(kb => kb.bomb) }, { "Plopps", ally.Count(kb => kb.plopp) } })));
-            FormatTable(stats, verteidigungen, "Verteidigungen", "def_" + war.id, (a1, a2) => a1 + a2);
+            FormatTable(stats, verteidigungen, "Verteidigungen", "def_" + war.id, showpercent:true);
 
             stats.AppendLine("<h3>Angriffe (Spieler)</h3>");
             DefaultDict<String, DefaultDict<String, long>> angriffeSpieler = new DefaultDict<string, DefaultDict<string, long>>(() => new DefaultDict<string, long>());
             angriffeSpieler.AddRange(kbs.SelectMany(kb => kb.Attackers.Select(att => att.Name).Distinct().Select(att => new { spieler = att, win = kb.AttWin, bomb = kb.Bomb, plopp = kb.Plopp })).GroupBy(att => att.spieler).Select(spieler => new Tuple<string, DefaultDict<string, long>>(spieler.Key, new DefaultDict<string, long>() { { "Angriffe", spieler.Count() }, { "Siege", spieler.Count(kb => kb.win) }, { "Bombings", spieler.Count(kb => kb.bomb) }, { "Plopps", spieler.Count(kb => kb.plopp) } })));
             angriffeSpieler = Transpose(angriffeSpieler); //Transponieren zum transponieren FTW!
-            FormatTable(stats, angriffeSpieler, "Spieler", "att_spieler_" + war.id, (a1, a2) => 0);
+            FormatTable(stats, angriffeSpieler, "Spieler", "att_spieler_" + war.id, showsum:false);
 
             stats.AppendLine("<h3>Verteidigungen (Spieler)</h3>");
             DefaultDict<String, DefaultDict<String, long>> verteidigungenSpieler = new DefaultDict<string, DefaultDict<string, long>>(() => new DefaultDict<string, long>());
             verteidigungenSpieler.AddRange(kbs.SelectMany(kb => kb.Defenders.Select(att => att.Name).Distinct().Select(att => new { spieler = att, win = kb.AttWin, bomb = kb.Bomb, plopp = kb.Plopp })).GroupBy(att => att.spieler).Select(spieler => new Tuple<string, DefaultDict<string, long>>(spieler.Key, new DefaultDict<string, long>() { { "Verteidigungen", spieler.Count() }, { "Siege", spieler.Count(kb => !kb.win) }, { "Bombings", spieler.Count(kb => kb.bomb) }, { "Plopps", spieler.Count(kb => kb.plopp) } })));
             verteidigungenSpieler = Transpose(verteidigungenSpieler);
-            FormatTable(stats, verteidigungenSpieler, "Spieler", "def_spieler_" + war.id, (a1, a2) => 0);
+            FormatTable(stats, verteidigungenSpieler, "Spieler", "def_spieler_" + war.id, showsum: false);
 
             stats.AppendLine("<h3>Verlorene Schiffe</h3>");
             DefaultDict<String, DefaultDict<String, long>> schiffeVerloren = new DefaultDict<string, DefaultDict<string, long>>(() => new DefaultDict<string, long>());
             foreach (IGrouping<string, Fleet> grp in kbs.SelectMany(kb => kb.DefFleets.Union(kb.AttFleets)).GroupBy(fl => fl.Ally)) {
-                schiffeVerloren.Add(grp.Key, new DefaultDict<string, long>().AddRange(grp.SelectMany(fl => fl.Ships).GroupBy(sh => sh.Item2).Select(gp => new Tuple<string, long>(gp.First().Item1, gp.Sum(sch => sch.Item5)))));
+                schiffeVerloren.Add(grp.Key, new DefaultDict<string, long>().AddRange(grp.SelectMany(fl => fl.Ships).GroupBy(sh => sh.SchiffID).Select(gp => new Tuple<string, long>(gp.First().Name, gp.Sum(sch => sch.Anzahl_Verlust)))));
             }
-            FormatTable(stats, schiffeVerloren, "Schiff", "schiff_" + war.id, (a1, a2) => a1 + a2);
+            FormatTable(stats, schiffeVerloren, "Schiff", "schiff_" + war.id, showpercent: true);
+
+            stats.AppendLine("<h3>Gesichtete Schiffe</h3>");
+            Dictionary<string, bool> interessanteSchiffe = new Dictionary<string, bool>() {
+                {"Gatling", true},{"Succubus", true},{"Kronk", true},{"Atombomber", true},{"Manta", true},{"Stormbringer", true},{"X12 (Carrier)", true},{"Zeus", true}
+            };
+            DefaultDict<string, DefaultDict<String, long>> schiffeGesichtet = new DefaultDict<string, DefaultDict<string, long>>(() => new DefaultDict<string, long>());
+            foreach (IGrouping<string, SchiffSichtung> allies in kbs.SelectMany(kb => kb.AttFleets.Union(kb.DefFleets).SelectMany(fl => fl.Ships.Select(sch => new SchiffSichtung() { Kb = kb, Name = sch.Name, Zeit = IWDBUtils.fromUnixTimestamp(kb.TimeStamp), AnflugZeit = fl.StartCoords == kb.DstCoords ? TimeSpan.Zero : FlugRechner.MinZeit(fl.StartCoords, kb.DstCoords, sch.Name).Add(TimeSpan.FromMinutes(15)), Anzahl = sch.Anzahl_Ende, Ally = fl.Ally, StartCoords = fl.StartCoords, ZielCoords = kb.DstCoords }))).GroupBy(s => s.Ally)) {
+                foreach(IGrouping<string, SchiffSichtung> sichtungen in allies.GroupBy(s=>s.Name)) {
+                    if (interessanteSchiffe.ContainsKey(sichtungen.Key)) {
+                        schiffeGesichtet[allies.Key][sichtungen.Key] = MeisteGleichzeitig(sichtungen, sichtungen.Key);
+                    }
+                }
+            }
+            FormatTable(stats, schiffeGesichtet, "Schiff", "schiffe_gesichtet_" + war.id);
 
             stats.AppendLine("<h3>Verlorene Gebäude</h3>");
             DefaultDict<String, DefaultDict<String, long>> gebsVerloren = new DefaultDict<string, DefaultDict<string, long>>(() => new DefaultDict<string, long>());
-            gebsVerloren.AddRange(kbs.Where(kb => kb.Bomb).GroupBy(kb => kb.Owner.Ally).Select(ally => new Tuple<string, DefaultDict<string, long>>(ally.Key, new DefaultDict<string, long>().AddRange(ally.SelectMany(a => a.Bombed).GroupBy(geb => geb.GebID).Select(grp => new Tuple<string, long>(grp.First().Name, grp.Sum(geb=>geb.Anzahl)))))));
-            FormatTable(stats, gebsVerloren, "Gebäude", "geb_" + war.id, (a1, a2) => a1 + a2);
+            gebsVerloren.AddRange(kbs.Where(kb => kb.Bomb).GroupBy(kb => kb.Owner.Ally).Select(ally => new Tuple<string, DefaultDict<string, long>>(ally.Key, new DefaultDict<string, long>().AddRange(ally.SelectMany(a => a.Bombed).GroupBy(geb => geb.GebID).Select(grp => new Tuple<string, long>(grp.First().Name, grp.Sum(geb => geb.Anzahl)))))));
+            DefaultDict<String, DefaultDict<String, long>> gebsGesichtet = new DefaultDict<string, DefaultDict<string, long>>(() => new DefaultDict<string, long>());
+            gebsGesichtet.AddRange(gebScans.GroupBy(s => s.Owner.Ally).Select(ally => new Tuple<string, DefaultDict<string, long>>(ally.Key, ally.GroupBy(s => s.Coords.ToString()).Select(g => g.MaxElem(s => s.Time.Ticks)).SelectMany(s => s.Gebs).Aggregate(new DefaultDict<string, long>(), (d, g) => { d[g.name] += g.anz; return d; }))));
+            FormatTable(stats, gebsVerloren, "Gebäude", "geb_" + war.id, showpercent: true, backgroundInfo: gebsGesichtet, backgroundFormatter:c => " / "+c.ToString("n0"));
 
             stats.AppendLine("<h3>Verlorene Ress (Schiffe)</h3>");
-            DefaultDict<string, DefaultDict<String, float>> ressVerloren = new DefaultDict<string, DefaultDict<string, float>>();
+            DefaultDict<string, DefaultDict<String, double>> ressVerloren = new DefaultDict<string, DefaultDict<string, double>>();
             foreach (var grp in kbs.SelectMany(kb => kb.DefFleets.Union(kb.AttFleets)).GroupBy(fl => fl.Ally)) {
-                ResourceSet rset = grp.SelectMany(fl => fl.Ships).Aggregate(new ResourceSet(), (rs, s) => rs + tkc.Query(s.Item1, con, DBPrefix) * s.Item5);
+                ResourceSet rset = grp.SelectMany(fl => fl.Ships).Aggregate(new ResourceSet(), (rs, s) => rs + tkc.Kosten(s.Name, con, DBPrefix) * s.Anzahl_Verlust);
                 if (rset.RaidScore <= float.Epsilon)
                     continue;
                 ressVerloren.Add(grp.Key, rset.AsDict());
             }
-            FormatTable(stats, ressVerloren, "Ress", "ress_" + war.id, (a1, a2) => a1 + a2, fl => fl.ToString("#,#"));
-            
+            FormatTable(stats, ressVerloren, "Ress", "ress_" + war.id, showsum:true, showpercent: true);
+
+            stats.Append("Stats erstellt um ").Append(DateTime.Now.ToString()).AppendLine("<br />");
+
             //Werften pro Ally
             //Planeten ohne Flottenscanner
             //Planeten mit Galascannern
             //Nach Schiffen: Verluste / Spieler
             //Ress durch Bombings verloren
             //Anzahl Schiffe
+            //Gesamtzahl Gebäude bei den Gebäudeverlusten dabei schreiben
 
             //für einzlene Schiffe berechnen welcher Spieler wie viel verloren hat
             //aufhübschen ^^
@@ -798,24 +892,38 @@ namespace IWDB.Parser {
                     MySqlCommand kbSelect = new MySqlCommand(@"SELECT iwid, hash FROM " + DBPrefix + "war_kbs WHERE warid=?warid", con);
                     kbSelect.Parameters.Add("?warid", MySqlDbType.UInt32).Value = warid;
                     MySqlDataReader r = kbSelect.ExecuteReader();
-                    List<Pair<uint, string>> l = new List<Pair<uint, string>>();
+                    List<Tuple<uint, string>> kampfberichte = new List<Tuple<uint, string>>();
                     try {
                         while (r.Read()) {
-                            l.Add(new Pair<uint, string>(r.GetUInt32(0), r.GetString(1)));
+                            kampfberichte.Add(new Tuple<uint, string>(r.GetUInt32(0), r.GetString(1)));
                         }
                     } finally {
                         r.Close();
                     }
-                    MySqlCommand statsInsert = new MySqlCommand(@"INSERT INTO " + DBPrefix + @"war_stats (id, stats) VALUES (?id, ?stats) on duplicate key update stats=VALUES(stats)", con);
-                    statsInsert.Parameters.Add("?id", MySqlDbType.UInt32);
-                    statsInsert.Parameters.Add("?stats", MySqlDbType.Text);
-                    statsInsert.Prepare();
-                    IEnumerable<IGrouping<WarFilter.War, Kb>> kbs = l.Select(p => new Kb(p.Item1, p.Item2, con, DBPrefix)).GroupBy(kb => warFilter.getWar(kb.AllyTags.First(tag => warFilter.getWar(tag, kb.TimeStamp) != null), kb.TimeStamp));
-                    foreach (IGrouping<WarFilter.War, Kb> grp in kbs) {
-                        statsInsert.Parameters["?id"].Value = grp.Key.id;
-                        statsInsert.Parameters["?stats"].Value = GenerateStats(grp, grp.Key, con);
-                        statsInsert.ExecuteNonQuery();
+                    MySqlCommand scanSelect = new MySqlCommand(@"SELECT iwid, iwhash FROM " + DBPrefix + "scans WHERE warid=?warid", con);
+                    scanSelect.Parameters.Add("?warid", MySqlDbType.UInt32).Value = warid;
+                    r = scanSelect.ExecuteReader();
+                    List<Tuple<uint, string>> scans = new List<Tuple<uint, string>>();
+                    try {
+                        while (r.Read()) {
+                            scans.Add(new Tuple<uint, string>(r.GetUInt32(0), r.GetString(1)));
+                        }
+                    } finally {
+                        r.Close();
                     }
+
+                    IEnumerable<Kb> kbs = kampfberichte.Select(p => new Kb(p.Item1, p.Item2, con, DBPrefix));
+                    WarFilter.War war = kbs.SelectMany(kb => kb.Attackers.Union(kb.Defenders).Select(s => warFilter.getWar(s.Ally, kb.TimeStamp))).First(w => w != null);
+                    if (war == null) {
+                        Log.WriteLine(LogLevel.E_WARNING, "Warstats ohne Krieg: #" + warid);
+                        return;
+                    }
+                    IEnumerable<IWScan> scs = scans.Select(s => IWScan.LoadXml(con, DBPrefix, warFilter, s.Item1, s.Item2));
+                    String stats = GenerateStats(kbs.ToList(), scs.OfType<GebScan>().ToList(), scs.OfType<SchiffScan>().ToList(), war, con);
+                    MySqlCommand statsInsert = new MySqlCommand(@"INSERT INTO " + DBPrefix + @"war_stats (id, stats) VALUES (?id, ?stats) on duplicate key update stats=VALUES(stats)", con);
+                    statsInsert.Parameters.Add("?id", MySqlDbType.UInt32).Value = war.id;
+                    statsInsert.Parameters.Add("?stats", MySqlDbType.Text).Value = stats;
+                    statsInsert.ExecuteNonQuery();
                 } finally {
                     con.Close();
                 }
@@ -834,4 +942,108 @@ namespace IWDB.Parser {
             get { return "warstats"; }
         }
     }
+
+
+    class Speed {
+        public int Gal;
+        public int Sol;
+    }
+    class Coords {
+        public int gal;
+        public int sys;
+        public int pla;
+        public Coords() { }
+        public Coords(String coords) {
+            string[] parts = coords.Split(new char[] { ':' }, 3);
+            Check.Cond(parts.Length != 3, "coords sollen im Format gala:sys:pla sein!");
+            gal = int.Parse(parts[0]);
+            sys = int.Parse(parts[1]);
+            pla = int.Parse(parts[2]);
+        }
+        public override string ToString() {
+            return gal + ":" + sys + ":" + pla;
+        }
+    }
+    static class FlugRechner {
+        static DefaultDict<string, Speed> speedCache = new DefaultDict<string, Speed>(() => new Speed() { Gal = int.MaxValue, Sol = int.MaxValue }) {
+            {"Kamel Z-98 (Hyperraumtransporter Klasse 1)", new Speed() {Gal=4500, Sol=500}},
+            {"Waschbär (Hyperraumtransporter Klasse 2)", new Speed() {Gal=4300, Sol=500}},
+            {"Zeus", new Speed() {Gal=5600, Sol=200}},
+            {"X12 (Carrier)", new Speed() {Gal=4900, Sol=600}},
+            /* Hack: gehe davon aus dass die Schiffe transportiert werden */
+            {"Stormbringer", new Speed() {Gal=4900, Sol=600}},
+            {"Manta", new Speed() {Gal=4900, Sol=600}},
+            {"Atombomber", new Speed() {Gal=4900, Sol=600}},
+            /* \Hack */
+            {"Kronk", new Speed() {Gal=5700, Sol=450}},
+            {"Succubus", new Speed() {Gal=6000, Sol=670}},
+            {"Gatling", new Speed() {Gal=5900, Sol=750}},
+        };
+        private static List<Coords> sgCache = new List<Coords>();
+        
+        public static readonly TimeSpan StargateFlug = TimeSpan.FromMinutes(10);
+        public static readonly TimeSpan TransportAnkunft = TimeSpan.FromMinutes(5);
+        public static readonly TimeSpan AngriffAnkunft = TimeSpan.FromMinutes(15);
+        public static readonly TimeSpan SondierungAnkunft = TimeSpan.FromMinutes(5);
+        public static void ReloadCache(String DBPrefix, MySqlConnection con) {
+            lock (sgCache) {
+                MySqlCommand cmd = new MySqlCommand("SELECT gala, sys, pla FROM " + DBPrefix + "universum WHERE objekttyp='Raumstation'", con);
+                MySqlDataReader r = cmd.ExecuteReader();
+                sgCache.Clear();
+                try {
+                    while (r.Read()) {
+                        sgCache.Add(new Coords() { gal = r.GetInt32(0), sys = r.GetInt32(1), pla = r.GetInt32(2) });
+                    }
+                } finally {
+                    r.Close();
+                }
+                sgCache.Sort((c1, c2) => c1.gal < c2.gal ? -1 : c1.gal > c2.gal ? 1 : c1.sys < c2.sys ? -1 : c1.sys > c2.sys ? 1 : (int)c1.pla - (int)c2.pla);
+            }
+        }
+        private static Coords NextSg(Coords c) {
+            lock (sgCache) {
+                return sgCache.MaxElem(sg => -((sg.gal - c.gal) * (sg.gal - c.gal) + (sg.sys - c.sys) * (sg.sys - c.sys) + (sg.pla - c.pla) * (sg.pla - c.pla)));
+            }
+        }
+        public static TimeSpan SgZeit(String from, String to, String schiff) {
+            return SgZeit(new Coords(from), new Coords(to), schiff);
+        }
+        private static TimeSpan SgZeit(Coords s, Coords d, String schiff) {
+            Coords sg_s = NextSg(s);
+            Coords sg_d = NextSg(d);
+            if (sg_s == null || sg_d == null || sg_s == sg_d)
+                return TimeSpan.MaxValue;
+            return Zeit(s, sg_s, schiff) + StargateFlug + Zeit(sg_d, d, schiff);
+        }
+
+        public static TimeSpan Zeit(String from, String to, String schiff) {
+            return Zeit(new Coords(from), new Coords(to), schiff);
+        }
+        private static TimeSpan Zeit(Coords s, Coords d, String schiff) {
+            if (s.gal == d.gal && s.sys == d.sys)
+                return TimeSpan.FromSeconds(1500000.0* Math.Log(Math.Abs(d.pla - s.pla) + 6) / speedCache[schiff].Sol);
+            int galspeed = speedCache[schiff].Gal;
+            if (galspeed == 0)
+                return TimeSpan.MaxValue;
+            int mod = s.gal != d.gal ? 100 : 5;
+            double gal = Math.Abs(s.gal - d.gal);
+            double sol = Math.Abs(s.sys - d.sys);
+            double pla = Math.Abs(s.pla - d.pla);
+            return TimeSpan.FromSeconds((15000000 / galspeed) * Math.Pow(((3000 * gal * gal) / Math.Log(gal + 50) + (mod * sol * Math.Max(3, sol)) / Math.Log(sol + 2) + pla), 0.25));
+        }
+        public static TimeSpan MinZeit(String from, String to, String schiff) {
+            Coords s = new Coords(from);
+            Coords d = new Coords(to);
+            TimeSpan direkt = Zeit(s, d, schiff);
+            TimeSpan sg = SgZeit(s, d, schiff);
+            if (direkt < sg)
+                return direkt;
+            return sg;
+        }
+        public static TimeSpan MaxZeit(String schiff) {
+            return Zeit("1:1:1", "20:199:20", schiff);
+        }
+    }
+
+
 }

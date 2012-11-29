@@ -337,6 +337,54 @@ namespace Utils {
 			foreach(string s in l)
 				yield return s.Trim();
 		}
+        public static T MaxElem<T>(this IEnumerable<T> l, Func<T, int> f) {
+            bool first = true;
+            int max = default(int);
+            T ret = default(T);
+            foreach (T el in l) {
+                int possible_max = f(el);
+                if (first || possible_max > max) {
+                    max = possible_max;
+                    ret = el;
+                    first = false;
+                }
+            }
+            if (first)
+                throw new InvalidOperationException("Enumeration is empty!");
+            return ret;
+        }
+        public static T MaxElem<T>(this IEnumerable<T> l, Func<T, long> f)  {
+            bool first = true;
+            long max = default(long);
+            T ret = default(T);
+            foreach (T el in l) {
+                long possible_max = f(el);
+                if (first || possible_max > max) {
+                    max = possible_max;
+                    ret = el;
+                    first = false;
+                }
+            }
+            if (first)
+                throw new InvalidOperationException("Enumeration is empty!");
+            return ret;
+        }
+        public static T MaxElem<T>(this IEnumerable<T> l, Func<T, double> f) {
+            bool first = true;
+            double max = default(double);
+            T ret = default(T);
+            foreach (T el in l) {
+                double possible_max = f(el);
+                if (first || possible_max > max) {
+                    max = possible_max;
+                    ret = el;
+                    first = false;
+                }
+            }
+            if (first)
+                throw new InvalidOperationException("Enumeration is empty!");
+            return ret;
+        }
 	}
     public static class Utils {
         public static void TimeLimited(int milliseconds, Action<object> a) {
@@ -354,7 +402,6 @@ namespace Utils {
             return Xml(unescaped);
         }
     }
-
 
 	public class Re {
 		public static Match Match(String input, String pattern) {
@@ -637,6 +684,443 @@ namespace Utils {
 			return enc.GetString(resp);
 		}
 	}
+
+    //http://www.codeproject.com/Articles/126751/Priority-queue-in-C-with-the-help-of-heap-data-str
+    public class PriorityQueue<TPriority, TValue> {
+        private List<KeyValuePair<TPriority, TValue>> _baseHeap;
+        private IComparer<TPriority> _comparer;
+
+        public PriorityQueue()
+            : this(Comparer<TPriority>.Default) {
+        }
+
+        public PriorityQueue(IComparer<TPriority> comparer) {
+            if (comparer == null)
+                throw new ArgumentNullException();
+
+            _baseHeap = new List<KeyValuePair<TPriority, TValue>>();
+            _comparer = comparer;
+        }
+
+        public void Enqueue(TPriority priority, TValue value) {
+            Insert(priority, value);
+        }
+
+        private void Insert(TPriority priority, TValue value) {
+            KeyValuePair<TPriority, TValue> val =
+                new KeyValuePair<TPriority, TValue>(priority, value);
+            _baseHeap.Add(val);
+
+            // heapify after insert, from end to beginning
+            HeapifyFromEndToBeginning(_baseHeap.Count - 1);
+        }
+
+        private int HeapifyFromEndToBeginning(int pos) {
+            if (pos >= _baseHeap.Count) return -1;
+
+            // heap[i] have children heap[2*i + 1] and heap[2*i + 2] and parent heap[(i-1)/ 2];
+
+            while (pos > 0) {
+                int parentPos = (pos - 1) / 2;
+                if (_comparer.Compare(_baseHeap[parentPos].Key, _baseHeap[pos].Key) > 0) {
+                    ExchangeElements(parentPos, pos);
+                    pos = parentPos;
+                } else break;
+            }
+            return pos;
+        }
+
+        private void ExchangeElements(int pos1, int pos2) {
+            KeyValuePair<TPriority, TValue> val = _baseHeap[pos1];
+            _baseHeap[pos1] = _baseHeap[pos2];
+            _baseHeap[pos2] = val;
+        }
+        public TValue DequeueValue() {
+            return Dequeue().Value;
+        }
+
+        public KeyValuePair<TPriority, TValue> Dequeue() {
+            if (!IsEmpty) {
+                KeyValuePair<TPriority, TValue> result = _baseHeap[0];
+                DeleteRoot();
+                return result;
+            } else
+                throw new InvalidOperationException("Priority queue is empty");
+        }
+
+        private void DeleteRoot() {
+            if (_baseHeap.Count <= 1) {
+                _baseHeap.Clear();
+                return;
+            }
+
+            _baseHeap[0] = _baseHeap[_baseHeap.Count - 1];
+            _baseHeap.RemoveAt(_baseHeap.Count - 1);
+
+            // heapify
+            HeapifyFromBeginningToEnd(0);
+        }
+
+        private void HeapifyFromBeginningToEnd(int pos) {
+            if (pos >= _baseHeap.Count) return;
+
+            // heap[i] have children heap[2*i + 1] and heap[2*i + 2] and parent heap[(i-1)/ 2];
+
+            while (true) {
+                // on each iteration exchange element with its smallest child
+                int smallest = pos;
+                int left = 2 * pos + 1;
+                int right = 2 * pos + 2;
+                if (left < _baseHeap.Count &&
+                    _comparer.Compare(_baseHeap[smallest].Key, _baseHeap[left].Key) > 0)
+                    smallest = left;
+                if (right < _baseHeap.Count &&
+                    _comparer.Compare(_baseHeap[smallest].Key, _baseHeap[right].Key) > 0)
+                    smallest = right;
+
+                if (smallest != pos) {
+                    ExchangeElements(smallest, pos);
+                    pos = smallest;
+                } else break;
+            }
+        }
+        public KeyValuePair<TPriority, TValue> Peek() {
+            if (!IsEmpty)
+                return _baseHeap[0];
+            else
+                throw new InvalidOperationException("Priority queue is empty");
+        }
+
+        public TValue PeekValue() {
+            return Peek().Value;
+        }
+
+        public bool IsEmpty {
+            get { return _baseHeap.Count == 0; }
+        }
+    }
+
+}
+
+namespace Flow {
+    using Utils;
+
+    public class MaximumFlowNetwork {
+
+        public class Pair<T1, T2> {
+            public T1 Item1;
+            public T2 Item2;
+        }
+
+        public MaximumFlowNetwork(int cNodes, int s, int t) {
+            Check.RangeCond(s >= cNodes, "s >=< cNodes");
+            Check.RangeCond(t >= cNodes, "t >=< cNodes");
+            this.cNodes = cNodes;
+            this.s = s;
+            this.t = t;
+            this.excess = new int[cNodes];
+            height = new int[cNodes];
+            c = new int[cNodes,cNodes];
+            f = new int[cNodes, cNodes];
+        }
+
+        public readonly int cNodes;
+        public readonly int s, t;
+        private readonly int[] excess;
+        private readonly int[] height;
+        public readonly int[,] c;
+        public readonly int[,] f;
+        private void InitPP() {
+            for (int i = 0; i < cNodes; ++i) {
+                height[i] = 0;
+                if (i != s && i != t)
+                    excess[i] = c[s, i];
+                else
+                    excess[i] = 0;
+                f[s, i] = c[s, i];
+                f[i, s] = -c[s, i];
+            }
+            height[s] = cNodes;
+        }
+        private void Push(int u, int v) {
+            int tmp = Math.Min(excess[u], c[u, v] - f[u, v]);
+            f[u, v] += tmp;
+            f[v, u] = -f[u, v];
+            if (u != s && u != t)
+                excess[u] -= tmp;
+            if (v != s && v != t)
+                excess[v] += tmp;
+        }
+        private void Lift(int u) {
+            int min = 2 * cNodes;
+            for (int i = 0; i < cNodes; ++i)
+                if ((c[u,i] - f[u,i]) > 0 && height[i] + 1 < min)
+                    min = height[i] + 1;
+            height[u] = min;
+        }
+        public int MaxFlow() {
+            //Highest-Label Preflow-Push
+            //This is a stub implementation.
+            //Should use Priority Queue instead of linear search
+            InitPP();
+            while (true) {
+                int cur = -1;
+                for (int i = 0; i < cNodes; ++i)
+                    if (excess[i] > 0 && (cur == -1 || height[i] > height[cur]))
+                        cur = i;
+                if (cur == -1)
+                    break;
+                for (int i = 0; i < cNodes; ++i) {
+                    if ((c[cur,i] - f[cur,i]) > 0 && (height[cur] == height[i] + 1))
+                        Push(cur, i);
+                    if (excess[cur] == 0)
+                        break;
+                }
+                if (excess[cur] > 0)
+                    Lift(cur);
+            }
+
+            int ret = 0;
+            for (int i = 0; i < cNodes; ++i) {
+                ret += f[s, i];
+            }
+            return ret;
+        }
+
+        public static void Test() {
+            Debug.Assert(Test1());
+            Debug.Assert(Test2());
+            Debug.Assert(Test3());
+            Debug.Assert(Test4());
+            Debug.Assert(Test5());
+            Debug.Assert(Test6());
+        }
+
+        private static bool Test1() {
+            MaximumFlowNetwork net = new MaximumFlowNetwork(2, 0, 1);
+            net.c[0, 1] = 10;
+            long flow = net.MaxFlow();
+            return flow == 10;
+        }
+        private static bool Test2() {
+            MaximumFlowNetwork net = new MaximumFlowNetwork(3, 0, 2);
+            net.c[0, 1] = 8;
+            net.c[1, 2] = 12;
+            long flow = net.MaxFlow();
+            return flow == 8;
+        }
+        private static bool Test3() {
+            MaximumFlowNetwork net = new MaximumFlowNetwork(4, 0, 3);
+            net.c[0, 1] = 7;
+            net.c[0, 2] = 8;
+            net.c[1, 3] = 3;
+            net.c[2, 3] = 10;
+            long flow = net.MaxFlow();
+            return flow == 11;
+        }
+        private static bool Test4() {
+            MaximumFlowNetwork net = new MaximumFlowNetwork(4, 0, 3);
+            net.c[0, 1] = 7;
+            net.c[0, 2] = 8;
+            net.c[1, 3] = 3;
+            net.c[1, 2] = int.MaxValue;
+            net.c[2, 3] = 10;
+            long flow = net.MaxFlow();
+            return flow == 13;
+        }
+        private static bool Test6() {
+            MaximumFlowNetwork net = new MaximumFlowNetwork(4, 2, 3);
+            net.c[0, 1] = int.MaxValue;
+            net.c[1, 0] = int.MaxValue;
+            net.c[0, 3] = 17;
+            net.c[2, 1] = 17;
+            long flow = net.MaxFlow();
+            return flow == 17;
+        }
+        private static bool Test5() {
+            MaximumFlowNetwork net = new MaximumFlowNetwork(4, 0, 3);
+            net.c[0, 1] = 17;
+            net.c[1, 2] = int.MaxValue;
+            net.c[2, 1] = int.MaxValue;
+            net.c[2, 3] = 17;
+            long flow = net.MaxFlow();
+            return flow == 17;
+        }
+    }
+    public class MinimumFlowNetwork {
+        public readonly int cNodes;
+        public readonly int s, t;
+        private readonly int[] e; //excess
+        private readonly int[] d; //distance
+        public readonly int[,] l; //lower bound
+        public readonly int[,] c; //capacity = upper bound
+        private readonly int[,] f; //current flow
+        private readonly bool[] enQ;
+
+        public MinimumFlowNetwork(int cNodes, int s, int t) {
+            Check.RangeCond(s >= cNodes, "s >= cNodes");
+            Check.RangeCond(t >= cNodes, "t >= cNodes");
+            Check.Cond(s == t, "s == t");
+            this.cNodes = cNodes;
+            this.s = s;
+            this.t = t;
+            e = new int[cNodes];
+            d = new int[cNodes];
+            l = new int[cNodes,cNodes];
+            c = new int[cNodes, cNodes];
+            f = new int[cNodes, cNodes];
+            enQ = new bool[cNodes];
+        }
+        private IEnumerable<int> Neighbors(int node) {
+            for (int i = 0; i < cNodes; ++i)
+                if ((c[node, i] - f[node, i]) != 0)
+                    yield return i;
+        }
+        private IEnumerable<int> Incoming(int node) {
+            for (int i = 0; i < cNodes; ++i)
+                if ((c[i, node] - f[i, node]) > 0)
+                    yield return i;
+        }
+        private IEnumerable<int> Admissible(int node) {
+            for (int i = 0; i < cNodes; ++i)
+                if ((c[i, node] - f[i, node]) > 0 && d[node] == d[i] + 1)
+                    yield return i;
+        }
+        private bool InitPP() {
+            for (int i = 0; i < d.Length; ++i)
+                d[i] = 0;
+            Queue<int> Q = new Queue<int>();
+            d[s] = -1;
+            Q.Enqueue(s);
+            while (Q.Count > 0) {
+                int node = Q.Dequeue();
+                foreach (int neighb in Neighbors(node)) {
+                    if (d[neighb] == -1) {
+                        d[neighb] = d[node] + 1;
+                        Q.Enqueue(neighb);
+                    }
+                }
+            }
+            return d[t] != -1;
+        }
+
+        private bool GenFeasibleF() {
+            MaximumFlowNetwork maxfl = new MaximumFlowNetwork(cNodes + 2, cNodes, cNodes + 1);
+            int sum_s = 0;
+            for (int i = 0; i < cNodes; ++i) {
+                int b = 0;
+                for (int j = 0; j < cNodes; ++j) {
+                    maxfl.c[i, j] = c[i, j] - l[i, j];
+                    b += l[j, i] - l[i, j];
+                }
+                if (b > 0) {
+                    maxfl.c[maxfl.s, i] = b;
+                    sum_s += b;
+                } else {
+                    maxfl.c[i, maxfl.t] = -b;
+                }
+            }
+            maxfl.c[t, s] = int.MaxValue;
+            int flow = maxfl.MaxFlow();
+            if (sum_s != flow)
+                return false;
+            for (int i = 0; i < cNodes; ++i) {
+                for (int j = 0; j < cNodes; ++j)
+                    f[i, j] = maxfl.f[i, j] + l[i, j];
+            }
+            f[t, s] -= sum_s;
+            f[s, t] += sum_s;
+            return true;
+        }
+
+        public int MinFlow() {
+            if (!GenFeasibleF())
+                return -1;
+            MaximumFlowNetwork back = new MaximumFlowNetwork(cNodes, t, s);
+            for (int i = 0; i < cNodes; ++i) {
+                for (int j = 0; j < cNodes; ++j) {
+                    back.c[i, j] = c[i, j] - f[i, j];
+                }
+            }
+            int res = back.MaxFlow();
+            int ret = 0;
+            for (int i = 0; i < cNodes; ++i)
+                ret += f[s, i] + back.f[s, i];
+            return ret;
+        }
+        public static void Test() {
+            Debug.Assert(Test3());
+            Debug.Assert(Test1());
+            Debug.Assert(Test2());
+            Debug.Assert(Test4());
+            Debug.Assert(Test5());
+            Debug.Assert(Test6());
+        }
+        public static bool Test4() {
+            Flow.MinimumFlowNetwork net = new MinimumFlowNetwork(5, 0, 1);
+            net.c[net.s, 2] = int.MaxValue;
+            net.c[net.s, 4] = int.MaxValue;
+            net.c[2, 3] = int.MaxValue;
+            net.c[4, 3] = int.MaxValue;
+            net.c[3, net.t] = int.MaxValue;
+            net.c[4, net.t] = int.MaxValue;
+            net.l[net.s, 4] = 1;
+            net.l[2, 3] = 2;
+            long flow = net.MinFlow();
+            return flow == 3;
+        }
+        private static bool Test1() {
+            Flow.MinimumFlowNetwork net = new MinimumFlowNetwork(2, 0, 1);
+            net.c[net.s, net.t] = int.MaxValue;
+            net.l[net.s, net.t] = 17;
+            long flow = net.MinFlow();
+            return flow == 17;
+        }
+        private static bool Test2() {
+            Flow.MinimumFlowNetwork net = new MinimumFlowNetwork(2, 0, 1);
+            net.c[net.s, net.t] = int.MaxValue;
+            net.l[net.s, net.t] = 0;
+            long flow = net.MinFlow();
+            return flow == 0;
+        }
+        private static bool Test3() {
+            Flow.MinimumFlowNetwork net = new MinimumFlowNetwork(3, 0, 2);
+            net.c[net.s, 1] = int.MaxValue;
+            net.l[net.s, 1] = 10;
+            net.c[1, net.t] = int.MaxValue;
+            net.l[1, net.t] = 0;
+            long flow = net.MinFlow();
+            return flow == 10;
+        }
+        private static bool Test5() {
+            Flow.MinimumFlowNetwork net = new MinimumFlowNetwork(5, 0, 1);
+            net.c[net.s, 2] = int.MaxValue;
+            net.c[net.s, 4] = int.MaxValue;
+            net.c[2, 3] = int.MaxValue;
+            net.c[4, 3] = int.MaxValue;
+            net.c[3, net.t] = int.MaxValue;
+            net.c[4, net.t] = int.MaxValue;
+            net.l[net.s, 4] = 1;
+            net.l[4, net.t] = 20;
+            net.l[2, 3] = 2;
+            long flow = net.MinFlow();
+            return flow == 22;
+        }
+        private static bool Test6() {
+            Flow.MinimumFlowNetwork net = new MinimumFlowNetwork(5, 0, 1);
+            net.c[net.s, 2] = int.MaxValue;
+            net.c[net.s, 4] = int.MaxValue;
+            net.c[2, 3] = int.MaxValue;
+            net.c[3, 4] = int.MaxValue;
+            net.c[3, net.t] = int.MaxValue;
+            net.c[4, net.t] = int.MaxValue;
+            net.l[net.s, 4] = 1;
+            net.l[4, net.t] = 20;
+            net.l[2, 3] = 2;
+            long flow = net.MinFlow();
+            return flow == 20;
+        }
+    }
 }
 
 namespace Short {

@@ -15,7 +15,7 @@ $schiffe = array(
 	array('type' => 'schiff','name' => 'Eraser 90%', 'gal' => 4900*0.9, 'sol' => 630*0.9, 'war' => true),
 	array('type' => 'schiff','name' => 'Eraser 95%', 'gal' => 4900*0.95, 'sol' => 630*0.95, 'war' => true),
 	array('type' => 'schiff','name' => 'Eraser', 'gal' => 4900, 'sol' => 630, 'war' => true),
-	array('type' => 'schiff','name' => 'X12 (Carrier)', 'gal' => 4900, 'sol' => 600, 'war' => true),
+	array('type' => 'schiff','name' => 'X12', 'gal' => 4900, 'sol' => 600, 'war' => true),
 );
 	
 	
@@ -114,7 +114,7 @@ function SitterUtilFlug() {
 
 function SitterFeindlFlottenUebersicht() {
 	global $content, $pre, $scripturl, $schiffe;
-	$q = DBQuery("SELECT startuni.gala, startuni.sys, startuni.pla, startuni.planiname, startuni.ownername, start_userdata.allytag, zieluni.gala, zieluni.sys, zieluni.pla, zieluni.planiname, zieluni.ownername, ziel_userdata.allytag, flotten.action, flotten.ankunft, flotten.firstseen, flotten.notyetSeen, flotten.safe, flotten.dont_save, igm_data.id
+	$q = DBQuery("SELECT startuni.gala, startuni.sys, startuni.pla, startuni.planiname, startuni.ownername, zieluni.gala, zieluni.sys, zieluni.pla, zieluni.planiname, zieluni.ownername, flotten.action, flotten.ankunft, flotten.firstseen, flotten.notyetSeen, flotten.safe, flotten.dont_save, igm_data.id
 FROM (((({$pre}flotten AS flotten INNER JOIN {$pre}universum AS startuni ON flotten.startid = startuni.ID) 
 	INNER JOIN {$pre}universum AS zieluni ON flotten.zielid=zieluni.ID)
 	LEFT JOIN {$pre}uni_userdata AS start_userdata ON startuni.ownername = start_userdata.name)
@@ -131,22 +131,20 @@ ORDER BY flotten.ankunft", __FILE__, __LINE__);
 			's_p' => intval($row[2]),
 			'startname' => EscapeOU($row[3]),
 			'startowner' => EscapeOU($row[4]),
-			'startally' => EscapeOU($row[5]),
-			'zielkoords' => $row[6].':'.$row[7].':'.$row[8],
-			'd_g' => intval($row[6]),
-			'd_s' => intval($row[7]),
-			'd_p' => intval($row[8]),
-			'zielname' => EscapeOU($row[9]),
-			'zielowner' => EscapeOU($row[10]),
-			'zielally' => EscapeOU($row[11]),
-			'bewegung' => EscapeOU($row[12]),
-			'gefaehrlich' => $row[12] == 'Angriff',
-			'ankunft' => intval($row[13]),
-			'firstSeen' => intval($row[14]),
-			'notyetSeen' => intval($row[15]),
-			'safe' => $row[16] == 1,
-			'dont_save' => $row[17] != 0,
-			'loginLink' => $scripturl.'/index.php?action=sitter_login&amp;show_save=1&amp;from=sitter_flotten&amp;id='.$row[18],
+			'zielkoords' => $row[5].':'.$row[6].':'.$row[7],
+			'd_g' => intval($row[5]),
+			'd_s' => intval($row[6]),
+			'd_p' => intval($row[7]),
+			'zielname' => EscapeOU($row[8]),
+			'zielowner' => EscapeOU($row[9]),
+			'bewegung' => EscapeOU($row[10]),
+			'gefaehrlich' => $row[10] == 'Angriff',
+			'ankunft' => intval($row[11]),
+			'firstSeen' => intval($row[12]),
+			'notyetSeen' => intval($row[13]),
+			'safe' => $row[14] == 1,
+			'dont_save' => $row[15] != 0,
+			'loginLink' => $scripturl.'/index.php?action=sitter_login&amp;show_save=1&amp;from=sitter_flotten&amp;id='.$row[16],
 		);
 	}
 	$content['flotten'] = EscapeJSU($fl);

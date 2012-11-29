@@ -372,7 +372,7 @@ namespace IWDB {
             uint flottenAnz, zielPlaniAnz;
             iwdb.AnfliegendeFlotten(out flottenAnz, out zielPlaniAnz);
             if (flottenAnz > 0 || verbose) {
-                String msg = FlottenSpamColor + "Innerhalb der nächsten 5 Minuten kommen " + flottenAnz + " Flotten bei " + zielPlaniAnz + " verschiedenen Zielplanis an!";
+                String msg = FlottenSpamColor + "Innerhalb der nächsten 5 Minuten kommen " + flottenAnz + " ungesavte Flotten bei " + zielPlaniAnz + " verschiedenen Zielplanis an!";
                 LogEvent(msg);
                 chan.SendChanMsg(msg);
             }

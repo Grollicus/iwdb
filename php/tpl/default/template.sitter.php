@@ -864,9 +864,9 @@
 				var fl = flotten[i];
 				var maxspeed = flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen);
 				var minspeed = flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen);
-				$("#fl").append("<tr>"
-					+"<td>["+ fl.startally + "]" + fl.startowner + "<br />(" + fl.startkoords+ ") " + fl.startname +"<\/td>"
-					+"<td>["+fl.zielally+"]"+fl.zielowner+ "<br />("+fl.zielkoords+") "+fl.zielname+"<\/td>"
+				$("#fl tbody").append("<tr>"
+					+"<td align=\"center\">(" + fl.startkoords+ ") " + fl.startname +"<br />" + fl.startowner + "<\/td>"
+					+"<td align=\"center\">("+fl.zielkoords+") "+fl.zielname+"<br />"+fl.zielowner+ "<\/td>"
 					+"<td"+ (fl.gefaehrlich ? " class=\"danger\"" : "")+ ">"+fl.bewegung+"<\/td>"
 					+"<td>"+formatdate(fl.firstSeen)+"<\/td>"
 					+"<td>"+formatdate(fl.ankunft)+"<\/td>"
@@ -877,14 +877,17 @@
 					+"<td><a href=\""+fl.loginLink+"\">["+fl.zielowner+"]<\/a><\/td><\/tr>");	
 			}
 			schiffe.sort(function(a,b){return a.sol>b.sol ? 1 : a.sol==b.sol?0:-1;});
-			$("#fl").append("<tr><td colspan=\"10\"><b>Sol:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.sol}).join(" &lt; ")+"<\/td><\/tr>");
+			$("#fl tfoot").append("<tr><td colspan=\"10\"><b>Sol:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.sol}).join(" &lt; ")+"<\/td><\/tr>");
 			schiffe.sort(function(a,b){return a.gal>b.gal ? 1 : a.gal==b.gal?0:-1;});
-			$("#fl").append("<tr><td colspan=\"10\"><b>Gal:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.gal}).join(" &lt; ")+"<\/td><\/tr>");
+			$("#fl tfoot").append("<tr><td colspan=\"10\"><b>Gal:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.gal}).join(" &lt; ")+"<\/td><\/tr>");
+			$("#fl").tablesorter();
 		});
 	// ]]></script>
 	<div class="content"><h2>Übersicht feindliche Flotten</h2>
-		<table id="fl">
-			<tr><th>Start</th><th>Ziel</th><th>Typ</th><th>zuerst gesichtet</th><th>Ankunft</th><th>minspeed</th><th></th><th>maxspeed</th><th></th><th></th></tr>
+		<table id="fl" class="tablesorter">
+			<thead><tr><th>Start</th><th>Ziel</th><th>Typ</th><th>zuerst gesichtet</th><th>Ankunft</th><th>minspeed</th><th></th><th>maxspeed</th><th></th><th></th></tr></thead>
+			<tbody></tbody>
+			<tfoot></tfoot>
 		</table></div>';
 		TemplateFooter();
 	}
