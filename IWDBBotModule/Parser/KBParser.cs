@@ -1002,7 +1002,13 @@ namespace IWDB.Parser {
         }
         private static Coords NextSg(Coords c) {
             lock (sgCache) {
-                return sgCache.MaxElem(sg => -((sg.gal - c.gal) * (sg.gal - c.gal) + (sg.sys - c.sys) * (sg.sys - c.sys) + (sg.pla - c.pla) * (sg.pla - c.pla)));
+                return sgCache.MaxElem(sg => {
+                    int mod = sg.gal != c.gal ? 100 : 5;
+                    double gal = Math.Abs(sg.gal - c.gal);
+                    double sol = Math.Abs(sg.sys - c.sys);
+                    double pla = Math.Abs(sg.pla - c.pla);
+                    return -((3000 * gal * gal) / Math.Log(gal + 50) + (mod * sol * Math.Max(3, sol)) / Math.Log(sol + 2) + pla); 
+                });
             }
         }
         public static TimeSpan SgZeit(String from, String to, String schiff) {
