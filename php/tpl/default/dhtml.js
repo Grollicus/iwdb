@@ -8,7 +8,16 @@ var unique_id=0;
 function gen_id() {
 	return "unique_id_"+(unique_id++);
 }
-
+function sgspeed(g1, s1, p1, g2, s2, p2, fz, stargates) {
+	var min=false;
+	for(var i=0; i < stargates.length; ++i) {
+		var sg = stargates[i];
+		var speed = flugspeed(g1, s2, p1, sg.g, sg.s, p1, fz);
+		if(!min || speed < min)
+			min=speed;
+	}
+	return min;
+}
 function flugzeit(g1, s1, p1, g2, s2, p2, solspeed, galaspeed) {
 	if(p1 == false && p2 == false) //Flug zwischen Stargates
 		return 600;

@@ -114,7 +114,14 @@ function SitterUtilFlug() {
 
 function SitterFeindlFlottenUebersicht() {
 	global $content, $pre, $scripturl, $schiffe;
-	$q = DBQuery("SELECT startuni.gala, startuni.sys, startuni.pla, startuni.planiname, startuni.ownername, zieluni.gala, zieluni.sys, zieluni.pla, zieluni.planiname, zieluni.ownername, flotten.action, flotten.ankunft, flotten.firstseen, flotten.notyetSeen, flotten.safe, flotten.dont_save, igm_data.id
+	if(isset($_REQUEST['stargate_flip'])) {
+		$flid = intval($_REQUEST['stargate_flip']);
+		DBQuery("UPDATE {$pre}flotten SET stargate=IF(stargate=1,0,1) WHERE ID={$flid}", __FILE__, __LINE__);
+		$sg = DBQueryOne("SELECT stargate FROM {$pre}flotten WHERE ID={$flid}", __FILE__, __LINE__);
+		echo EscapeJSU(array('use_stargate' => ("1" == $sg)));
+		return;
+	}
+	$q = DBQuery("SELECT startuni.gala, startuni.sys, startuni.pla, startuni.planiname, startuni.ownername, zieluni.gala, zieluni.sys, zieluni.pla, zieluni.planiname, zieluni.ownername, flotten.action, flotten.ankunft, flotten.firstseen, flotten.notyetSeen, flotten.safe, flotten.dont_save, flotten.stargate, flotten.id, igm_data.id
 FROM (((({$pre}flotten AS flotten INNER JOIN {$pre}universum AS startuni ON flotten.startid = startuni.ID) 
 	INNER JOIN {$pre}universum AS zieluni ON flotten.zielid=zieluni.ID)
 	LEFT JOIN {$pre}uni_userdata AS start_userdata ON startuni.ownername = start_userdata.name)
@@ -144,11 +151,22 @@ ORDER BY flotten.ankunft", __FILE__, __LINE__);
 			'notyetSeen' => intval($row[13]),
 			'safe' => $row[14] == 1,
 			'dont_save' => $row[15] != 0,
-			'loginLink' => $scripturl.'/index.php?action=sitter_login&amp;show_save=1&amp;from=sitter_flotten&amp;id='.$row[16],
+			'use_stargate' => $row[16] == 1,
+			'sgLink' => $scripturl.'/index.php?action=sitter_flotten&stargate_flip='.$row[17],
+			'loginLink' => $scripturl.'/index.php?action=sitter_login&amp;show_save=1&amp;from=sitter_flotten&amp;id='.$row[18],
+		);
+	}
+	$q = DBQuery("SELECT gala, sys FROM {$pre}universum WHERE objekttyp='Raumstation'", __FILE__, __LINE__);
+	$sgs = array();
+	while($row = mysql_fetch_row($q)) {
+		$sgs[] = array(
+			'g' => $row[0],
+			's' => $row[1],
 		);
 	}
 	$content['flotten'] = EscapeJSU($fl);
 	$content['schiffe'] = EscapeJSU(array_values(array_filter($schiffe, function($el) {return $el['war'];})));
+	$content['stargates'] = EscapeJSU($sgs);
 	TemplateInit('sitter');
 	TemplateFeindlFlottenUebersicht();
 }

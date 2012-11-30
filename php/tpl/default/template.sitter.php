@@ -848,6 +848,7 @@
 	<script type="text/javascript"><!-- // --><![CDATA[
 		var flotten = ',$content['flotten'],';
 		var schiffe = ',$content['schiffe'],';
+		var stargates = ',$content['stargates'],';
 		schiffe.sort(function(a,b){return a.gal>b.gal ? 1 : a.gal==b.gal?0:-1;});
 		function schiffsnamen(minspeed, maxspeed, sol) {
 			var ret = "";
@@ -862,30 +863,47 @@
 		$(function() {
 			for(var i = 0; i < flotten.length; i++) {
 				var fl = flotten[i];
-				var maxspeed = flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen);
-				var minspeed = flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen);
-				$("#fl tbody").append("<tr>"
+				var minspeed = fl.use_stargate ? sgspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen, stargates) : flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen);
+				var maxspeed = fl.use_stargate ? sgspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen, stargates) : flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen);
+				$("#fl tbody").append("<tr id=\"fl_"+i+"\">"
 					+"<td align=\"center\">(" + fl.startkoords+ ") " + fl.startname +"<br />" + fl.startowner + "<\/td>"
 					+"<td align=\"center\">("+fl.zielkoords+") "+fl.zielname+"<br />"+fl.zielowner+ "<\/td>"
 					+"<td"+ (fl.gefaehrlich ? " class=\"danger\"" : "")+ ">"+fl.bewegung+"<\/td>"
+					+"<td><div id=\"sg_checkbox_"+i+"\" "+(fl.use_stargate ? "style=\"font-weight:bold;\"" : "")+">SG<\/div><\/td>"
 					+"<td>"+formatdate(fl.firstSeen)+"<\/td>"
 					+"<td>"+formatdate(fl.ankunft)+"<\/td>"
-					+"<td>"+Math.floor(minspeed)+"<\/td>"
-					+"<td>"+schiffsnamen(minspeed, maxspeed, fl.s_g==fl.d_g && fl.s_s == fl.d_s)+"<\/td>"
-					+"<td>"+Math.floor(maxspeed)+"<\/td>"
+					+"<td id=\"minspeed_"+i+"\">"+Math.floor(minspeed)+"<\/td>"
+					+"<td id=\"namen_"+i+"\">"+schiffsnamen(minspeed, maxspeed, fl.s_g==fl.d_g && fl.s_s == fl.d_s)+"<\/td>"
+					+"<td id=\"maxspeed_"+i+"\">"+Math.floor(maxspeed)+"<\/td>"
 					+(fl.dont_save ? "<td>Nicht saven<\/td>" : (fl.safe ? "<td style=\"background:green;\">Saved<\/td>" : "<td style=\"background:red;\">Not Saved<\/td>"))
-					+"<td><a href=\""+fl.loginLink+"\">["+fl.zielowner+"]<\/a><\/td><\/tr>");	
+					+"<td><a href=\""+fl.loginLink+"\">["+fl.zielowner+"]<\/a><\/td><\/tr>");
+				$("#sg_checkbox_"+i).data("id", i);
+				$("#sg_checkbox_"+i).button().click(function() {
+					var i = $(this).data("id");
+					var fl = flotten[i];
+					var btn = this;
+					//sgLink
+					$.getJSON(fl.sgLink, function(data) {
+						fl.use_stargate = data.use_stargate;
+						var minspeed = fl.use_stargate ? sgspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen, stargates) : flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen);
+						var maxspeed = fl.use_stargate ? sgspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen, stargates) : flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen);
+						$("#minspeed_"+i).text(Math.floor(minspeed));
+						$("#maxspeed_"+i).text(Math.floor(maxspeed));
+						$("#namen_"+i).html(schiffsnamen(minspeed, maxspeed, fl.s_g==fl.d_g && fl.s_s == fl.d_s));
+						$(btn).css("font-weight", fl.use_stargate ? "bold" : "normal");
+					});
+				});
 			}
 			schiffe.sort(function(a,b){return a.sol>b.sol ? 1 : a.sol==b.sol?0:-1;});
-			$("#fl tfoot").append("<tr><td colspan=\"10\"><b>Sol:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.sol}).join(" &lt; ")+"<\/td><\/tr>");
+			$("#fl tfoot").append("<tr><td colspan=\"11\"><b>Sol:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.sol}).join(" &lt; ")+"<\/td><\/tr>");
 			schiffe.sort(function(a,b){return a.gal>b.gal ? 1 : a.gal==b.gal?0:-1;});
-			$("#fl tfoot").append("<tr><td colspan=\"10\"><b>Gal:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.gal}).join(" &lt; ")+"<\/td><\/tr>");
+			$("#fl tfoot").append("<tr><td colspan=\"11\"><b>Gal:<\/b> "+$.map(schiffe, function(e) {return e.name+" "+e.gal}).join(" &lt; ")+"<\/td><\/tr>");
 			$("#fl").tablesorter();
 		});
 	// ]]></script>
 	<div class="content"><h2>Übersicht feindliche Flotten</h2>
 		<table id="fl" class="tablesorter">
-			<thead><tr><th>Start</th><th>Ziel</th><th>Typ</th><th>zuerst gesichtet</th><th>Ankunft</th><th>minspeed</th><th></th><th>maxspeed</th><th></th><th></th></tr></thead>
+			<thead><tr><th>Start</th><th>Ziel</th><th>Typ</th><th>SG</th><th>zuerst gesichtet</th><th>Ankunft</th><th>minspeed</th><th></th><th>maxspeed</th><th></th><th></th></tr></thead>
 			<tbody></tbody>
 			<tfoot></tfoot>
 		</table></div>';
