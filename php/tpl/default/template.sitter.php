@@ -863,7 +863,7 @@
 		$(function() {
 			for(var i = 0; i < flotten.length; i++) {
 				var fl = flotten[i];
-				var minspeed = fl.use_stargate ? sgspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen, stargates) : flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen);
+				var minspeed = fl.use_stargate ? sgspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen, stargates) : flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen);
 				var maxspeed = fl.use_stargate ? sgspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen, stargates) : flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen);
 				$("#fl tbody").append("<tr id=\"fl_"+i+"\">"
 					+"<td align=\"center\">(" + fl.startkoords+ ") " + fl.startname +"<br />" + fl.startowner + "<\/td>"
@@ -885,7 +885,7 @@
 					//sgLink
 					$.getJSON(fl.sgLink, function(data) {
 						fl.use_stargate = data.use_stargate;
-						var minspeed = fl.use_stargate ? sgspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen, stargates) : flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen);
+						var minspeed = fl.use_stargate ? sgspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen, stargates) : flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen);
 						var maxspeed = fl.use_stargate ? sgspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen, stargates) : flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.firstSeen);
 						$("#minspeed_"+i).text(Math.floor(minspeed));
 						$("#maxspeed_"+i).text(Math.floor(maxspeed));
