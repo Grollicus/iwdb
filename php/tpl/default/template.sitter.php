@@ -611,7 +611,7 @@
 	}
 	
 	function TemplateSitterUtilNewscan() {
-		global $content, $scripturl;
+		global $content, $scripturl, $themeurl;
 		echo '<script type="text/javascript"><!-- // --><![CDATA[
 			$(function() {
 				$(".scans", ".sitter_newscan").keyup(function() {
@@ -628,8 +628,12 @@
 							if(resp.msg)
 								$(".simp", ".sitter_newscan").html("<div>"+resp.msg+"<div>");
 							if(resp.nextid) {
-								var v = resp.nextid;
-								uid_change(v.uid, v.name, v.loginwarning, v.act, v.acc);
+								var newv = resp.nextid;
+								uid_change(newv.uid, newv.name, newv.loginwarning, newv.act, newv.acc);
+							} else {
+								$(".sitter_flotten:visible").parent().each(function(i, el) {
+									$(el).html("<img src=\"',$themeurl,'/img/load.gif\" alt=\"Loading..\" title=\"Loading..\" />").load($(el).data("url"), {"uid": v.uid, "id": v.jid});
+								});
 							}
 						},
 						"json");
@@ -882,7 +886,6 @@
 					var i = $(this).data("id");
 					var fl = flotten[i];
 					var btn = this;
-					//sgLink
 					$.getJSON(fl.sgLink, function(data) {
 						fl.use_stargate = data.use_stargate;
 						var minspeed = fl.use_stargate ? sgspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen, stargates) : flugspeed(fl.s_g, fl.s_s, fl.s_p, fl.d_g, fl.d_s, fl.d_p, fl.ankunft-fl.notyetSeen);
