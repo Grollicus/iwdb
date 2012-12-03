@@ -12,6 +12,7 @@ $schiffe = array(
 	array('type' => 'schiff','name' => 'Waschbär', 'gal' => 4300, 'sol' => 500, 'war' => true),
 	array('type' => 'schiff','name' => 'Kronk', 'gal' => 5700, 'sol' => 450, 'war' => false),
 	array('type' => 'schiff','name' => 'Zeus', 'gal' => 5600, 'sol' => 200, 'war' => false),
+	array('type' => 'schiff','name' => 'Eraser 85%', 'gal' => 4900*0.85, 'sol' => 630*0.85, 'war' => true),
 	array('type' => 'schiff','name' => 'Eraser 90%', 'gal' => 4900*0.9, 'sol' => 630*0.9, 'war' => true),
 	array('type' => 'schiff','name' => 'Eraser 95%', 'gal' => 4900*0.95, 'sol' => 630*0.95, 'war' => true),
 	array('type' => 'schiff','name' => 'Eraser', 'gal' => 4900, 'sol' => 630, 'war' => true),
