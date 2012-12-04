@@ -15,21 +15,21 @@ namespace Utils {
 		#region implemented abstract members of System.Text.Encoding
 		public override int GetByteCount(char[] chars, int index, int count) {
 			Check.NotNull(chars, "chars");
-			Check.RangeCond(index < 0, "index < 0");
-			Check.RangeCond(count < 0, "count < 0");
-			Check.RangeCond(chars.Length <= index + count, "chars.Length <= index + count");
+			Check.RangeCond(index >= 0, "index < 0!");
+            Check.RangeCond(count >= 0, "count < 0!");
+			Check.RangeCond(chars.Length > index + count, "chars.Length <= index + count!");
 			return count;
 		}
 
 		public override int GetBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex) {
 			Check.NotNull(chars, "chars");
 			Check.NotNull(bytes, "bytes");
-			Check.RangeCond(charIndex < 0, "charIndex < 0");
-			Check.RangeCond(charCount < 0, "charCount < 0");
-			Check.RangeCond(byteIndex < 0, "byteIndex < 0");
-			Check.RangeCond(chars.Length <= charIndex + charCount, "chars.Length <= charIndex+charCount");
-			Check.RangeCond(bytes.Length <= byteIndex, "bytes.Length <= byteIndex");
-			Check.Cond(bytes.Length <= byteIndex + charCount, "bytes.Length <= byteIndex+charCount");
+			Check.RangeCond(charIndex >= 0, "charIndex < 0!");
+            Check.RangeCond(charCount >= 0, "charCount < 0!");
+            Check.RangeCond(byteIndex >= 0, "byteIndex < 0!");
+			Check.RangeCond(chars.Length > charIndex + charCount, "chars.Length <= charIndex+charCount!");
+			Check.RangeCond(bytes.Length > byteIndex, "bytes.Length <= byteIndex!");
+			Check.Cond(bytes.Length > byteIndex + charCount, "bytes.Length <= byteIndex+charCount");
 			for(int i = 0; i < charCount; ++i) {
 				bytes[i + byteIndex] = (byte)(chars[charIndex + i]);
 			}
@@ -38,21 +38,21 @@ namespace Utils {
 
 		public override int GetCharCount(byte[] bytes, int index, int count) {
 			Check.NotNull(bytes, "bytes");
-			Check.RangeCond(index < 0, "index < 0");
-			Check.RangeCond(count < 0, "count < 0");
-			Check.RangeCond(bytes.Length <= index + count, "chars.Length <= index + count");
+			Check.RangeCond(index >= 0, "index < 0!");
+			Check.RangeCond(count >= 0, "count < 0!");
+			Check.RangeCond(bytes.Length > index + count, "chars.Length <= index + count!");
 			return bytes.Length;
 		}
 
 		public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars, int charIndex) {
 			Check.NotNull(bytes, "bytes");
 			Check.NotNull(chars, "chars");
-			Check.RangeCond(charIndex < 0, "charIndex < 0");
-			Check.RangeCond(byteCount < 0, "byteCount < 0");
-			Check.RangeCond(byteIndex < 0, "byteIndex < 0");
-			Check.RangeCond(bytes.Length <= byteIndex + byteCount, "bytes.Length <= byteIndex + byteCount");
-			Check.RangeCond(chars.Length <= charIndex, "chars.Length <= charIndex");
-			Check.Cond(chars.Length <= charIndex + byteCount, "bytes.Length <= byteIndex+charCount");
+			Check.RangeCond(charIndex >= 0, "charIndex < 0!");
+            Check.RangeCond(byteCount >= 0, "byteCount < 0!");
+            Check.RangeCond(byteIndex >= 0, "byteIndex < 0!");
+			Check.RangeCond(bytes.Length > byteIndex + byteCount, "bytes.Length <= byteIndex + byteCount!");
+			Check.RangeCond(chars.Length > charIndex, "chars.Length <= charIndex!");
+			Check.Cond(chars.Length > charIndex + byteCount, "bytes.Length <= byteIndex+charCount!");
 			for(int i = 0; i < byteCount; ++i) {
 				chars[charIndex + i] = (char)bytes[byteIndex + i];
 			}
@@ -76,12 +76,12 @@ namespace Utils {
 		}
 
 		public static void RangeCond(bool cond, String desc) {
-			if(cond)
+			if(!cond)
 				throw new ArgumentOutOfRangeException(desc);
 		}
 
 		public static void Cond(bool cond, String desc) {
-			if(cond)
+			if(!cond)
 				throw new ArgumentException(desc);
 		}
 	}
@@ -813,8 +813,8 @@ namespace Flow {
         }
 
         public MaximumFlowNetwork(int cNodes, int s, int t) {
-            Check.RangeCond(s >= cNodes, "s >=< cNodes");
-            Check.RangeCond(t >= cNodes, "t >=< cNodes");
+            Check.RangeCond(s < cNodes, "s >= cNodes!");
+            Check.RangeCond(t < cNodes, "t >= cNodes!");
             this.cNodes = cNodes;
             this.s = s;
             this.t = t;
@@ -958,9 +958,9 @@ namespace Flow {
         private readonly bool[] enQ;
 
         public MinimumFlowNetwork(int cNodes, int s, int t) {
-            Check.RangeCond(s >= cNodes, "s >= cNodes");
-            Check.RangeCond(t >= cNodes, "t >= cNodes");
-            Check.Cond(s == t, "s == t");
+            Check.RangeCond(s < cNodes, "s >= cNodes");
+            Check.RangeCond(t < cNodes, "t >= cNodes");
+            Check.Cond(s != t, "s == t");
             this.cNodes = cNodes;
             this.s = s;
             this.t = t;

@@ -16,8 +16,8 @@ namespace IWDB {
 		public static uint parsePreciseIWTime(String toParse) {
 			//03.04.2008 11:27:45
 			try {
-				return toUnixTimestamp(DateTime.ParseExact(toParse, "dd.MM.yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.AssumeLocal | System.Globalization.DateTimeStyles.AdjustToUniversal));
-			} catch (FormatException) {
+				return toUnixTimestamp(DateTime.ParseExact(toParse, "d.M.yyyy H:m:s", null, System.Globalization.DateTimeStyles.AssumeLocal | System.Globalization.DateTimeStyles.AdjustToUniversal));
+			} catch (FormatException e) {
 				return toUnixTimestamp(DateTime.Now);
 			}
 		}
@@ -33,6 +33,16 @@ namespace IWDB {
 			return new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(timestamp).ToLocalTime();
 			//return new DateTime((long)timestamp * 10000000 + 621355968000000000, DateTimeKind.Utc);
 		}
+        public static TimeSpan parseIWZeitspanne(string p) {
+            TimeSpan ret;
+            if (TimeSpan.TryParseExact(p, @"d' Tag 'hh\:mm\:ss", System.Globalization.CultureInfo.CurrentCulture, out ret))
+                return ret;
+            if (TimeSpan.TryParseExact(p, @"d' Tage 'hh\:mm\:ss", System.Globalization.CultureInfo.CurrentCulture, out ret))
+                return ret;
+            if (TimeSpan.TryParseExact(p, @"hh\:mm\:ss", System.Globalization.CultureInfo.CurrentCulture, out ret))
+                return ret;
+            return TimeSpan.Zero;
+        }
         public static T2 Get<T1, T2>(Dictionary<T1, T2> dict, T1 key, T2 defaultValue) {
             T2 ret;
             if (dict.TryGetValue(key, out ret))
@@ -45,23 +55,6 @@ namespace IWDB {
 				return ret;
 			return defaultValue;
 		}
-
-		public static void ForEach<T>(this IEnumerable<T> list, Action<T> f) {
-			foreach(T t in list)
-				f(t);
-		}
-        public static string Join<T>(this IEnumerable<T> list, string glue) {
-            StringBuilder ret = list.Aggregate(new StringBuilder(), (sb, a) => sb.Append(a.ToString()).Append(glue));
-            if (ret.Length > glue.Length)
-                ret.Length -= glue.Length;
-            return ret.ToString();
-        }
-        public static string Join<T>(this IEnumerable<T> list, string glue, Func<T, string> formatter) {
-            StringBuilder ret = list.Aggregate(new StringBuilder(), (sb, a) => sb.Append(formatter(a)).Append(glue));
-            if (ret.Length > glue.Length)
-                ret.Length -= glue.Length;
-            return ret.ToString();
-        }
     }
 	abstract class IWDBRegex {
 		public const String KolonieName = @"(?:(?:[a-zA-Z0-9_\-\.‰ˆ¸ƒ÷‹ﬂ*+][a-zA-Z0-9_\-\. ‰ˆ¸ƒ÷‹ﬂ*+]*[a-zA-Z0-9_\-\.‰ˆ¸ƒ÷‹ﬂ*+])|[a-zA-Z0-9_\-\.‰ˆ¸ƒ÷‹ﬂ*+])";

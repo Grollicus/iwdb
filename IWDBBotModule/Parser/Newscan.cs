@@ -19,7 +19,7 @@ namespace IWDB.Parser {
 		WarFilter warFilter;
 		TechTreeCache techKostenCache;
 
-		public NewscanHandler(MySqlConnection con, String DBPrefix, String DBConnection, IWDBParser parser, WarFilter warFilter, TechTreeCache techKostenCache) {
+		public NewscanHandler(MySqlConnection con, String DBPrefix, String DBConnection, IWDBParser parser, WarFilter warFilter, TechTreeCache techKostenCache, DateTime roundStart) {
 			this.parser = parser;
 			this.DBPrefix = DBPrefix;
 			caches = new Dictionary<string, object>();
@@ -27,7 +27,7 @@ namespace IWDB.Parser {
 
             postRequestHandler = new Dictionary<string, IPostRequestHandler>();
 			RegisterPostRequestHandler(new FlottenCleanupPostRequestHandler(this));
-            realRequestHandler = new SingleNewscanRequestHandler(this, parsers, postRequestHandler, con, DBPrefix);
+            realRequestHandler = new SingleNewscanRequestHandler(this, parsers, postRequestHandler, roundStart, con, DBPrefix);
 			this.warFilter = warFilter;
 			this.techKostenCache = techKostenCache;
 		}
@@ -114,8 +114,10 @@ namespace IWDB.Parser {
         IRCeX.MessageQueue<ParserRequestMessage> Q = new IRCeX.MessageQueue<ParserRequestMessage>();
 
         BesonderheitenData besData;
+        private Regex PrefilterZeitRegex = new Regex(@"Dauer\sder\sRunde\s+(" + IWDBRegex.IWZeitspanne + ")", RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+        private DateTime roundstart;
 
-        public SingleNewscanRequestHandler(NewscanHandler handler, Dictionary<String, Dictionary<String, List<ReportParser>>> parsers, Dictionary<string, IPostRequestHandler> postRequestHandlers, MySqlConnection con, String dbPrefix) {
+        public SingleNewscanRequestHandler(NewscanHandler handler, Dictionary<String, Dictionary<String, List<ReportParser>>> parsers, Dictionary<string, IPostRequestHandler> postRequestHandlers, DateTime roundStart, MySqlConnection con, String dbPrefix) {
             this.parsers=parsers;
             this.parentHandler = handler;
             this.postRequestHandler = postRequestHandlers;
@@ -126,6 +128,7 @@ namespace IWDB.Parser {
             this.dbPrefix = dbPrefix;
 			//IRCeX.Log.WriteLine("MySqlOpen: SingleNewscanRequestHandler constructor");
 			this.besData = new BesonderheitenData(con, dbPrefix);
+            this.roundstart = roundStart;
         }
 
         public void ActivatePostHandler(String name) {
@@ -156,7 +159,7 @@ namespace IWDB.Parser {
                         MySqlDataReader r = envQry.ExecuteReader();
                         if (!r.Read()) {
                             r.Close();
-                            toHandle.Answer("Fehler: Unbekannte UID!");
+                            toHandle.Answer("Fehler: Unbekannte IgmID!");
                             toHandle.Handled();
                             continue;
                         }
@@ -183,12 +186,15 @@ namespace IWDB.Parser {
                         MySqlCommand perfLog = new MySqlCommand("INSERT INTO " + DBPrefix + "speedlog (action, sub, runtime) VALUES ('parser', ?p, ?rt)", con);
                         MySqlParameter pParser = perfLog.Parameters.Add("?p", MySqlDbType.String);
                         MySqlParameter pRT = perfLog.Parameters.Add("?rt", MySqlDbType.UInt32);
+                        DateTime now;
                         foreach (String part in parts) {
+                            if (!Timecheck(part, resp, out now))
+                                continue;
                             foreach (ReportParser parser in parserList) {
                                 DateTime start = DateTime.Now;
-                                parser.TryMatch(part, posterID, victimID, browserFlags, warmode, restrictedUser, con, this, resp);
+                                bool success = parser.TryMatch(part, posterID, victimID, now, browserFlags, warmode, restrictedUser, con, this, resp);
                                 TimeSpan parseTime = DateTime.Now - start;
-                                pParser.Value = parser.ToString();
+                                pParser.Value = parser.ToString() + (success ? "+" : "-");
                                 pRT.Value = parseTime.Ticks;
                                 perfLog.ExecuteNonQuery();
                             }
@@ -229,6 +235,25 @@ namespace IWDB.Parser {
             }
         }
 
+        private bool Timecheck(string part, ParserResponse resp, out DateTime time) {
+            time = DateTime.Now;
+            if (part.Contains("Dauer der Runde")) {
+                Match m = PrefilterZeitRegex.Match(part);
+                if (!m.Success)
+                    return true;
+                TimeSpan ts = IWDBUtils.parseIWZeitspanne(m.Groups[1].Value);
+                time = roundstart + ts;
+                DateTime now = DateTime.Now;
+                if (time < now.AddSeconds(-10)) {
+                    resp.RespondError("Die Hauptseite ist mir zu alt!");
+                    return false;
+                }
+                if (time > now.AddSeconds(10))
+                    resp.RespondError("Uhrzeitfehler! (Hauptseite aus der Zukunft??");
+            }
+            return true;
+        }
+
         
         private PatternFlags GetBrowserFlags(String userAgent) {
             if (userAgent.Contains("Firefox"))
@@ -257,7 +282,7 @@ namespace IWDB.Parser {
         private readonly NewscanHandler parent;
 		private bool allowRestricted = true;
 
-		public abstract void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp);
+		public abstract void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp);
         public ReportParser(NewscanHandler newscanHandler) {
             regexes = new List<Tuple<Regex, String, PatternFlags>>();
             this.DBPrefix = newscanHandler.DBPrefix;
@@ -279,9 +304,9 @@ namespace IWDB.Parser {
             if (!parent.HasParser(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator, t))
                 throw new InvalidOperationException(this.GetType()+ " benötigt einen " + t.ToString());
         }
-        public void TryMatch(String haystack, uint posterID, uint victimID, PatternFlags browserFlags, bool warmode, bool restrictedUser, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public bool TryMatch(String haystack, uint posterID, uint victimID, DateTime now, PatternFlags browserFlags, bool warmode, bool restrictedUser, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			if(!allowRestricted && restrictedUser)
-				return;
+				return false;
             foreach (Tuple<Regex, String, PatternFlags> p in regexes) {
                 if ((browserFlags & p.Item3) == 0)
                     continue;
@@ -290,10 +315,11 @@ namespace IWDB.Parser {
                 MatchCollection matches = p.Item1.Matches(haystack);
                 if (matches.Count > 0) {
                     Console.WriteLine(this.GetType().Name);
-                    Matched(matches, posterID, victimID, con, handler, resp);
-                    break;
+                    Matched(matches, posterID, victimID, now, con, handler, resp);
+                    return true;
                 }
             }
+            return false;
         }
 		protected CacheType RequestCache<CacheType>(String Name) where CacheType:new() {
 			object ret;
@@ -313,7 +339,7 @@ namespace IWDB.Parser {
 
 	class TestParser : ReportParser {
         public TestParser(NewscanHandler newscanHandler) : base(newscanHandler, false) { AddPattern("thisisatest"); }
-        public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			resp.Respond("retest");
 			resp.Respond("retest");
 			resp.Respond("retestv2");
@@ -328,7 +354,7 @@ namespace IWDB.Parser {
             AddPattern(@"Forschungsinfo:\s+(.+)[\s\S]+?Farbenlegende:", PatternFlags.Opera);
             AddPattern(@"Schiffinfo:\s+", PatternFlags.Opera);
         }
-        public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
             resp.RespondError("Bitte für Gebäudeinfo, Schiffsinfo, Forschungsinfo den Firefox benutzen!");
         }
     }

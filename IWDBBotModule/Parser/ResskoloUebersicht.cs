@@ -12,10 +12,10 @@ namespace IWDB.Parser {
             String comma = System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator;
             AddPattern(@"Ressourcenkoloübersicht\s+
 Kolonie\s+Eisen\s+Stahl\s+VV4A\s+chem.\sElemente\s+Eis\s+Wasser\s+Energie\s+
-[\s\S]+?Gesamt[\s\S]+?(?:\s+[\d" + dot + comma + @" ]+\s+\([-\d" + dot + comma + @"]+\)+)\s+Lager\sund\sBunker\sanzeigen", PatternFlags.All);
+[\s\S]+?Gesamt[\s\S]+?(?:\s+[\d" + dot + comma + @" ]+\s+\([-\d" + dot + comma + @"]+\)+)\s+Lager\sund\sBunker\sanzeigen", "Ressourcenkoloübersicht", PatternFlags.All);
         }
-        public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
-			uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+			uint unixnow = IWDBUtils.toUnixTimestamp(now);
 			String dot = Regex.Escape(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator);
 			String comma = Regex.Escape(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
 			foreach (Match outerMatch in matches) {
@@ -102,7 +102,7 @@ Kolonie\s+Eisen\s+Stahl\s+VV4A\s+chem.\sElemente\s+Eis\s+Wasser\s+Energie\s+
 					insertQry.Parameters.Add("?lEi", MySqlDbType.UInt32).Value = lager.Eis;
 					insertQry.Parameters.Add("?lWa", MySqlDbType.UInt32).Value = lager.Wasser;
 					insertQry.Parameters.Add("?lEn", MySqlDbType.UInt32).Value = lager.Energie;
-					insertQry.Parameters.Add("?time", MySqlDbType.UInt32).Value = now;
+					insertQry.Parameters.Add("?time", MySqlDbType.UInt32).Value = unixnow;
 					insertQry.ExecuteNonQuery();
 				}
 				resp.Respond("Ressourcenkoloübersicht eingelesen!\n");
@@ -118,9 +118,9 @@ Kolonie\s+Eisen\s+Stahl\s+VV4A\s+chem.\sElemente\s+Eis\s+Wasser\s+Energie\s+
             AddPattern(@"Ressourcenkoloübersicht\s+Teil\s2\s+
 Kolonie\s+FP\s+Credits\s+Steuersatz\s+Bevölkerung\s+Zufr\s+
 ([\s\S]+?)
-Gesamt\s+[\d" + dot+@"]+\s+\(\S+?\*\((\d+,\d+)\+(\d+,\d+)\)\)\s+([\d"+dot+comma+@"]+)\s+\([^)]+\)\sAllisteuer:\s+([\d"+dot+comma+@"]+)", PatternFlags.All);
+Gesamt\s+[\d" + dot + @"]+\s+\(\S+?\*\((\d+,\d+)\+(\d+,\d+)\)\)\s+([\d" + dot + comma + @"]+)\s+\([^)]+\)\sAllisteuer:\s+([\d" + dot + comma + @"]+)", "Ressourcenkoloübersicht", PatternFlags.All);
         }
-        public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match outerMatch in matches) {
 				uint creditsGes = (uint)Math.Round(float.Parse(outerMatch.Groups[4].Value));
                 float globalFpMod = float.Parse(outerMatch.Groups[2].Value)+float.Parse(outerMatch.Groups[3].Value);

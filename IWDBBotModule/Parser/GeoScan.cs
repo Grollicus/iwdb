@@ -98,7 +98,7 @@ namespace IWDB.Parser {
             AddPattern(@"http://www\.icewars\.de/portal/kb/de/sb\.php\?id=(\d+)&md_hash=([a-z0-9A-Z]{32})", "kb/de/sb.php", PatternFlags.All);
 			this.warFilter = warFilter;
 		}
-        public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match m in matches) {
 				String url = m.Value+"&typ=xml";
 				XmlNode xml = IWCache.Query(url, con, DBPrefix);
@@ -368,8 +368,7 @@ namespace IWDB.Parser {
                 }
             }
         }
-        
-	}
+    }
 
     class ScanSchiff {
         public String name;
@@ -548,6 +547,8 @@ namespace IWDB.Parser {
         public Spieler Owner { get { return new Spieler(owner_name, owner_ally); } }
         public DateTime Time { get { return IWDBUtils.fromUnixTimestamp(timestamp); } }
         public Coords Coords { get { return new Coords() { gal = (int)gal, sys = (int)sol, pla = (int)pla }; } }
+        public string Planityp { get { return this.pla_typ; } }
+        public string Objettyp { get { return this.obj_typ; } }
 	}
 }
 

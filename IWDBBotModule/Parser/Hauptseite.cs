@@ -16,8 +16,8 @@ namespace IWDB.Parser {
             AddPattern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch + @"[\s\S]+?
 			#Lebensbedingungen,Flottenscannerreichweite, Leerzeile danach, Serverzeit, Kolonien aktuell/maximal, Schiffsübersicht,...
 			Forschungsstatus\s+
-			([^\n]+)\s+("+IWZeit+")");
-			AddPattern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch);
+			([^\n]+)\s+("+IWZeit+")", "Kolonieinformation", PatternFlags.All);
+			AddPattern(@"Kolonieinformation\s+(?:" + IWObjektTyp + @")\s+" + KolonieName + @"\s+" + KoordinatenMatch, "Kolonieinformation", PatternFlags.All);
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
 			ownerCache = RequestCache<List<uint>>("OwnerCache");
             oldLastParsed = RequestCache<Dictionary<uint, uint>>("OldLastParsed");
@@ -41,7 +41,7 @@ namespace IWDB.Parser {
             return (uint)insert.LastInsertedId;
         }
 
-		public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			ownerCache.Clear();
 			foreach(Match m in matches) {
 				PlaniFetcher f = new PlaniFetcher(handler.BesData, con, DBPrefix);
@@ -99,7 +99,7 @@ namespace IWDB.Parser {
 
 				//lastParse
 				String bonus = "";
-				uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
+				uint unixnow = IWDBUtils.toUnixTimestamp(now);
 				MySqlCommand lastParsedQry = new MySqlCommand("SELECT lastParsed FROM " + DBPrefix + "igm_data WHERE ID=?id", con);
 				lastParsedQry.Parameters.Add("?id", MySqlDbType.UInt32).Value = uid;
 				Object ret = lastParsedQry.ExecuteScalar();
@@ -108,17 +108,21 @@ namespace IWDB.Parser {
 					return;
 				}
 				uint lastUpdTime = (uint)ret;
+                if (lastUpdTime >= unixnow) {
+                    resp.RespondError("Ausbaustatus ignoriert (zu alt!)");
+                    return;
+                }
                 oldLastParsed[uid] = lastUpdTime;
                 if (m.Groups[2].Success) {
                     MySqlCommand lastParseUpd = new MySqlCommand(@"UPDATE " + DBPrefix + "igm_data SET lastParsed=?lp, forschung=?for, forschung_ende=?end WHERE ID=?id", con);
-                    lastParseUpd.Parameters.Add("?lp", MySqlDbType.UInt32).Value = now;
+                    lastParseUpd.Parameters.Add("?lp", MySqlDbType.UInt32).Value = unixnow;
                     lastParseUpd.Parameters.Add("?for", MySqlDbType.UInt32).Value = getItemID(m.Groups[2].Value, "geb", con);
                     lastParseUpd.Parameters.Add("?end", MySqlDbType.UInt32).Value = IWDBUtils.parseIWTime(m.Groups[3].Value);
                     lastParseUpd.Parameters.Add("?id", MySqlDbType.UInt32).Value = uid;
                     lastParseUpd.ExecuteNonQuery();
                 } else {
                     MySqlCommand lastParseUpd = new MySqlCommand(@"UPDATE " + DBPrefix + "igm_data SET lastParsed=?lp WHERE ID=?id", con);
-                    lastParseUpd.Parameters.Add("?lp", MySqlDbType.UInt32).Value = now;
+                    lastParseUpd.Parameters.Add("?lp", MySqlDbType.UInt32).Value = unixnow;
                     lastParseUpd.Parameters.Add("?id", MySqlDbType.UInt32).Value = uid;
                     lastParseUpd.ExecuteNonQuery();
                 }
@@ -126,7 +130,7 @@ namespace IWDB.Parser {
 				int sitterfact = 1;
 				if(warFilter.InWar) {
 					sitterfact = 5;
-					uint schedule_slot = now - (now % 1800);
+					uint schedule_slot = unixnow - (unixnow % 1800);
 					MySqlCommand sitterSlotQry = new MySqlCommand("SELECT count(*) FROM "+DBPrefix+"war_schedule WHERE time=?time AND userid=?uid", con);
 					sitterSlotQry.Parameters.Add("?time", MySqlDbType.UInt32).Value = schedule_slot;
 					sitterSlotQry.Parameters.Add("?uid", MySqlDbType.UInt32).Value=posterID;
@@ -139,7 +143,7 @@ namespace IWDB.Parser {
 					}
 				}
                 MySqlCommand sitterScoreUpd = new MySqlCommand(@"UPDATE " + DBPrefix + "users SET sittertime=sittertime+?add WHERE ID=?uid", con);
-				sitterScoreUpd.Parameters.Add("?add", MySqlDbType.UInt32).Value = (now - lastUpdTime) * sitterfact;
+				sitterScoreUpd.Parameters.Add("?add", MySqlDbType.UInt32).Value = (unixnow - lastUpdTime) * sitterfact;
 				sitterScoreUpd.Parameters.Add("?uid", MySqlDbType.UInt32).Value = posterID;
                 sitterScoreUpd.ExecuteNonQuery();
 				resp.Respond("Kolonieinformationen (" + planiowner + ") eingelesen! "+bonus+"\n");
@@ -153,7 +157,7 @@ namespace IWDB.Parser {
             AddPattern(@"Ausbaustatus
 		((?:\n" + KolonieName + @"\s+" + Koordinaten + @"\s+(?:(?:nÜscht[^\n])|(?:.*?\s+bis\s+" + IWZeit + @"[\s\-]+" + IWZeitspanne + ")))+)");
         }
-        public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match outerMatch in matches) {
 				MatchCollection c = Regex.Matches(outerMatch.Groups[1].Value, "\n" + KolonieName + @"\s+" + KoordinatenEinzelMatch + @"\s+(?:(?:nÜscht)|(?:.*bis\s+(" + IWZeit + @")(?:\n|\s-).*))");
 				foreach (Match m in c) {
@@ -209,13 +213,13 @@ Fremde\sFlotten\n
 (?:\(Es\ssind\sfremde\sFlotten\süber\sdem\sPlaneten\sstationiert\.\)\s+)?
 Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 ((?:\s*\n" + KolonieName + @"\s" + Koordinaten + @"\s+" + KolonieName + @"\s" + Koordinaten + @"\n
-" + SpielerName + @"\s+(?:" + PräziseIWZeit + @"|" + AbladeAktionen + @")[\s\-]+(?:[\d:]+|angekommen)\s+(?:" + FlottenAktionen + @")(?:\s+Stationieren)?(?:[\s\S]+?\+)?)+)", PatternFlags.All);
+" + SpielerName + @"\s+(?:" + PräziseIWZeit + @"|" + AbladeAktionen + @")[\s\-]+(?:[\d:]+|angekommen)\s+(?:" + FlottenAktionen + @")(?:\s+Stationieren)?(?:[\s\S]+?\+)?)+)", "fremde Flotten", PatternFlags.All);
 			flottenCache = RequestCache<Dictionary<uint, OrderedList<FlottenCacheFlotte>>>("FlottenCache");
 			ownerCache = RequestCache<List<uint>>("OwnerCache");
             oldLastParsed = RequestCache<Dictionary<uint, uint>>("OldLastParsed");
 			this.parser = parser;
 		}
-        public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			PlaniIDFetcher idFetcherStartID = new PlaniIDFetcher(KnownData.Name|KnownData.Owner, con, DBPrefix);
 			PlaniIDFetcher idFetcherZielID = new PlaniIDFetcher(KnownData.Name | KnownData.Owner, con, DBPrefix);
 
@@ -240,7 +244,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 			deleteQry.Parameters.Add("?id", MySqlDbType.UInt32);
 			deleteQry.Prepare();
 
-            uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
+            uint unixnow = IWDBUtils.toUnixTimestamp(now);
 
 			foreach(Match outerMatch in matches) {
 				MatchCollection innerMatches = Regex.Matches(outerMatch.Groups[0].Value, "(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\s+(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\n
@@ -295,6 +299,12 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 				List<OrderedListDifference<FlottenCacheFlotte>> diffs = cachedFlotten.Differences(flotten);
 				int neu = 0;
 				String ziel = "";
+                uint lastParsed = oldLastParsed.GetOrDefault(uid, (uint)0);
+                if(lastParsed >= IWDBUtils.toUnixTimestamp(now)) {
+                    resp.RespondError("Die gesamten fremden Flotten wurden übersprungen (zu alt)");
+                    cachedFlotten.RemoveMatching(delegate(FlottenCacheFlotte f) { return f.Action != "Angriff"; });
+                    continue;
+                }
 				foreach(OrderedListDifference<FlottenCacheFlotte> diff in diffs) {
 					if(diff.Item.Action == "Angriff")
 						continue;
@@ -307,8 +317,8 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+\+
 						insertQry.Parameters["?action"].Value = diff.Item.Action;
 						insertQry.Parameters["?ankunft"].Value = diff.Item.ankunft;
 						insertQry.Parameters["?nummer"].Value = diff.Item.nummer;
-                        insertQry.Parameters["?firstseen"].Value = now;
-                        insertQry.Parameters["?notyetseen"].Value = oldLastParsed.GetOrDefault(uid, (uint)0);
+                        insertQry.Parameters["?firstseen"].Value = unixnow;
+                        insertQry.Parameters["?notyetseen"].Value = lastParsed;
 						insertQry.ExecuteNonQuery();
 						if(neu == 0) {
 							MySqlCommand zielQry = new MySqlCommand("SELECT ownername FROM " + DBPrefix + "universum WHERE id=?id", con);
@@ -343,7 +353,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
             oldLastParsed = RequestCache<Dictionary<uint, uint>>("OldLastParsed");
 			this.parser = parser;
 		}
-        public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			PlaniIDFetcher idFetcherStartID = new PlaniIDFetcher(KnownData.Name | KnownData.Owner, con, DBPrefix);
 			PlaniIDFetcher idFetcherZielID = new PlaniIDFetcher(KnownData.Name | KnownData.Owner, con, DBPrefix);
 
@@ -365,7 +375,7 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 			MySqlCommand deleteQry = new MySqlCommand(@"DELETE FROM " + DBPrefix + @"flotten WHERE id=?id", con);
 			deleteQry.Parameters.Add("?id", MySqlDbType.UInt32);
 			deleteQry.Prepare();
-            uint now = IWDBUtils.toUnixTimestamp(DateTime.Now);
+            uint unixnow = IWDBUtils.toUnixTimestamp(now);
 
 			foreach(Match outerMatch in matches) {
 				MatchCollection innerMatches = Regex.Matches(outerMatch.Groups[0].Value, "(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\s+(" + KolonieName + @")\s" + KoordinatenEinzelMatch + @"\n
@@ -419,11 +429,17 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 				List<OrderedListDifference<FlottenCacheFlotte>> diffs = cachedFlotten.Differences(flotten);
 				int neu = 0;
 				String ziel = "";
+                uint lastParsed = oldLastParsed.GetOrDefault(uid, (uint)0);
+                if (lastParsed >= IWDBUtils.toUnixTimestamp(now)) {
+                    resp.RespondError("Die ganzen feindlichen Flotten wurden übersprungen (zu alt)");
+                    cachedFlotten.RemoveMatching(delegate(FlottenCacheFlotte f) { return f.Action == "Angriff"; });
+                    continue;
+                }
 				foreach(OrderedListDifference<FlottenCacheFlotte> diff in diffs) {
 					if(diff.Item.Action != "Angriff")
 						continue;
 					if(diff.Difference == OrderedListDifferenceType.MissingInCompared) {
-						if(diff.Item.ankunft < (now-900) || diff.Item.ankunft > now) { //failsafe gegen Chemiemangel, dafür "werden flotten nicht recalled"
+						if(diff.Item.ankunft < (unixnow-900) || diff.Item.ankunft > unixnow) { //failsafe gegen Chemiemangel, dafür "werden flotten nicht recalled"
 							deleteQry.Parameters["?id"].Value = diff.Item.id;
 							deleteQry.ExecuteNonQuery();
 						}
@@ -433,8 +449,8 @@ Ziel\s+Start\s+Ankunft\s+Aktionen\s+
 						insertQry.Parameters["?action"].Value = "Angriff";
 						insertQry.Parameters["?ankunft"].Value = diff.Item.ankunft;
 						insertQry.Parameters["?nummer"].Value = diff.Item.nummer;
-                        insertQry.Parameters["?firstseen"].Value = now;
-                        insertQry.Parameters["?notyetseen"].Value = oldLastParsed.GetOrDefault(uid, (uint)0);
+                        insertQry.Parameters["?firstseen"].Value = unixnow;
+                        insertQry.Parameters["?notyetseen"].Value = lastParsed;
 						insertQry.ExecuteNonQuery();
 						if(neu == 0) {
 							MySqlCommand zielQry = new MySqlCommand("SELECT ownername FROM " + DBPrefix + "universum WHERE id=?id", con);

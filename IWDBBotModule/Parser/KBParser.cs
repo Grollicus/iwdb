@@ -21,7 +21,7 @@ namespace IWDB.Parser {
 				this.warFilter = warFilter;
 				this.techKostenCache = tkc;
 		}
-		public override void Matched(System.Text.RegularExpressions.MatchCollection matches, uint posterID, uint victimID, MySql.Data.MySqlClient.MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(System.Text.RegularExpressions.MatchCollection matches, uint posterID, uint victimID, DateTime now, MySql.Data.MySqlClient.MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach(Match match in matches) {
 				Kb kb = new Kb(uint.Parse(match.Groups[1].Value), match.Groups[2].Value, con, DBPrefix);
 
@@ -662,9 +662,9 @@ namespace IWDB.Parser {
     class FremderScanParser : ReportParser {
         public FremderScanParser(NewscanHandler newscanHandler)
             : base(newscanHandler) {
-                this.AddPattern(@"Eigener\sPlanet\swurde\ssondiert\s" + KoordinatenMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+Sondierung\s\((Schiffe/Def/Ress|Gebäude/Ress|Geologie)\)\s+([^\n]+)");
+                this.AddPattern(@"Eigener\sPlanet\swurde\ssondiert\s" + KoordinatenMatch + @"\s+Systemnachricht\s+(" + PräziseIWZeit + @")\s+Sondierung\s\((Schiffe/Def/Ress|Gebäude/Ress|Geologie)\)\s+([^\n]+)", "Eigener Planet wurde sondiert", PatternFlags.All);
         }
-        public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
             MySqlCommand cmd = new MySqlCommand("INSERT IGNORE INTO " + DBPrefix + "feind_scans (dst, time, type, start, sender, ally ) VALUES (?dst, ?time, ?type, ?start, ?sender, ?ally)", con);
             cmd.Parameters.Add("?dst", MySqlDbType.VarChar);
             cmd.Parameters.Add("?time", MySqlDbType.UInt32);
@@ -817,6 +817,12 @@ namespace IWDB.Parser {
                 backgroundFormatter = formatter;
             return FormatTable(sb, tbl, backgroundInfo, title, id, showsum, showpercent, (a1, a2) => a1 + a2, (a1, a2) => a1 / a2, formatter, backgroundFormatter);
         }
+        private StringBuilder FormatTable(StringBuilder sb, DefaultDict<String, DefaultDict<String, String>> tbl, String title, String id, DefaultDict<String, DefaultDict<String, String>> backgroundInfo = null, bool showsum = false, bool showpercent = false, Func<string, string> backgroundFormatter = null) {
+            Func<string, string> formatter = el => el;
+            if (backgroundFormatter == null)
+                backgroundFormatter = formatter;
+            return FormatTable(sb, tbl, backgroundInfo, title, id, showsum, showpercent, (a1, a2) => "", (a1, a2) => 0, formatter, backgroundFormatter);
+        }
         private StringBuilder FormatTable<T>(StringBuilder sb, DefaultDict<String, DefaultDict<String, T>> tbl, DefaultDict<String, DefaultDict<String, T>> backgroundInfo, String title, String id, bool showSum, bool showPercent, Func<T, T, T> Add, Func<T, T, double> Div, Func<T, String> formatter, Func<T, String> backgroundFormatter) {
             bool showInfo = backgroundInfo != null;
             if (backgroundInfo == null)
@@ -918,10 +924,10 @@ namespace IWDB.Parser {
             foreach (IGrouping<string, Kb> grp in kbs.Where(kb => kb.Bomb).GroupBy(kb => kb.DstCoords)) {
                 gebsVerlorenPlani.Add(grp.Key, grp);
             }
-            DefaultDict<string, DefaultDict<String, double>> ressProduktion = new DefaultDict<string, DefaultDict<string, double>>(() => new DefaultDict<string, double>());
-            ressProduktion.AddRange(gebScans.GroupBy(s => s.Coords.ToString()).Select(g => g.MaxElem(s => s.Time.Ticks)).Select(s => {
+            DefaultDict<string, DefaultDict<String, string>> ressProduktion = new DefaultDict<string, DefaultDict<string, string>>(() => new DefaultDict<string, string>());
+            ressProduktion.AddRange(gebScans.Where(s => s.Objettyp == "Kolonie").GroupBy(s => s.Coords.ToString()).Select(g => g.MaxElem(s => s.Time.Ticks)).Select(s => {
                 DefaultDict<String, long> gebsBombed = gebsVerlorenPlani[s.Coords.ToString()].Where(kb => kb.TimeStamp>IWDBUtils.toUnixTimestamp(s.Time)).SelectMany(kb => kb.Bombed).Aggregate(new DefaultDict<string, long>(), (d, g) => { d[g.Name] += g.Anzahl; return d; });
-                return s.Gebs.Aggregate(new PlaniProduktion(), (p, g) => p.AddProd(g.name, (uint)Math.Max(0, g.anz - gebsBombed[g.name])).AddMod(g.name, (uint)Math.Max(0, g.anz - gebsBombed[g.name])), g => new Tuple<String, DefaultDict<string, double>>(s.Coords.ToString()+" "+s.Owner.Name, (g.baseProd * g.localMod).AsDict()));
+                return s.Gebs.Aggregate(new PlaniProduktion(), (p, g) => p.AddProd(g.name, (uint)Math.Max(0, g.anz - gebsBombed[g.name])).AddMod(g.name, (uint)Math.Max(0, g.anz - gebsBombed[g.name])), g => new Tuple<String, DefaultDict<string, string>>(s.Coords.ToString(), new DefaultDict<string, string>().Add("Besitzer", s.Owner.Name).Add("Planityp", s.Planityp).AddRange((g.baseProd * g.localMod).AsReducedDict(Eisen:true, Chemie:true, FP:true))));
             }));
             FormatTable(stats, Transpose(ressProduktion), "Produktion", "prod_" + war.id);
 
@@ -944,6 +950,7 @@ namespace IWDB.Parser {
             //Nach Schiffen: Verluste / Spieler
             //Ress durch Bombings verloren
             //Anzahl Schiffe
+            //Fakes bei den Angriffen rausrechnen
 
             //für einzlene Schiffe berechnen welcher Spieler wie viel verloren hat
             //aufhübschen ^^
@@ -1023,7 +1030,7 @@ namespace IWDB.Parser {
         public Coords() { }
         public Coords(String coords) {
             string[] parts = coords.Split(new char[] { ':' }, 3);
-            Check.Cond(parts.Length != 3, "coords sollen im Format gala:sys:pla sein!");
+            Check.Cond(parts.Length == 3, "coords sollen im Format gala:sys:pla sein!");
             gal = int.Parse(parts[0]);
             sys = int.Parse(parts[1]);
             pla = int.Parse(parts[2]);

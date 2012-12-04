@@ -25,7 +25,7 @@ namespace IWDB.Parser {
 	//TODO: Parser umbauen so dass sie auch Tausendertrennzeichen beherrschen, zumindest die grundlegenden wie [,. ]
 	class GebäudeinfoParser : ReportParser {
         public GebäudeinfoParser(NewscanHandler newscanHandler) : base(newscanHandler, false) { AddPattern(@"Gebäudeinfo:[\s\S]+?Farbenlegende:", PatternFlags.Firefox); }
-        public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySql.Data.MySqlClient.MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySql.Data.MySqlClient.MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match gebinfo in matches) {
 				try {
 					TechtreeItem item = TechtreeGebäude.Parse(gebinfo.Value, DBPrefix);
@@ -48,7 +48,7 @@ namespace IWDB.Parser {
             : base(newscanHandler, false) {
             AddPattern(@"Forschungsinfo:\s+(.+)[\s\S]+?Farbenlegende:", PatternFlags.Firefox);
         }
-        public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySql.Data.MySqlClient.MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySql.Data.MySqlClient.MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match forschungsInfo in matches) {
 				try {
 					TechtreeItem item = TechtreeForschung.Parse(forschungsInfo.Value, DBPrefix);
@@ -83,7 +83,7 @@ Geschwindigkeit\sGal\s+(\d+)\n
 Verbrauch\schem.\sElemente\s+(\d+)\n
 Verbrauch\sEnergie\s+(\d+)\n", PatternFlags.Firefox);
         }
-        public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match m in matches) {
 				TechtreeItem item = new TechtreeSchiff(m, DBPrefix);
 				item.WriteToDB(con);
@@ -93,7 +93,7 @@ Verbrauch\sEnergie\s+(\d+)\n", PatternFlags.Firefox);
 	}
 class ForschungsübersichtParser:ReportParser {
     public ForschungsübersichtParser(NewscanHandler newscanHandler) : base(newscanHandler, false) { AddPattern(@"Erforschte\sForschungen\n([\s\S]+)", PatternFlags.All); }
-    public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+    public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match m in matches) {
 
 				MySqlCommand cleanup = new MySqlCommand(@"DELETE FROM techtree_useritems
@@ -143,7 +143,7 @@ class GebäudeübersichtParser:ReportParser {
 	public GebäudeübersichtParser(NewscanHandler newscanHandler) : base(newscanHandler) {
         AddPattern(@"Artefaktübersicht\s*\nGebäudeübersicht\n\s*\nGebäudeübersicht\n([\s\S]+)", PatternFlags.All);
     }
-    public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+    public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			foreach (Match outerMatch in matches) {
 				MySqlCommand cleanup = new MySqlCommand("DELETE FROM "+DBPrefix+"techtree_useritems WHERE uid=?uid AND coords <> ''", con);
 				cleanup.Parameters.Add("?uid", MySqlDbType.UInt32).Value=victimID;
@@ -643,6 +643,32 @@ abstract class TechtreeItem {
             ret.Add("Zeit (h)", Zeit.TotalHours);
             return ret;
         }
+        public Utils.DefaultDict<string, string> AsReducedDict(bool Eisen = false, bool Stahl = false, bool VV4A = false, bool Chemie = false, bool Eis = false, bool Wasser = false, bool Energie = false, bool Bev = false, bool Credits = false, bool FP=false, bool Zeit = false) {
+            Utils.DefaultDict<string, string> ret = new Utils.DefaultDict<string, string>();
+            if (Eisen)
+                ret.Add("Eisen", this.Eisen.ToString("N0"));
+            if(Stahl)
+                ret.Add("Stahl", this.Stahl.ToString("N0"));
+            if (VV4A)
+                ret.Add("VV4A", this.VV4A.ToString("N0"));
+            if (Chemie)
+                ret.Add("Chemie", this.Chemie.ToString("N0"));
+            if (Eis)
+                ret.Add("Eis", this.Eis.ToString("N0"));
+            if (Wasser)
+                ret.Add("Wasser", this.Wasser.ToString("N0"));
+            if (Energie)
+                ret.Add("Energie", this.Energie.ToString("N0"));
+            if (Bev)
+                ret.Add("Bev", this.Bev.ToString("N0"));
+            if (Credits)
+                ret.Add("Credits", this.Credits.ToString("N0"));
+            if (FP)
+                ret.Add("FP", this.FP.ToString("N0"));
+            if (Zeit)
+                ret.Add("Zeit (h)", this.Zeit.TotalHours.ToString("N0"));
+            return ret;
+        }
 	}
 	class TechtreeItemStufe {
 		public int Stufe;
@@ -838,7 +864,7 @@ abstract class TechtreeItem {
 			: base(h, false) {
 				AddPattern("http://www.icewars.de/portal/xml/de/schiffkosten.xml", PatternFlags.All);
 		}
-		public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			String str = IWCache.WebQuery(matches[0].Value);
 			System.Xml.XmlDocument d = new System.Xml.XmlDocument();
 			d.LoadXml(str);

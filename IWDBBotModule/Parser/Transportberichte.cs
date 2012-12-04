@@ -90,7 +90,7 @@ Eine\sFlotte\sist\sauf\sdem\sPlaneten\s" + KolonieName + @"\s+\d+:\d+:\d+\s+ange
 Ressourcen
 ((?:\s" + RessourcenName + @"\s+" + Number + @")+)\s");
         }
-        public override void Matched(System.Text.RegularExpressions.MatchCollection matches, uint posterID, uint victimID, MySql.Data.MySqlClient.MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(System.Text.RegularExpressions.MatchCollection matches, uint posterID, uint victimID, DateTime now, MySql.Data.MySqlClient.MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
             foreach (Match outerMatch in matches) {
                 Transport t = new Transport(
                     uint.Parse(outerMatch.Groups[1].Value),
@@ -121,7 +121,7 @@ Ressourcen
 ((?:\s+" + RessourcenName + @"\s+" + Number + @")+)\s");
 		}
 
-		public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			Dictionary<uint, String> uidToIgmNameCache = new Dictionary<uint, string>();
 			foreach(Match outerMatch in matches) {
 				String absender;
@@ -159,10 +159,10 @@ Es\swurden\sfolgende\sSachen\sübergeben\s+
 Schiffe\s+
 (.+?)\s+
 Ressourcen
-((?:\s+" + RessourcenName + @"\s+" + Number + @")+)\s");
+((?:\s+" + RessourcenName + @"\s+" + Number + @")+)\s", "Schiffe übergeben", PatternFlags.All);
 		}
 
-		public override void Matched(MatchCollection matches, uint posterID, uint victimID, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
+        public override void Matched(MatchCollection matches, uint posterID, uint victimID, DateTime now, MySqlConnection con, SingleNewscanRequestHandler handler, ParserResponse resp) {
 			Dictionary<uint, String> uidToIgmNameCache = new Dictionary<uint, string>();
 			foreach(Match outerMatch in matches) {
 				String empfaenger;

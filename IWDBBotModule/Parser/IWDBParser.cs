@@ -10,6 +10,7 @@ using MySql.Data.MySqlClient;
 using IRCeX;
 using System.Xml;
 using System.Threading;
+using Utils;
 
 namespace IWDB {
     public interface IWDBParserManager {
@@ -42,6 +43,7 @@ namespace IWDB.Parser {
 		KabaFilter kabaFilter;
 		WarFilter warFilter;
 		TechTreeCache techKostenCache;
+        DateTime roundStart;
 
         List<String> usersLoggedIn;
         Dictionary<String, List<string>> checkingUsers;
@@ -49,15 +51,17 @@ namespace IWDB.Parser {
 		public event NeueKbGesichtet OnNeueKbGesichtet;
 
         internal IWDBParser(XmlNode config, IWDBParserModule parserMod) {
-            if (config["name"] == null)
-                throw new Exception("IWDBParser ohne Name!");
-            if (config["ip"] == null || config["port"] == null || config["mysql"].InnerText == null || config["dbprefix"] == null)
-                throw new Exception("Config von IWDBParser '"+config["name"].InnerText+"' fehlerhaft!");
+            Check.NotNull(config["name"], "IWDBParser ohne Name!");
+            Check.NotNull(config["ip"], "IWDBParser " + config["name"].InnerText + " fehlt 'ip'");
+            Check.NotNull(config["port"], "IWDBParser " + config["name"].InnerText + " fehlt 'port'");
+            Check.NotNull(config["mysql"], "IWDBParser " + config["name"].InnerText + " fehlt 'mysql'");
+            Check.NotNull(config["dbprefix"], "IWDBParser " + config["name"].InnerText + " fehlt 'dbprefix'");
+            Check.NotNull(config["roundstart"], "IWDBParser " + config["name"].InnerText + " fehlt 'roundstart'");
 
             DBPrefix = config["dbprefix"].InnerText;
-
             mysql = parserMod.GetMysqlConnection(config["mysql"].InnerText);
-			//IRCeX.Log.WriteLine("MySqlOpen: IWDBParser constructor");
+            roundStart = IWDBUtils.fromUnixTimestamp(uint.Parse(config["roundstart"].InnerText));
+			
 			Monitor.Enter(mysql);
 			try {
 				mysql.Open();
@@ -67,14 +71,13 @@ namespace IWDB.Parser {
                 warFilter = new WarFilter(DBPrefix, mysql, techKostenCache, config["mysql"].InnerText);
                 FlugRechner.ReloadCache(DBPrefix, mysql);
 				AddHandler(warFilter);
-				AddHandler(new NewscanHandler(mysql, DBPrefix, config["mysql"].InnerText, this, warFilter, techKostenCache));
+				AddHandler(new NewscanHandler(mysql, DBPrefix, config["mysql"].InnerText, this, warFilter, techKostenCache, roundStart));
 				AddHandler(new BauschleifenHandler());
 				AddHandler(new TechTreeDepthHandler(mysql, DBPrefix));
                 AddHandler(new WarStats(DBPrefix, config["mysql"].InnerText, warFilter));
 				kabaFilter = new KabaFilter(DBPrefix, mysql);
 				AddHandler(kabaFilter);
 			} finally {
-				//IRCeX.Log.WriteLine("MySqlClose: IWDBParser constructor");
 				mysql.Close();
 				Monitor.Exit(mysql);
 			}
