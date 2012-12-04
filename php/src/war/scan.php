@@ -174,6 +174,13 @@ function ScanPrint() {
 			while($r = mysql_fetch_row($q)) {
 				$s[] = array('name' => EscapeOU($r[0]), 'cnt' => $r[1]);
 			}
+			if($row[2] == 'planetar') { //Deffstellungen
+				$q = DBQuery("SELECT techtree_items.Name, schiffe.anz FROM {$pre}scans_flotten_schiffe AS schiffe LEFT JOIN {$pre}techtree_items AS techtree_items ON schiffe.schid-1000 = techtree_items.ID WHERE schiffe.flid=".$row[0], __FILE__, __LINE__);
+				$s = array();
+				while($r = mysql_fetch_row($q)) {
+					$s[] = array('name' => EscapeOU($r[0]), 'cnt' => $r[1]);
+				}
+			}
 			$content['scan']['flotten'][] = array(
 				'typ' => $row[2],
 				'owner' => EscapeOU($row[1]),
