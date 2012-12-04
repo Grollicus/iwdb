@@ -416,7 +416,7 @@ namespace IWDB.Parser {
             return xml.SelectNodes("scann/pla_def/user").OfType<XmlNode>().Select(n => new { n = n, typ = "planetar" }).Union(xml.SelectNodes("scann/flotten_def/user").OfType<XmlNode>().Select(n => new { n = n, typ = "stationiert" })).Select(v => new ScanFlotte() {
                 ownerName = v.n["name"].InnerText,
                 typ=v.typ,
-                schiffe = v.n.SelectNodes("schiffe/schifftyp").OfType<XmlNode>().Union(xml.SelectNodes("defence/defencetyp").OfType<XmlNode>()).Select(s=>new ScanSchiff() { name=s["name"].InnerText, anz=uint.Parse(s["anzahl"].InnerText)})
+                schiffe = v.n.SelectNodes("schiffe/schifftyp").OfType<XmlNode>().Union(v.n.SelectNodes("defence/defencetyp").OfType<XmlNode>()).Select(s => new ScanSchiff() { name = s["name"].InnerText, anz = uint.Parse(s["anzahl"].InnerText) })
             });
         } }
     }
