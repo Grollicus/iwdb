@@ -913,7 +913,7 @@ namespace IWDB.Parser {
             gebsGesichtet.AddRange(gebScans.GroupBy(s => s.Owner.Ally).Select(ally => new Tuple<string, DefaultDict<string, long>>(ally.Key, ally.GroupBy(s => s.Coords.ToString()).Select(g => g.MaxElem(s => s.Time.Ticks)).SelectMany(s => s.Gebs).Aggregate(new DefaultDict<string, long>(), (d, g) => { d[g.name] += g.anz; return d; }))));
             FormatTable(stats, gebsVerloren, "Gebäude", "geb_" + war.id, showpercent: true, backgroundInfo: gebsGesichtet, backgroundFormatter:c => " / "+c.ToString("n0"));
 
-            stats.AppendLine("<h3>Produktion</h3>");
+            stats.AppendLine("<h3>Produktion/h</h3>");
             DefaultDict<String, IEnumerable<Kb>> gebsVerlorenPlani = new DefaultDict<string, IEnumerable<Kb>>(() => Enumerable.Empty<Kb>());
             foreach (IGrouping<string, Kb> grp in kbs.Where(kb => kb.Bomb).GroupBy(kb => kb.DstCoords)) {
                 gebsVerlorenPlani.Add(grp.Key, grp);
@@ -921,7 +921,7 @@ namespace IWDB.Parser {
             DefaultDict<string, DefaultDict<String, double>> ressProduktion = new DefaultDict<string, DefaultDict<string, double>>(() => new DefaultDict<string, double>());
             ressProduktion.AddRange(gebScans.GroupBy(s => s.Coords.ToString()).Select(g => g.MaxElem(s => s.Time.Ticks)).Select(s => {
                 DefaultDict<String, long> gebsBombed = gebsVerlorenPlani[s.Coords.ToString()].Where(kb => kb.TimeStamp>IWDBUtils.toUnixTimestamp(s.Time)).SelectMany(kb => kb.Bombed).Aggregate(new DefaultDict<string, long>(), (d, g) => { d[g.Name] += g.Anzahl; return d; });
-                return s.Gebs.Aggregate(new PlaniProduktion(), (p, g) => p.AddProd(g.name, (uint)Math.Max(0, g.anz - gebsBombed[g.name])).AddMod(g.name, (uint)Math.Max(0, g.anz - gebsBombed[g.name])), g => new Tuple<String, DefaultDict<string, double>>(s.Coords.ToString(), (g.baseProd * g.localMod).AsDict()));
+                return s.Gebs.Aggregate(new PlaniProduktion(), (p, g) => p.AddProd(g.name, (uint)Math.Max(0, g.anz - gebsBombed[g.name])).AddMod(g.name, (uint)Math.Max(0, g.anz - gebsBombed[g.name])), g => new Tuple<String, DefaultDict<string, double>>(s.Coords.ToString()+" "+s.Owner.Name, (g.baseProd * g.localMod).AsDict()));
             }));
             FormatTable(stats, Transpose(ressProduktion), "Produktion", "prod_" + war.id);
 
