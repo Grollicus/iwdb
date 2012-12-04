@@ -110,8 +110,8 @@ namespace IWDB.Parser {
         NewscanHandler parentHandler;
         Thread t;
         MySqlConnection con;
-        ParserRequestMessage toHandle;
         string dbPrefix;
+        IRCeX.MessageQueue<ParserRequestMessage> Q = new IRCeX.MessageQueue<ParserRequestMessage>();
 
         BesonderheitenData besData;
 
@@ -120,7 +120,6 @@ namespace IWDB.Parser {
             this.parentHandler = handler;
             this.postRequestHandler = postRequestHandlers;
             this.activePostRequestHandler = new Dictionary<string, IPostRequestHandler>();
-            toHandle = null;
             t = new Thread(threadMain);
             t.Start();
 			this.con = con;
@@ -135,99 +134,98 @@ namespace IWDB.Parser {
         }
 
         internal void Handle(ParserRequestMessage Msg) {
-            Monitor.Enter(t);
-            toHandle = Msg;
-            Monitor.Pulse(t);
-            Monitor.Exit(t);
+            Q.SendMessage(Msg);
         }
 
         private void threadMain() {
-            Monitor.Enter(t);
-            try {
-                while (true) {
-					try {
-						Monitor.Wait(t);
-						//IRCeX.Log.WriteLine("MySqlOpen: SingleNewscanRequestHandler");
-						Monitor.Enter(con);
-						try {
-							con.Open();
-							uint posterID = uint.Parse(toHandle[1].AsString);
-							uint victimID = uint.Parse(toHandle[2].AsString);
-							bool warmode = toHandle[4].AsString == "1";
-							bool restrictedUser = toHandle[5].AsString == "1";
-							String str = toHandle[6].AsString;
+            while (true) {
+                try {
+                    ParserRequestMessage toHandle = Q.RecvMessage();
+                    //IRCeX.Log.WriteLine("MySqlOpen: SingleNewscanRequestHandler");
+                    Monitor.Enter(con);
+                    try {
+                        con.Open();
+                        uint posterID = uint.Parse(toHandle[1].AsString);
+                        uint victimID = uint.Parse(toHandle[2].AsString);
+                        bool warmode = toHandle[4].AsString == "1";
+                        bool restrictedUser = toHandle[5].AsString == "1";
+                        String str = toHandle[6].AsString;
 
-							MySqlCommand envQry = new MySqlCommand("SELECT Komma, tsdTrennZeichen FROM " + DBPrefix + "igm_data where id=?id", con);
-							envQry.Parameters.Add("?id", MySqlDbType.UInt32).Value = victimID;
-							MySqlDataReader r = envQry.ExecuteReader();
-							if(!r.Read()) {
-								r.Close();
-								toHandle.Answer("Fehler: Unbekannte UID!");
-								toHandle.Handled();
-								continue;
-							}
-							String Komma = r.GetString(0);
-							String tsdTrennZeichen = r.GetString(1);
-							r.Close();
-							CultureInfo culture = (CultureInfo)CultureInfo.CurrentCulture.Clone();
-							NumberFormatInfo numberFormat = (NumberFormatInfo)NumberFormatInfo.CurrentInfo.Clone();
-							numberFormat.NumberDecimalSeparator = Komma;
-							numberFormat.NumberGroupSeparator = tsdTrennZeichen;
-							culture.NumberFormat = numberFormat;
-							System.Threading.Thread.CurrentThread.CurrentCulture = culture;
-							ParserResponse resp = new ParserResponse();
+                        MySqlCommand envQry = new MySqlCommand("SELECT Komma, tsdTrennZeichen FROM " + DBPrefix + "igm_data where id=?id", con);
+                        envQry.Parameters.Add("?id", MySqlDbType.UInt32).Value = victimID;
+                        MySqlDataReader r = envQry.ExecuteReader();
+                        if (!r.Read()) {
+                            r.Close();
+                            toHandle.Answer("Fehler: Unbekannte UID!");
+                            toHandle.Handled();
+                            continue;
+                        }
+                        String Komma = r.GetString(0);
+                        String tsdTrennZeichen = r.GetString(1);
+                        r.Close();
+                        CultureInfo culture = (CultureInfo)CultureInfo.CurrentCulture.Clone();
+                        NumberFormatInfo numberFormat = (NumberFormatInfo)NumberFormatInfo.CurrentInfo.Clone();
+                        numberFormat.NumberDecimalSeparator = Komma;
+                        numberFormat.NumberGroupSeparator = tsdTrennZeichen;
+                        culture.NumberFormat = numberFormat;
+                        System.Threading.Thread.CurrentThread.CurrentCulture = culture;
+                        ParserResponse resp = new ParserResponse();
 
-							Dictionary<String, List<ReportParser>> parsersWithComma;
-							List<ReportParser> parserList;
-							if(!parsers.TryGetValue(Komma, out parsersWithComma) || !parsersWithComma.TryGetValue(tsdTrennZeichen, out parserList)) {
-								parserList = parentHandler.CreateParsers(Komma, tsdTrennZeichen);
-							}
-							PatternFlags browserFlags = GetBrowserFlags(toHandle[3].AsString);
+                        Dictionary<String, List<ReportParser>> parsersWithComma;
+                        List<ReportParser> parserList;
+                        if (!parsers.TryGetValue(Komma, out parsersWithComma) || !parsersWithComma.TryGetValue(tsdTrennZeichen, out parserList)) {
+                            parserList = parentHandler.CreateParsers(Komma, tsdTrennZeichen);
+                        }
+                        PatternFlags browserFlags = GetBrowserFlags(toHandle[3].AsString);
 
-							//dieser workaround ist notwendig, da der Universumsansicht-Parser 2 aufeinander folgende Uniansichten nicht auseinander halten kann
-							String[] parts = str.Split(new string[] { "\nHILFE\nPostit erstellen", "HILFE\n\nWerde IceWars Supporter" }, StringSplitOptions.RemoveEmptyEntries);
-                            MySqlCommand perfLog = new MySqlCommand("INSERT INTO " + DBPrefix + "speedlog (action, sub, runtime) VALUES ('parser', ?p, ?rt)", con);
-                            MySqlParameter pParser = perfLog.Parameters.Add("?p", MySqlDbType.String);
-                            MySqlParameter pRT = perfLog.Parameters.Add("?rt", MySqlDbType.UInt32);
-							foreach(String part in parts) {
-								foreach(ReportParser parser in parserList) {
-                                    DateTime start = DateTime.Now;
-									parser.TryMatch(part, posterID, victimID, browserFlags, warmode, restrictedUser, con, this, resp);
-                                    TimeSpan parseTime = DateTime.Now - start;
-                                    pParser.Value = parser.ToString();
-                                    pRT.Value = parseTime.Ticks;
-                                    perfLog.ExecuteNonQuery();
-								}
-							}
-							toHandle.Answer(resp.ToString());
-							
-							foreach(IPostRequestHandler postReqH in activePostRequestHandler.Values) {
-								postReqH.HandlePostRequest(con, dbPrefix);
-							}
-							activePostRequestHandler.Clear();
-							toHandle.Handled();
-						} catch(Exception e) {
-							if(e is ThreadAbortException || e is SynchronizationLockException)
-								throw e;
-							ParserResponse errResp = new ParserResponse();
-							errResp.RespondError("<b>Schwerer Parserfehler:</b><br />" + e.ToString());
-							try {
-								toHandle.Answer(errResp.ToString());
-								toHandle.Handled();
-							} catch(Exception ex) {
-                                IRCeX.Log.WriteLine(IRCeX.LogLevel.E_ERROR, "Fehler im Exceptionhandler :O");
-								IRCeX.Log.WriteException(e);
-								IRCeX.Log.WriteException(ex);
-							}
-						}
-					} finally {
-						//IRCeX.Log.WriteLine("MySqlClose: SingleNewscanRequestHandler");
-						con.Close();
-						Monitor.Exit(con);
-					}
+                        //dieser workaround ist notwendig, da der Universumsansicht-Parser 2 aufeinander folgende Uniansichten nicht auseinander halten kann
+                        String[] parts = str.Split(new string[] { "\nHILFE\nPostit erstellen", "HILFE\n\nWerde IceWars Supporter" }, StringSplitOptions.RemoveEmptyEntries);
+                        MySqlCommand perfLog = new MySqlCommand("INSERT INTO " + DBPrefix + "speedlog (action, sub, runtime) VALUES ('parser', ?p, ?rt)", con);
+                        MySqlParameter pParser = perfLog.Parameters.Add("?p", MySqlDbType.String);
+                        MySqlParameter pRT = perfLog.Parameters.Add("?rt", MySqlDbType.UInt32);
+                        foreach (String part in parts) {
+                            foreach (ReportParser parser in parserList) {
+                                DateTime start = DateTime.Now;
+                                parser.TryMatch(part, posterID, victimID, browserFlags, warmode, restrictedUser, con, this, resp);
+                                TimeSpan parseTime = DateTime.Now - start;
+                                pParser.Value = parser.ToString();
+                                pRT.Value = parseTime.Ticks;
+                                perfLog.ExecuteNonQuery();
+                            }
+                        }
+                        toHandle.Answer(resp.ToString());
+
+                        foreach (IPostRequestHandler postReqH in activePostRequestHandler.Values) {
+                            postReqH.HandlePostRequest(con, dbPrefix);
+                        }
+                        activePostRequestHandler.Clear();
+                        toHandle.Handled();
+                    } catch (Exception e) {
+                        if (e is SynchronizationLockException)
+                            throw;
+                        if (e is ThreadAbortException) {
+                            try {
+                                toHandle.Answer("timeout killed");
+                                toHandle.Handled();
+                            } catch (Exception) { }
+                            throw;
+                        }
+                        ParserResponse errResp = new ParserResponse();
+                        errResp.RespondError("<b>Schwerer Parserfehler:</b><br />" + e.ToString());
+                        try {
+                            toHandle.Answer(errResp.ToString());
+                            toHandle.Handled();
+                        } catch (Exception ex) {
+                            IRCeX.Log.WriteLine(IRCeX.LogLevel.E_ERROR, "Fehler im Exceptionhandler :O");
+                            IRCeX.Log.WriteException(e);
+                            IRCeX.Log.WriteException(ex);
+                        }
+                    }
+                } finally {
+                    //IRCeX.Log.WriteLine("MySqlClose: SingleNewscanRequestHandler");
+                    con.Close();
+                    Monitor.Exit(con);
                 }
-            } finally {
-                Monitor.Exit(t);
             }
         }
 

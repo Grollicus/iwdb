@@ -494,6 +494,21 @@ abstract class TechtreeItem {
 			ret.Zeit = TimeSpan.FromSeconds(rs1.Zeit.TotalSeconds * scalar);
 			return ret;
 		}
+        public static ResourceSet operator *(ResourceSet rs1, ResourceSet rs2) {
+            ResourceSet ret = new ResourceSet();
+            ret.Eisen = rs1.Eisen * rs2.Eisen;
+            ret.Stahl = rs1.Stahl * rs2.Stahl;
+            ret.Chemie = rs1.Chemie * rs2.Chemie;
+            ret.VV4A = rs1.VV4A * rs2.VV4A;
+            ret.Eis = rs1.Eis * rs2.Eis;
+            ret.Wasser = rs1.Wasser * rs2.Wasser;
+            ret.Energie = rs1.Energie * rs2.Energie;
+            ret.Credits = rs1.Credits * rs2.Credits;
+            ret.Bev = rs1.Bev * rs2.Bev;
+            ret.FP = rs1.FP + rs2.FP;
+            ret.Zeit = TimeSpan.Zero;
+            return ret;
+        }
 		public static ResourceSet operator *(uint scalar, ResourceSet rs2) {
 			return rs2 * scalar;
 		}

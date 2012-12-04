@@ -10,6 +10,7 @@ namespace Test {
         public static void Main(String[] args) {
             MaximumFlowNetwork.Test();
             MinimumFlowNetwork.Test();
+            IWDB.Parser.FlugRechner.Test();
             IWDBTest.DoTest();
         }
     }

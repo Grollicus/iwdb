@@ -1048,6 +1048,79 @@ namespace Flow {
                 ret += f[s, i] + back.f[s, i];
             return ret;
         }
+
+        public void Save(String filename) {
+            using (StreamWriter w = new StreamWriter(filename)) {
+                w.WriteLine("n=" + cNodes);
+                w.WriteLine("s=" + s);
+                w.WriteLine("t=" + t);
+                for (int i = 0; i < cNodes; ++i) {
+                    w.Write(i + ": ");
+                    for (int j = 0; j < cNodes; ++j) {
+                        if(c[i,j] == 0 && l[i,j] == 0)
+                            continue;
+                        w.Write(j + "l" + l[i, j] + "c" + c[i, j] + " ");
+                    }
+                    w.WriteLine();
+                }
+            }
+        }
+        public static MinimumFlowNetwork Load(String filename) {
+            int state = 0;
+            int cNodes=0, s=0, t=0;
+            MinimumFlowNetwork ret=null;
+            using (StreamReader r = new StreamReader(filename)) {
+                while (!r.EndOfStream) {
+                    String line = r.ReadLine();
+                    switch (state) {
+                        case 0: {
+                                Match m = Regex.Match(line, "n=(\\d+)");
+                                if (!m.Success)
+                                    continue;
+                                cNodes = int.Parse(m.Groups[1].Value);
+                                ++state;
+                            }
+                            break;
+                        case 1: {
+                                Match m = Regex.Match(line, "s=(\\d+)");
+                                if (!m.Success)
+                                    continue;
+                                s = int.Parse(m.Groups[1].Value);
+                                ++state;
+                            }
+                            break;
+                        case 2: {
+                                Match m = Regex.Match(line, "t=(\\d+)");
+                                if (!m.Success)
+                                    continue;
+                                t = int.Parse(m.Groups[1].Value);
+                                ret = new MinimumFlowNetwork(cNodes, s, t);
+                                ++state;
+                            }
+                            break;
+                        case 3: {
+                                Match m = Regex.Match(line, @"(\d+):((?: \d+l\d+c\d+)*)");
+                                if (!m.Success)
+                                    continue;
+                                int i = int.Parse(m.Groups[1].Value);
+                                foreach (Match inner in Regex.Matches(m.Groups[2].Value, @" (\d+)l(\d+)c(\d+)")) {
+                                    int j = int.Parse(inner.Groups[1].Value);
+                                    int l = int.Parse(inner.Groups[2].Value);
+                                    int c = int.Parse(inner.Groups[3].Value);
+                                    ret.l[i, j] = l;
+                                    ret.c[i, j] = c;
+                                }
+                            }
+                            break;
+                    }
+                }
+                if (state != 3)
+                    throw new FileLoadException("Laden fehlgeschlagen!");
+                return ret;
+            }
+        }
+
+#region Tests
         public static void Test() {
             Debug.Assert(Test3());
             Debug.Assert(Test1());
@@ -1055,6 +1128,7 @@ namespace Flow {
             Debug.Assert(Test4());
             Debug.Assert(Test5());
             Debug.Assert(Test6());
+            Debug.Assert(Test7());
         }
         public static bool Test4() {
             Flow.MinimumFlowNetwork net = new MinimumFlowNetwork(5, 0, 1);
@@ -1120,6 +1194,30 @@ namespace Flow {
             long flow = net.MinFlow();
             return flow == 20;
         }
+        private static bool Test7() {
+            Flow.MinimumFlowNetwork net = new MinimumFlowNetwork(5, 0, 1);
+            net.c[net.s, 2] = int.MaxValue;
+            net.c[net.s, 4] = int.MaxValue;
+            net.c[2, 3] = int.MaxValue;
+            net.c[3, 4] = int.MaxValue;
+            net.c[3, net.t] = int.MaxValue;
+            net.c[4, net.t] = int.MaxValue;
+            net.l[net.s, 4] = 1;
+            net.l[4, net.t] = 20;
+            net.l[2, 3] = 2;
+            String file = Path.GetTempFileName();
+            try {
+                net.Save(file);
+                MinimumFlowNetwork net2 = MinimumFlowNetwork.Load(file);
+                bool ccheck = net2.c[net2.s, 2] == int.MaxValue && net2.c[net2.s, 4] == int.MaxValue && net2.c[2, 3] == int.MaxValue && net2.c[3, 4] == int.MaxValue && net2.c[3, net2.t] == int.MaxValue && net2.c[4, net2.t] == int.MaxValue;
+                bool lcheck = net2.l[net2.s, 4] == 1 && net2.l[4, net2.t] == 20 && net2.l[2, 3] == 2;
+                long flow = net2.MinFlow();
+                return ccheck && lcheck && flow == 20;
+            } finally {
+                File.Delete(file);
+            }
+        }
+#endregion
     }
 }
 

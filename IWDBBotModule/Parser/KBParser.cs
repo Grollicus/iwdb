@@ -732,6 +732,59 @@ namespace IWDB.Parser {
             public String StartCoords;
         }
 
+        class PlaniProduktion {
+            static DefaultDict<String, ResourceSet> prods = new DefaultDict<string, ResourceSet>(() => new ResourceSet());
+            static DefaultDict<string, ResourceSet> mods = new DefaultDict<string, ResourceSet>(() => new ResourceSet());
+            static PlaniProduktion() {
+                prods.Add("kleiner chemischer Fabrikkomplex", new ResourceSet() { Chemie = 160 });
+                prods.Add("große Chemiefabrik", new ResourceSet() { Chemie = 80 });
+                prods.Add("kleine Chemiefabrik", new ResourceSet() { Chemie = 20 });
+                prods.Add("kleine Eisenmine", new ResourceSet() { Eisen = 20 });
+                prods.Add("große Eisenmine", new ResourceSet() { Eisen = 80 });
+                prods.Add("kleiner Eisenminenkomplex", new ResourceSet() { Eisen = 200 });
+                prods.Add("kleines Stahlwerk", new ResourceSet() { Stahl = 20 });
+                prods.Add("großes Stahlwerk", new ResourceSet() { Stahl = 80 });
+                prods.Add("kleiner Stahlkomplex", new ResourceSet() { Stahl = 160 });
+                prods.Add("VV4A Walzwerk", new ResourceSet() { VV4A = 20 });
+                prods.Add("großes VV4A-Walzwerk", new ResourceSet() { VV4A = 80 });
+                prods.Add("Mondbergwerk", new ResourceSet() { Eisen = 40, Chemie = 40 });
+                prods.Add("kleines Forschungslabor", new ResourceSet() { FP = 25 });
+                prods.Add("großes Forschungslabor", new ResourceSet() { FP = 50 });
+                prods.Add("orbitaler Forschungskomplex", new ResourceSet() { FP = 100 });
+                prods.Add("Area 42 (unterirdischer Forschungskomplex)", new ResourceSet() { FP = 185 });
+                prods.Add("geheimes Vulkanlabor", new ResourceSet() { FP = 300 });
+                //prods.Add("", new ResourceSet() { });
+
+                mods.Add("Roboterminenkomplex", new ResourceSet() { Eisen = 1.4f, Chemie = 1.4f, Eis = 1.4f });
+                mods.Add("Universität", new ResourceSet() { FP = 1.08f });
+                mods.Add("planetarer Supercomputer", new ResourceSet() { FP = 1.13f });
+                mods.Add("Quantencomputer", new ResourceSet() { FP = 1.18f });
+            }
+
+            private static ResourceSet getProd(String name) {
+                lock (prods) {
+                    return prods[name];
+                }
+            }
+            private static ResourceSet getMod(String name) {
+                lock (mods) {
+                    return mods[name];
+                }
+            }
+
+            public ResourceSet baseProd = new ResourceSet();
+            public ResourceSet localMod = new ResourceSet();
+
+            public PlaniProduktion AddProd(String name, uint anz) {
+                baseProd += getProd(name) * anz;
+                return this;
+            }
+            public PlaniProduktion AddMod(String name, uint anz) {
+                localMod += getMod(name) * anz;
+                return this;
+            }
+        }
+        //TODO: das ist leider immernoch buggy (aka spuckt zu große Zahlen aus) also wirds erstmal nicht mehr benutzt :/
         private int MeisteGleichzeitig(IEnumerable<SchiffSichtung> sichtungen, String schiff) {
             List<SchiffSichtung> alle = new List<SchiffSichtung>(sichtungen.OrderBy(s => s.Zeit.Ticks));
             MinimumFlowNetwork net = new MinimumFlowNetwork(2 * alle.Count + 2, 2 * alle.Count, 2 * alle.Count + 1);
@@ -792,7 +845,7 @@ namespace IWDB.Parser {
                     sb.Append("<td>").Append(Escape.Html(formatter(sum))).Append("</td>");
                 sb.Append("</tr>");
             }
-            sb.Append("</tbody></table><script type=\"text/javascript\">$(function(){$(\"#").Append(id).AppendLine("\").tablesorter();});</script>");
+            sb.Append("</tbody></table><script type=\"text/javascript\">$(function(){$(\"#").Append(id).AppendLine("\").tablesorter({textExtraction: function(n) {return n.innerHTML.replace(\".\", \"\").replace(\",\", \"\");}});});</script>");
             return sb;
         }
         private DefaultDict<string, DefaultDict<string, T>> Transpose<T>(DefaultDict<string, DefaultDict<string, T>> d) {
@@ -800,6 +853,8 @@ namespace IWDB.Parser {
             d.ForEach(outer => outer.Value.ForEach(inner => ret[inner.Key][outer.Key] = inner.Value));
             return ret;
         }
+
+
 
         protected String GenerateStats(List<Kb> kbs, List<GebScan> gebScans, List<SchiffScan> schiffScans, WarFilter.War war, MySqlConnection con) {
             StringBuilder stats = new StringBuilder();
@@ -836,6 +891,7 @@ namespace IWDB.Parser {
             }
             FormatTable(stats, schiffeVerloren, "Schiff", "schiff_" + war.id, showpercent: true);
 
+            /* Buggy (überschätzt sich)
             stats.AppendLine("<h3>Gesichtete Schiffe</h3>");
             Dictionary<string, bool> interessanteSchiffe = new Dictionary<string, bool>() {
                 {"Gatling", true},{"Succubus", true},{"Kronk", true},{"Atombomber", true},{"Manta", true},{"Stormbringer", true},{"X12 (Carrier)", true},{"Zeus", true}
@@ -848,7 +904,7 @@ namespace IWDB.Parser {
                     }
                 }
             }
-            FormatTable(stats, schiffeGesichtet, "Schiff", "schiffe_gesichtet_" + war.id);
+            FormatTable(stats, schiffeGesichtet, "Schiff", "schiffe_gesichtet_" + war.id);*/
 
             stats.AppendLine("<h3>Verlorene Gebäude</h3>");
             DefaultDict<String, DefaultDict<String, long>> gebsVerloren = new DefaultDict<string, DefaultDict<string, long>>(() => new DefaultDict<string, long>());
@@ -856,6 +912,18 @@ namespace IWDB.Parser {
             DefaultDict<String, DefaultDict<String, long>> gebsGesichtet = new DefaultDict<string, DefaultDict<string, long>>(() => new DefaultDict<string, long>());
             gebsGesichtet.AddRange(gebScans.GroupBy(s => s.Owner.Ally).Select(ally => new Tuple<string, DefaultDict<string, long>>(ally.Key, ally.GroupBy(s => s.Coords.ToString()).Select(g => g.MaxElem(s => s.Time.Ticks)).SelectMany(s => s.Gebs).Aggregate(new DefaultDict<string, long>(), (d, g) => { d[g.name] += g.anz; return d; }))));
             FormatTable(stats, gebsVerloren, "Gebäude", "geb_" + war.id, showpercent: true, backgroundInfo: gebsGesichtet, backgroundFormatter:c => " / "+c.ToString("n0"));
+
+            stats.AppendLine("<h3>Produktion</h3>");
+            DefaultDict<String, IEnumerable<Kb>> gebsVerlorenPlani = new DefaultDict<string, IEnumerable<Kb>>(() => Enumerable.Empty<Kb>());
+            foreach (IGrouping<string, Kb> grp in kbs.Where(kb => kb.Bomb).GroupBy(kb => kb.DstCoords)) {
+                gebsVerlorenPlani.Add(grp.Key, grp);
+            }
+            DefaultDict<string, DefaultDict<String, double>> ressProduktion = new DefaultDict<string, DefaultDict<string, double>>(() => new DefaultDict<string, double>());
+            ressProduktion.AddRange(gebScans.GroupBy(s => s.Coords.ToString()).Select(g => g.MaxElem(s => s.Time.Ticks)).Select(s => {
+                DefaultDict<String, long> gebsBombed = gebsVerlorenPlani[s.Coords.ToString()].Where(kb => kb.TimeStamp>IWDBUtils.toUnixTimestamp(s.Time)).SelectMany(kb => kb.Bombed).Aggregate(new DefaultDict<string, long>(), (d, g) => { d[g.Name] += g.Anzahl; return d; });
+                return s.Gebs.Aggregate(new PlaniProduktion(), (p, g) => p.AddProd(g.name, (uint)Math.Max(0, g.anz - gebsBombed[g.name])).AddMod(g.name, (uint)Math.Max(0, g.anz - gebsBombed[g.name])), g => new Tuple<String, DefaultDict<string, double>>(s.Coords.ToString(), (g.baseProd * g.localMod).AsDict()));
+            }));
+            FormatTable(stats, Transpose(ressProduktion), "Produktion", "prod_" + war.id);
 
             stats.AppendLine("<h3>Verlorene Ress (Schiffe)</h3>");
             DefaultDict<string, DefaultDict<String, double>> ressVerloren = new DefaultDict<string, DefaultDict<string, double>>();
@@ -865,17 +933,17 @@ namespace IWDB.Parser {
                     continue;
                 ressVerloren.Add(grp.Key, rset.AsDict());
             }
-            FormatTable(stats, ressVerloren, "Ress", "ress_" + war.id, showsum:true, showpercent: true);
+            FormatTable(stats, ressVerloren, "Ress", "ress_" + war.id, showsum: true, showpercent: true);
 
             stats.Append("Stats erstellt um ").Append(DateTime.Now.ToString()).AppendLine("<br />");
 
-            //Werften pro Ally
+            //Geraidete Ress
+            //Raidress verloren
             //Planeten ohne Flottenscanner
             //Planeten mit Galascannern
             //Nach Schiffen: Verluste / Spieler
             //Ress durch Bombings verloren
             //Anzahl Schiffe
-            //Gesamtzahl Gebäude bei den Gebäudeverlusten dabei schreiben
 
             //für einzlene Schiffe berechnen welcher Spieler wie viel verloren hat
             //aufhübschen ^^
@@ -960,11 +1028,16 @@ namespace IWDB.Parser {
             sys = int.Parse(parts[1]);
             pla = int.Parse(parts[2]);
         }
+        public Coords(Coords c) {
+            this.gal = c.gal;
+            this.sys = c.sys;
+            this.pla = c.pla;
+        }
         public override string ToString() {
             return gal + ":" + sys + ":" + pla;
         }
     }
-    static class FlugRechner {
+    public static class FlugRechner {
         static DefaultDict<string, Speed> speedCache = new DefaultDict<string, Speed>(() => new Speed() { Gal = int.MaxValue, Sol = int.MaxValue }) {
             {"Kamel Z-98 (Hyperraumtransporter Klasse 1)", new Speed() {Gal=4500, Sol=500}},
             {"Waschbär (Hyperraumtransporter Klasse 2)", new Speed() {Gal=4300, Sol=500}},
@@ -1015,8 +1088,10 @@ namespace IWDB.Parser {
             return SgZeit(new Coords(from), new Coords(to), schiff);
         }
         private static TimeSpan SgZeit(Coords s, Coords d, String schiff) {
-            Coords sg_s = NextSg(s);
-            Coords sg_d = NextSg(d);
+            Coords sg_s = new Coords(NextSg(s));
+            sg_s.pla = s.pla;
+            Coords sg_d = new Coords(NextSg(d));
+            sg_d.pla = d.pla;
             if (sg_s == null || sg_d == null || sg_s == sg_d)
                 return TimeSpan.MaxValue;
             return Zeit(s, sg_s, schiff) + StargateFlug + Zeit(sg_d, d, schiff);
@@ -1035,7 +1110,7 @@ namespace IWDB.Parser {
             double gal = Math.Abs(s.gal - d.gal);
             double sol = Math.Abs(s.sys - d.sys);
             double pla = Math.Abs(s.pla - d.pla);
-            return TimeSpan.FromSeconds((15000000 / galspeed) * Math.Pow(((3000 * gal * gal) / Math.Log(gal + 50) + (mod * sol * Math.Max(3, sol)) / Math.Log(sol + 2) + pla), 0.25));
+            return TimeSpan.FromSeconds((15000000.0 / galspeed) * Math.Pow(((3000.0 * gal * gal) / Math.Log(gal + 50) + (mod * sol * Math.Max(3, sol)) / Math.Log(sol + 2) + pla), 0.25));
         }
         public static TimeSpan MinZeit(String from, String to, String schiff) {
             Coords s = new Coords(from);
@@ -1048,6 +1123,34 @@ namespace IWDB.Parser {
         }
         public static TimeSpan MaxZeit(String schiff) {
             return Zeit("1:1:1", "20:199:20", schiff);
+        }
+
+        public static void Test() {
+            if (sgCache.Count != 0) {
+                throw new InvalidOperationException();
+            }
+            sgCache.AddRange(new List<string>() {"1:35:0","1:73:0","1:105:0","2:37:0","2:68:0","2:99:0","3:32:0","3:66:0","3:99:0","5:33:0","5:64:0","5:102:0","6:33:0","6:69:0","6:105:0","7:34:0","7:71:0","9:38:0","9:69:0","10:33:0","10:67:0","10:98:0","11:37:0","11:71:0","11:108:0","13:37:0","13:70:0","14:31:0","14:64:0","14:98:0","15:36:0","15:68:0","17:39:0","17:76:0","18:35:0","18:73:0","19:37:0","19:68:0","19:107:0"}.Select(c => new Coords(c)));
+            System.Diagnostics.Debug.Assert(Test1());
+            System.Diagnostics.Debug.Assert(Test2());
+            System.Diagnostics.Debug.Assert(Test3());
+            System.Diagnostics.Debug.Assert(Test4());
+            sgCache.Clear();
+        }
+        private static bool Test1() {
+            TimeSpan z = FlugRechner.Zeit("19:3:2", "19:2:6", "Zeus");
+            return z.Hours == 1 && z.Minutes == 31 && z.Seconds == 30;
+        }
+        private static bool Test2() {
+            TimeSpan z = FlugRechner.Zeit("19:2:6", "15:31:3", "Zeus");
+            return z.Hours == 10 && z.Minutes == 17 && z.Seconds == 10;
+        }
+        private static bool Test3() {
+            TimeSpan z = FlugRechner.SgZeit("19:2:6", "15:31:3", "Zeus");
+            return z.Hours == 7 && z.Minutes == 2 && z.Seconds == 53;
+        }
+        private static bool Test4() {
+            TimeSpan z = FlugRechner.MinZeit("19:2:6", "15:31:3", "Zeus");
+            return z.Hours == 7 && z.Minutes == 2 && z.Seconds == 53;
         }
     }
 
