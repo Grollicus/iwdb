@@ -402,7 +402,7 @@ namespace IWDB.Parser {
                 flInsert.ExecuteNonQuery();
                 sch_flid.Value = flInsert.LastInsertedId;
                 foreach (ScanSchiff s in fl.schiffe) {
-                    schiffsInsert.Parameters["?schid"].Value = tc.ID(s.name, "sch", con, DBPrefix);
+                    schiffsInsert.Parameters["?schid"].Value = tc.ID(s.name, "schiff", con, DBPrefix);
                     schiffsInsert.Parameters["?anz"].Value = s.anz;
                     schiffsInsert.ExecuteNonQuery();
                 }
