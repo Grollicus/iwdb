@@ -59,9 +59,6 @@ $uni_presets= array(
 	'Blocken' => 'gala_min=19&amp;gala_max=19&amp;sys_min=1&amp;sys_max=25&amp;pla_min=&amp;pla_max=&amp;spieler=&amp;tag=&amp;planiname=&amp;geo_ch_min=&amp;geo_ch_max=&amp;geo_fe_min=&amp;geo_fe_max=&amp;geo_ei_min=&amp;geo_ei_max=&amp;geo_gravi_min=&amp;geo_gravi_max=&amp;geo_lb_min=&amp;geo_lb_max=&amp;geo_fmod_min=&amp;geo_fmod_max=&amp;geo_gebd_min=&amp;geo_gebd_max=&amp;geo_gebk_min=&amp;geo_gebk_max=&amp;geo_schd_min=&amp;geo_schd_max=&amp;geo_schk_min=&amp;geo_schk_max=&amp;scan_geb=&amp;scan_geb_cmp=0&amp;scan_geb_cnt=&amp;raw_sql=(userdata.allytag IS NULL or userdata.allytag!=\'FP\') AND uni.objekttyp != \'Kolonie\'&amp;raw_sql_hash=e21c4d34fdc179fdc230ca38540e1d5913b3af7fa0fbd1e640de0d5e59ce97fc&amp;spalten[]=coords&amp;spalten[]=owner&amp;spalten[]=types&amp;spalten[]=planiname&amp;spalten[]=important_specials&amp;spalten[]=geo_fe&amp;spalten[]=geo_ch&amp;spalten[]=geo_ei&amp;spalten[]=geo_gravilb&amp;spalten[]=geo_ttl&amp;spalten[]=geo_mods&amp;sortby[]=coords&amp;orders[]=0&amp;limit=0',
 );
 
-// Bezeichne Angriffe als Fake wenn angreifer-Wert < $fake_att und verteidiger-Wert < $fake_def 
-$fake = 200000;
-
 $warmode = false;
 $allow_restricted = false;
 

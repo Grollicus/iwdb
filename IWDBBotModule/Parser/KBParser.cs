@@ -187,7 +187,7 @@ namespace IWDB.Parser {
 			if(saveMode != KbSaveMode.None)
 				throw new InvalidOperationException("Versuche KB als KriegsKB zu speichern obwohl er schon gespeichert ist!");
 
-			MySqlCommand cmd = new MySqlCommand(@"INSERT IGNORE INTO " + DBPrefix + "war_kbs (iwid,hash,timestamp,att,attally,def,defally,attvalue,attloss,defvalue,defloss,raidvalue,bombvalue, attwin, start, dst, warid) VALUES (?iwid,?hash,?timestamp,?att,?attally,?def,?defally,?attvalue,?attloss,?defvalue,?defloss,?raidvalue,?bombvalue,?attwin,?start,?dst,?warid)", con);
+			MySqlCommand cmd = new MySqlCommand(@"INSERT IGNORE INTO " + DBPrefix + "war_kbs (iwid,hash,timestamp,att,attally,def,defally,attvalue,attloss,defvalue,defloss,raidvalue,bombvalue, attwin, start, dst, warid, fake) VALUES (?iwid,?hash,?timestamp,?att,?attally,?def,?defally,?attvalue,?attloss,?defvalue,?defloss,?raidvalue,?bombvalue,?attwin,?start,?dst,?warid, ?fake)", con);
 			cmd.Parameters.Add("?iwid", MySqlDbType.UInt32).Value = iwid;
 			cmd.Parameters.Add("?hash", MySqlDbType.String).Value = hash;
 			cmd.Parameters.Add("?timestamp", MySqlDbType.UInt32).Value = TimeStamp;
@@ -211,6 +211,7 @@ namespace IWDB.Parser {
 			cmd.Parameters.Add("?start", MySqlDbType.String).Value = StartCoords.Aggregate(new StringBuilder(), (sb, coords) => sb.AppendLine(coords), sb => sb.Length > 0 ? sb.ToString(0, sb.Length-Environment.NewLine.Length) : "");
 			cmd.Parameters.Add("?dst", MySqlDbType.String).Value = DstCoords;
 			cmd.Parameters.Add("?warid", MySqlDbType.UInt32).Value = warID;
+            cmd.Parameters.Add("?fake", MySqlDbType.UInt32).Value = Fake;
 
 			cmd.Prepare();
 			if(cmd.ExecuteNonQuery() == 0) {
@@ -387,6 +388,7 @@ namespace IWDB.Parser {
         public bool AttWin { get { return xml.SelectSingleNode("resultat/id").Attributes["value"].InnerText == "1"; } }
         public bool Bomb { get { return xml.SelectSingleNode("bomben") != null; } }
         public bool Plopp { get { return xml.SelectSingleNode("bomben/basis_zerstoert[@value='1']") != null; } }
+        public bool Fake { get { return !Plopp && !Bomb && AttShips.Sum(s => s.Anzahl_Start) <= 10 && DefShips.Sum(s => s.Anzahl_Start) <= 10; } }
 	}
 
 	class TechTreeCache {

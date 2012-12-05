@@ -3,7 +3,7 @@ if (!defined("dddfd"))
 	die("Hacking attempt");
 	
 function WarKbs() {
-	global $content, $pre, $fake, $scripturl;
+	global $content, $pre, $scripturl;
 	
 	$limit = isset($_REQUEST['limit']) ? intval($_REQUEST['limit']) : 0;
 
@@ -57,6 +57,13 @@ function WarKbs() {
 		$filter_link .= '&amp;def_value='.EscapeO(Param('def_value'));
 		$filter_kbs .= "AND defvalue >= ".intval(str_replace('.', '', Param('def_value')))." ";
 	}
+	$content['filter']['fake'] = false;
+	if(isset($_REQUEST['fake'])) {
+		$content['filter']['fake'] = true;
+		$filter_link .= '&amp;fake=1';
+	} else {
+		$filter_kbs .= "AND fake=0 ";
+	}
 	
 	$now = time();
 	$content['wars'] = array();
@@ -69,7 +76,7 @@ function WarKbs() {
 			'kbs' => array(),
 		);
 		
-		$q = DBQuery("SELECT iwid, hash, timestamp, att, attally, def, defally, attvalue, attloss, defvalue, defloss, raidvalue, bombvalue, attwin, start, dst FROM {$pre}war_kbs WHERE warid IN (".$row_wars[0].") {$filter_kbs} ORDER BY timestamp DESC LIMIT ".($limit*50).",".(($limit+1)*50), __FILE__, __LINE__);
+		$q = DBQuery("SELECT iwid, hash, timestamp, att, attally, def, defally, attvalue, attloss, defvalue, defloss, raidvalue, bombvalue, attwin, start, dst, fake FROM {$pre}war_kbs WHERE warid IN (".$row_wars[0].") {$filter_kbs} ORDER BY timestamp DESC LIMIT ".($limit*50).",".(($limit+1)*50), __FILE__, __LINE__);
 		while($row = mysql_fetch_row($q)) {
 			$wardata['kbs'][] = array(
 				'id' => $row[0],
@@ -80,16 +87,16 @@ function WarKbs() {
 				'angreiferAlly' => EscapeOU($row[4]),
 				'verteidigerName' => EscapeOU($row[5]),
 				'verteidigerAlly' => EscapeOU($row[6]),
-				'angreiferWert' => number_format($row[7], 0, ',', '.'),
-				'angreiferVerlust' => number_format(-$row[8], 0, ',', '.'),
-				'verteidigerWert' => number_format($row[9], 0, ',', '.'),
-				'verteidigerVerlust' => number_format(-$row[10], 0, ',', '.'),
+				'angreiferWert' => number_format($row[7]/10000, 0, ',', '.'),
+				'angreiferVerlust' => number_format(-$row[8]/10000, 0, ',', '.'),
+				'verteidigerWert' => number_format($row[9]/10000, 0, ',', '.'),
+				'verteidigerVerlust' => number_format(-$row[10]/10000, 0, ',', '.'),
 				'raidWert' => number_format($row[11], 0, ',', '.'),
 				'bombWert' => number_format($row[12], 0, ',', '.'),
 				'attWin' => $row[13] == '1',
 				'startKoords' => nl2br(EscapeOU($row[14])),
 				'zielKoords' => EscapeOU($row[15]),
-				'isFake' => $row[7] < $fake && $row[9] < $fake,
+				'isFake' => $row[16] == '1',
 			);
 		}
 

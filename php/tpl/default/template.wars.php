@@ -144,13 +144,13 @@
 					<td><input type="text" name="att_value" value="',$content['filter']['att_value'],'" size="9" /></td>
 					<td>&nbsp;</td>
 					<td><input type="text" name="def_value" value="',$content['filter']['def_value'],'" size="9" /></td>
-					<td>&nbsp;</td>
+					<td><input type="checkbox" name="fake" value="1" ', $content['filter']['fake'] ? 'checked="checked"' : '', ' />Fakes zeigen</td>
 					<td colspan="2"><input type="submit" value="Filtern!" /></td>
 				</tr>';
 			foreach($war['kbs'] as $kb) {
 				echo '<tr',$kb['isFake'] ? ' class="fake"' : '','><td><a href="', $kb['url'], '" onclick="return loadKB(\'', $kb['id'],'\', \'', $kb['hash'], '\');"> ', $kb['date'], '</a></td><td ', $kb['attWin']?'style="font-weight:bold;"':'' ,'>',
 					$kb['angreiferName'], '</td><td>', $kb['angreiferAlly'], '</td><td>', $kb['startKoords'], '</td><td ', !$kb['attWin']?'style="font-weight:bold;"':'' ,'>', $kb['verteidigerName'], '</td><td>', $kb['verteidigerAlly'], '</td><td>',
-					$kb['zielKoords'], '</td><td>', $kb['angreiferWert'], '</td><td>', $kb['angreiferVerlust'], '</td><td>', $kb['verteidigerWert'], '</td><td>', $kb['verteidigerVerlust'], '</td><td>',
+					$kb['zielKoords'], '</td><td>', $kb['angreiferWert'], '</td><td>', $kb['angreiferVerlust'], '</td><td>', $kb['verteidigerWert'], '</td><td>', $kb['verteidigerVerlust'], '</td><td>', 
 					$kb['raidWert'], '</td><td>', $kb['bombWert'], '</td></tr>
 					<tr style="display:none;" id="kbr_', $kb['id'], '"><td id="kb_', $kb['id'], '" colspan="13" class="kbtd"></td></tr>';
 			}
